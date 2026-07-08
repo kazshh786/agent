@@ -35,32 +35,103 @@
   </header>
 
   <main>
-    <!-- EDITORIAL ARCH CORE CONTENT -->
+    <!-- UX AUDIT LEAD CAPTURE PAGE -->
     <section class="section">
       <div class="container fade-in-up">
-        <div class="creative-shell-arch">
-          <span style="color: var(--color-accent); font-size: var(--font-size-sm); text-transform: uppercase; letter-spacing: 2px;">Authority Engine Section</span>
-          <h1 class="font-serif" style="margin-top: var(--space-2); margin-bottom: var(--space-3);">UX Audit</h1>
-          <p style="font-size: var(--font-size-h4); color: var(--color-muted); font-family: var(--font-serif); font-style: italic; margin-bottom: var(--space-4);">
-            "Identify the leaks in your digital conversion funnel."
-          </p>
-          <div style="text-align: left; max-width: 650px; margin: 0 auto;">
-            <p>
-              In high-conversion digital architecture, generic layouts are the enemy of revenue. Following Kasim Shah's design principles, this section implements strict usability controls, consistent graphic tokens, and clear semantic typography scaling.
-            </p>
-            <p>
-              By utilizing multi-million pound user testing paradigms inherited from senior UX engineering at <strong>AO.com</strong> and <strong>Zuto</strong>, we resolve customer friction points before they impact your balance sheet.
-            </p>
-          </div>
-          
-          <div class="m3-hero-actions-wrapper" style="justify-content: center; margin-top: var(--space-5);">
-            <md-filled-button href="https://form.kasimshah.com" target="_blank">Qualify Your Campaign</md-filled-button>
-            <md-outlined-button href="index.html" onclick="window.location.href='index.html'">Return Home</md-outlined-button>
-          </div>
+        
+        <div style="text-align: center; max-width: 700px; margin: 0 auto var(--space-5) auto;">
+          <span style="color: var(--color-accent); font-size: var(--font-size-sm); text-transform: uppercase; letter-spacing: 2px;">Leak Detection</span>
+          <h1 class="font-serif" style="margin-top: var(--space-2);">Request a Free 15-Minute Conversion Audit</h1>
+          <p>We will personally record a screen-share audit pointing out the exact coordinates where your website is bleeding mobile customers. Zero cost. Zero sales pitch.</p>
         </div>
+
+        <div class="lead-form-wrapper">
+          <h3 class="font-serif" style="margin-bottom: var(--space-3); color: var(--color-accent); text-align: center;">Conversion Audit Intake</h3>
+          
+          <form id="audit-intake-form" onsubmit="event.preventDefault(); handleAuditSubmit();">
+            <div class="form-group">
+              <md-outlined-text-field label="Your Website URL" id="audit-url" required type="url" placeholder="https://example.com"></md-outlined-text-field>
+            </div>
+            
+            <div class="form-group">
+              <md-outlined-text-field label="Your Name" id="audit-name" required type="text" placeholder="John Doe"></md-outlined-text-field>
+            </div>
+
+            <div class="form-group">
+              <md-outlined-text-field label="Business Email Address" id="audit-email" required type="email" placeholder="john@example.com"></md-outlined-text-field>
+            </div>
+
+            <div class="form-group">
+              <md-outlined-text-field label="Primary Bottleneck (e.g., slow speed, low lead volume)" id="audit-bottleneck" type="text" placeholder="We get clicks but no bookings."></md-outlined-text-field>
+            </div>
+
+            <div class="m3-button-full-wrapper" style="margin-top: var(--space-4);">
+              <md-filled-button type="submit" id="btn-submit-audit">Submit Free Audit Request</md-filled-button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Problem Agitation Card -->
+        <div class="creative-shell-arch reveal" style="max-width: 700px; margin: var(--space-6) auto 0 auto; text-align: left; padding: var(--space-5);">
+          <h3 class="font-serif" style="color: var(--color-accent); margin-bottom: var(--space-2);">Why are we doing this?</h3>
+          <p style="font-size: var(--font-size-sm); color: var(--color-muted);">
+            Most local B2B websites lose over 60% of their mobile traffic simply because their interface was built by graphic designers, not conversion engineers. 
+          </p>
+          <p style="font-size: var(--font-size-sm); color: var(--color-muted);">
+            In 15 minutes, we will show you exactly how to optimize your checkout or diary flow to capture those lost leads, utilizing the same user experience frameworks we engineered for multi-million pound checkouts at <strong>AO.com</strong>.
+          </p>
+        </div>
+
       </div>
     </section>
   </main>
+
+  <!-- DYNAMIC MODAL CONTAINER FOR CONFIRMATION -->
+  <div id="m3-dialog-root"></div>
+
+  <!-- INTERACTIVE AUDIT SUBMISSION SCRIPT -->
+  <script>
+    function handleAuditSubmit() {
+      const url = document.getElementById('audit-url').value;
+      const name = document.getElementById('audit-name').value;
+      const email = document.getElementById('audit-email').value;
+      const bottleneck = document.getElementById('audit-bottleneck').value;
+
+      if (!url || !name || !email) return;
+
+      showAuditConfirmation(name, url);
+    }
+
+    function showAuditConfirmation(name, url) {
+      const root = document.getElementById('m3-dialog-root');
+      root.innerHTML = `
+        <md-dialog id="audit-confirm-dialog" style="--md-dialog-container-color: var(--color-dark-surface); border: 1px solid var(--color-dark-border);">
+          <div slot="headline" class="font-serif" style="color: var(--color-accent); font-size: 20px;">Audit Registered ✓</div>
+          <form slot="content" method="dialog">
+            <p style="font-size: var(--font-size-sm); color: var(--color-secondary); margin: 0; line-height: 1.5;">
+              Thank you, ${name}. Your free 15-minute conversion audit for <strong>${url}</strong> has been registered. 
+            </p>
+            <p style="font-size: var(--font-size-sm); color: var(--color-muted); margin-top: 10px; line-height: 1.5;">
+              Kasim will record the video and email the direct link to you within 48 business hours.
+            </p>
+          </form>
+          <div slot="actions">
+            <md-filled-button id="dialog-audit-close-btn">Done</md-filled-button>
+          </div>
+        </md-dialog>
+      `;
+
+      const dialog = document.getElementById('audit-confirm-dialog');
+      const closeBtn = document.getElementById('dialog-audit-close-btn');
+
+      closeBtn.addEventListener('click', () => {
+        dialog.close();
+        document.getElementById('audit-intake-form').reset();
+      });
+
+      dialog.show();
+    }
+  </script>
 
   <!-- FOOTER -->
   <footer class="footer">

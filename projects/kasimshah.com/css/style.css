@@ -395,3 +395,275 @@ strong {
   font-size: var(--font-size-sm);
   color: var(--color-muted);
 }
+
+/* --- NEW BRAND POSITIONING LAYOUT ELEMENTS --- */
+
+/* Trust Ribbon */
+.trust-ribbon {
+  background-color: var(--color-dark-surface);
+  border-top: 1px solid var(--color-dark-border);
+  border-bottom: 1px solid var(--color-dark-border);
+  padding: var(--space-4) 0;
+  margin-bottom: var(--space-6);
+}
+
+.trust-ribbon-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.trust-logos {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.trust-logos-label {
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--color-muted);
+}
+
+.trust-logo-item {
+  font-family: var(--font-serif);
+  font-size: var(--font-size-h3);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.trust-logo-item strong {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.trust-metrics {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.trust-metric-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.trust-metric-number {
+  font-size: var(--font-size-h2);
+  font-family: var(--font-serif);
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.trust-metric-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+@media (max-width: 768px) {
+  .trust-ribbon-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* Old Way vs New Way Comparison */
+.comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.comparison-card {
+  padding: var(--space-5);
+  background-color: var(--color-dark-surface);
+  border: 1px solid var(--color-dark-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition: var(--transition-smooth);
+}
+
+.comparison-card.old-way {
+  border-left: 3px solid var(--color-error);
+}
+
+.comparison-card.new-way {
+  border-left: 3px solid var(--color-accent);
+}
+
+.comparison-card h3 {
+  font-family: var(--font-serif);
+  font-size: var(--font-size-h3);
+}
+
+.comparison-card.old-way h3 {
+  color: #E5E5EA;
+}
+
+.comparison-card.new-way h3 {
+  color: var(--color-accent);
+}
+
+.comparison-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.comparison-list li {
+  font-size: var(--font-size-sm);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.comparison-card.old-way .comparison-list li {
+  color: var(--color-muted);
+}
+
+.comparison-card.old-way .comparison-list li::before {
+  content: "✕";
+  color: var(--color-error);
+  font-weight: bold;
+}
+
+.comparison-card.new-way .comparison-list li {
+  color: var(--color-secondary);
+}
+
+.comparison-card.new-way .comparison-list li::before {
+  content: "✓";
+  color: var(--color-accent);
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .comparison-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Methodology Steps */
+.methodology-flow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.methodology-step {
+  background-color: var(--color-dark-surface);
+  border: 1px solid var(--color-dark-border);
+  padding: var(--space-4);
+  position: relative;
+  transition: var(--transition-smooth);
+}
+
+.methodology-step:hover {
+  border-color: var(--color-accent);
+}
+
+.methodology-num {
+  font-size: var(--font-size-hero);
+  font-family: var(--font-serif);
+  color: rgba(212, 175, 55, 0.15);
+  position: absolute;
+  top: 10px;
+  right: var(--space-3);
+  font-weight: 700;
+}
+
+.methodology-step h4 {
+  font-size: var(--font-size-h4);
+  margin-bottom: var(--space-2);
+}
+
+@media (max-width: 992px) {
+  .methodology-flow {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 576px) {
+  .methodology-flow {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Form Styles */
+.lead-form-wrapper {
+  background-color: var(--color-dark-surface);
+  border: 1px solid var(--color-dark-border);
+  padding: var(--space-5);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.form-group {
+  margin-bottom: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+md-outlined-text-field {
+  --md-outlined-text-field-container-shape: 0px;
+  --md-outlined-text-field-outline-color: var(--color-dark-border);
+  --md-outlined-text-field-hover-outline-color: var(--color-muted);
+  --md-outlined-text-field-focus-outline-color: var(--color-accent);
+  --md-outlined-text-field-input-text-color: var(--color-secondary);
+  --md-outlined-text-field-label-text-color: var(--color-muted);
+  --md-outlined-text-field-focus-label-text-color: var(--color-accent);
+  --md-outlined-text-field-input-text-font: var(--font-sans);
+  width: 100%;
+}
+
+/* Case Study details list */
+.case-details-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+  margin: var(--space-4) 0;
+}
+
+.case-detail-card {
+  background-color: var(--color-primary);
+  border: 1px solid var(--color-dark-border);
+  padding: var(--space-4);
+  text-align: center;
+}
+
+.case-detail-card.accent {
+  border-color: var(--color-accent);
+}
+
+.case-detail-num {
+  font-size: var(--font-size-h2);
+  color: var(--color-accent);
+  font-family: var(--font-serif);
+  font-weight: bold;
+}
+
+.case-detail-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-muted);
+  text-transform: uppercase;
+  margin-top: 5px;
+}
+
+@media (max-width: 768px) {
+  .case-details-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+  }
+}
+
