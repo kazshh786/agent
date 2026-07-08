@@ -1,0 +1,11 @@
+# IDE and system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Agent and temporary folders
+.gemini/
+*.log
+tmp/
+temp/

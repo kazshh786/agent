@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity Strategic UX Conversion Router</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        header {
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        h1 { font-size: 24pt; color: #111827; margin: 0 0 10px 0; font-weight: 700; }
+        .subtitle { font-size: 11pt; color: #4b5563; margin: 0; }
+        .section-title {
+            font-size: 13pt; color: #111827; border-left: 4px solid #10b981;
+            padding-left: 12px; margin: 35px 0 15px 0; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-size: 10.5pt; font-weight: 600; color: #374151; margin-bottom: 6px; }
+        .label-desc { font-weight: normal; color: #6b7280; font-size: 9.5pt; display: block; margin-bottom: 4px; }
+        input[type="text"], select, textarea {
+            width: 100%; padding: 10px 12px; border: 1px solid #d1d5db;
+            border-radius: 6px; font-size: 10.5pt; color: #1f2937; background-color: #f9fafb;
+        }
+        textarea { resize: vertical; min-height: 70px; }
+        
+        /* Conversion Routing Cards */
+        .routing-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+        .routing-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            background-color: #fff;
+        }
+        .routing-card:hover { border-color: #10b981; background-color: #f0fdf4; }
+        .routing-card.active { border-color: #10b981; background-color: #ecfdf5; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }
+        .routing-card h3 { font-size: 11pt; margin: 8px 0 4px 0; color: #111827; }
+        .routing-card p { font-size: 8.5pt; margin: 0; color: #6b7280; }
+        .routing-card input[type="radio"] { display: none; }
+        
+        /* Dynamic Mapping Output Box */
+        .mapping-preview {
+            background-color: #1e293b;
+            color: #38bdf8;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 9.5pt;
+            white-space: pre-wrap;
+            margin-top: 15px;
+            border: 1px solid #334155;
+            display: none;
+        }
+        .btn-container { text-align: right; margin-top: 30px; border-top: 1px solid #e5e7eb; padding-top: 20px; }
+        button { background-color: #10b981; color: white; border: none; padding: 12px 24px; font-size: 11pt; font-weight: 600; border-radius: 6px; cursor: pointer; }
+        button:hover { background-color: #059669; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Antigravity Conversion Engine Router</h1>
+        <p class="subtitle">Bridges the gap between client business goals and automated layout generation by dynamically routing page architecture logic.</p>
+    </header>
+
+    <form id="routerForm">
+        <div class="section-title">📋 Brand Setup</div>
+        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+            <div class="form-group" style="flex: 1;">
+                <label for="brand_name">Brand Name</label>
+                <input type="text" id="brand_name" placeholder="e.g., Barking Barn" required>
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label for="biz_type">Business Type</label>
+                <input type="text" id="biz_type" placeholder="e.g., Hairdresser, Salon, Plumber" required>
+            </div>
+        </div>
+
+        <div class="section-title">⚡ Select Core Conversion Mechanism</div>
+        <span class="label-desc" style="margin-bottom: 15px;">What mechanical infrastructure handles the business's client ingestion pipeline?</span>
+        
+        <div class="routing-container">
+            <div class="routing-card" onclick="selectMechanism('calendar')">
+                <input type="radio" id="mech_calendar" name="conv_mechanism" value="calendar">
+                <div style="font-size: 18pt;">📅</div>
+                <h3>Calendar Booking</h3>
+                <p>Direct live booking into a calendar interface.</p>
+            </div>
+            <div class="routing-card" onclick="selectMechanism('schedule')">
+                <input type="radio" id="mech_schedule" name="conv_mechanism" value="schedule">
+                <div style="font-size: 18pt;">☎️</div>
+                <h3>Schedule Call</h3>
+                <p>Vetting pipeline leading to discovery/strategy call.</p>
+            </div>
+            <div class="routing-card" onclick="selectMechanism('submission')">
+                <input type="radio" id="mech_submission" name="conv_mechanism" value="submission">
+                <div style="font-size: 18pt;">📝</div>
+                <h3>Contact Submission</h3>
+                <p>Detailed Multi-step intake or request a quote form.</p>
+            </div>
+            <div class="routing-card" onclick="selectMechanism('call')">
+                <input type="radio" id="mech_call" name="conv_mechanism" value="call">
+                <div style="font-size: 18pt;">📞</div>
+                <h3>Call Now</h3>
+                <p>Urgent Mobile tap-to-call local lead generation.</p>
+            </div>
+        </div>
+
+        <div id="dynamicMappingArea" style="display:none;">
+            <div class="section-title" style="border-left-color: #38bdf8;">🛠️ Target Component & Architecture Blueprint</div>
+            <p class="label-desc">Antigravity structural instructions mapped out to fit this operational profile:</p>
+            <div id="mappingPreviewBox" class="mapping-preview"></div>
+        </div>
+
+        <div class="section-title">🧠 Conversion Psychology Context</div>
+        <div class="form-group">
+            <label for="objection">What is the biggest friction point or hurdle stopping them from converting?</label>
+            <textarea id="objection" placeholder="e.g., Fear of hidden pricing, untrustworthy technicians, or a ruined haircut..."></textarea>
+        </div>
+        <div class="form-group">
+            <label for="tone">Tone of Voice Guidelines</label>
+            <input type="text" id="tone" placeholder="e.g., Warm but authoritative, precise, clinical, editorial luxury">
+        </div>
+
+        <div class="btn-container">
+            <button type="button" onclick="generateSystemPrompt()">Generate Antigravity Master Brief</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    const logicEngine = {
+        calendar: {
+            desc: "AUTOMATED DIRECT BOOKING ARCHITECTURE ENGINE",
+            pages: ["Home", "Services & Rates", "Live Booking Portal", "FAQ", "Success Page"],
+            components: ["Live Availability Matrix", "Value Stack Tier Matrix", "Fresha/Acuity Embed Wrapper"],
+            ux_focus: "Frictionless time-slot scanning. Above-The-Fold primary action must pull directly to local container anchors. Immediate confirmation screens paired with urgency metrics."
+        },
+        schedule: {
+            desc: "CONSULTATIVE HIGH-TICKET DISCOVERY PIPELINE",
+            pages: ["Home", "The Framework/Process", "Case Studies", "Qualify Audit Form", "Calendar Call Booking"],
+            components: ["Multi-step Logic Wizard", "Micro-Commitment Qualification Form", "Calendly/Vetted Router"],
+            ux_focus: "Establish absolute positioning authority prior to resource scheduling. High reliance on proof modules. Form fields act as user bottlenecks to filter poor match volume."
+        },
+        submission: {
+            desc: "ASYNC DETAILED INFORMATION INTAKE / ESTIMATOR GATEWAY",
+            pages: ["Home", "Services Offered", "Request Complex Estimate", "Our Guarantee"],
+            components: ["Interactive Estimate Parameter Calculator", "File Attachment / Scope Dropzone Module", "Dynamic Confirmation Pipeline"],
+            ux_focus: "Mitigate conversion drop-off through clear progress tracking (Breadcrumbs/Status steps). User data input metrics instantly frame expectations on response turnarounds."
+        },
+        call: {
+            desc: "HIGH-URGENCY DIRECT CONTACT ROUTING ENGINE",
+            pages: ["Home (Single Page Matrix Optimized)", "Emergency Response Details", "Simple Reviews"],
+            components: ["Sticky Persistent CTA Bar (Mobile Native Tap)", "Tap-to-Call Click Optimization Layer", "Instant Geo-Proximity Validation Banner"],
+            ux_focus: "Minimalist visual hierarchy. Primary metric is speed-to-action. Eliminate multi-column blocks on mobile screens. Immediate emphasis on proximity validation and trust validation vectors."
+        }
+    };
+
+    function selectMechanism(type) {
+        document.querySelectorAll('.routing-card').forEach(card => card.classList.remove('active'));
+        const activeRadio = document.getElementById(`mech_${type}`);
+        activeRadio.checked = true;
+        activeRadio.parentElement.classList.add('active');
+
+        // Render runtime system layout rules
+        const config = logicEngine[type];
+        const previewBox = document.getElementById('mappingPreviewBox');
+        document.getElementById('dynamicMappingArea').style.display = 'block';
+        previewBox.style.display = 'block';
+        
+        previewBox.innerText = `[ANTIGRAVITY ROUTER ENGINE MATCH: ${config.desc}]\n\n` +
+                               `• Required Sitemaps: ${JSON.stringify(config.pages, null, 2)}\n` +
+                               `• Injected Functional UI Blocks: ${JSON.stringify(config.components, null, 2)}\n` +
+                               `• Essential Conversion Psychology Focus:\n  ${config.ux_focus}`;
+    }
+
+    function generateSystemPrompt() {
+        const selectedRadio = document.querySelector('input[name="conv_mechanism"]:checked');
+        if(!selectedRadio) { alert('Please choose a core conversion mechanism first.'); return; }
+        
+        const type = selectedRadio.value;
+        const config = logicEngine[type];
+        const brand = document.getElementById('brand_name').value || "[BRAND]";
+        const niche = document.getElementById('biz_type').value || "[NICHE]";
+        const objection = document.getElementById('objection').value || "[USER SKEPTECISM]";
+        const tone = document.getElementById('tone').value || "Professional";
+
+        const templatePrompt = `=== ANTIGRAVITY MASTER PRODUCTION BRIEF ===\n\n` +
+            `Target Business: ${brand} (${niche})\n` +
+            `Core Conversion Protocol: ${type.toUpperCase()} INGESTION PIPELINE\n` +
+            `Tone Profile: ${tone}\n\n` +
+            `[SITEMAP PROTOCOL]\nGenerate sitemap.json with the following targets:\n${JSON.stringify(config.pages, null, 4)}\n\n` +
+            `[COMPONENT DIRECTIVE]\nGenerate component_map.json allocating these specific modules to their logical pages:\n${JSON.stringify(config.components, null, 4)}\n\n` +
+            `[UX ENGINE ARCHITECTURE CONSTRAINTS]\n1. Build layouts exclusively prioritizing: ${config.ux_focus}\n` +
+            `2. Write high-conversion copy designed to tackle the primary user hurdle: "${objection}".\n` +
+            `3. Ensure primary CTA elements map natively to the configured ${type} mechanism.`;
+
+        alert("Master Brief compiled for your Antigravity Engine! View the console output or save code directly.");
+        console.log(templatePrompt);
+    }
+</script>
+</body>
+</html>

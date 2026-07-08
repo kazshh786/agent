@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQ & Objections - KS Studio | Project Friction Buster</title>
+  <meta name="description" content="Find answers to booking questions, sound isolation queries, equipment rental policies, load-in specifications, and security details.">
+  <meta property="og:title" content="FAQ - KS Studio">
+  <meta property="og:description" content="Answers to common studio scheduling, gear, and booking questions.">
+  <meta property="og:type" content="website">
+  
+  <!-- Material Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="https://esm.run/@material/web/all.js"></script>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="container nav-container">
+      <a href="index.html" class="logo" id="header-logo">
+        KS <span>STUDIO</span>
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" id="nav-toggle-btn">
+        ☰
+      </button>
+      <nav class="nav-menu" id="navigation-menu">
+        <md-text-button href="index.html" onclick="window.location.href='index.html'">Home</md-text-button>
+        <md-text-button href="space.html" onclick="window.location.href='space.html'">The Space</md-text-button>
+        <md-text-button href="rates.html" onclick="window.location.href='rates.html'">Rates</md-text-button>
+        <md-text-button href="qualification.html" onclick="window.location.href='qualification.html'">Qualify</md-text-button>
+        <md-text-button href="diary.html" onclick="window.location.href='diary.html'">Diary</md-text-button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="section">
+    <div class="container">
+      
+      <div style="text-align: center; margin-bottom: var(--space-6);">
+        <h1 class="font-display">Frequently Asked Questions & Objections</h1>
+        <p style="max-width: 600px; margin: 0 auto;">We resolve friction before it starts. Review our answers to standard spatial, crew, and technical operations.</p>
+      </div>
+
+      <!-- FAQ ACCORDIONS -->
+      <div class="faq-list" style="max-width: 800px; margin: 0 auto;">
+        
+        <!-- FAQ 1 -->
+        <div class="faq-item">
+          <button class="faq-trigger" aria-expanded="false">What happens if we overshoot our booked schedule?</button>
+          <div class="faq-content">
+            <p>We charge a flat rate of £250/hour for overtimes, calculated in 30-minute blocks. If there is another commercial campaign scheduled immediately following yours, we must enforce load-out limits. To avoid this risk, we recommend choosing our full-day Commercial Stack.</p>
+          </div>
+        </div>
+
+        <!-- FAQ 2 -->
+        <div class="faq-item">
+          <button class="faq-trigger" aria-expanded="false">Is there secure on-site parking for production trucks?</button>
+          <div class="faq-content">
+            <p>Yes. Studio Alpha features direct shutter loading bays and has dedicated spaces for up to 3 commercial sprinters or trucks, plus 5 standard vehicles. We also offer 32A vehicle charging points if needed.</p>
+          </div>
+        </div>
+
+        <!-- FAQ 3 -->
+        <div class="faq-item">
+          <button class="faq-trigger" aria-expanded="false">Are cameras and custom lenses included in the price?</button>
+          <div class="faq-content">
+            <p>Lighting arrays, stands, and standard grip gear are integrated into all stacks. Camera kits (RED, ARRI, Cooke prime lenses) are treated as premium add-on value stacks, which you can specify in the Lead Qualification wizard for seamless pricing.</p>
+          </div>
+        </div>
+
+        <!-- FAQ 4 -->
+        <div class="faq-item">
+          <button class="faq-trigger" aria-expanded="false">What is your booking cancellation and hold policy?</button>
+          <div class="faq-content">
+            <p>Hold bookings are valid for 48 hours. Once confirmed with a 25% deposit, bookings can be rescheduled up to 14 days before the shoot with zero penalty. Cancellations made under 7 days forfeit the deposit, as that slot was blocked to other campaigns.</p>
+          </div>
+        </div>
+
+        <!-- FAQ 5 -->
+        <div class="faq-item">
+          <button class="faq-trigger" aria-expanded="false">Is Studio Alpha truly 100% soundproof?</button>
+          <div class="faq-content">
+            <p>Studio Alpha features an NC-25 acoustic rating. It has isolated ceiling joists and floating floors that eliminate low-frequency street rumble. While not a fully sealed vacuum chamber, it successfully isolates dialogue recordings from heavy external city noise.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Action Footer -->
+      <div style="text-align: center; margin-top: var(--space-6);">
+        <p style="margin-bottom: var(--space-3); color: var(--color-muted);">Have a specific technical question not answered here?</p>
+        <md-outlined-button href="rfp.html" onclick="window.location.href='rfp.html'">Submit Custom Technical RFP</md-outlined-button>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <span class="logo">KS <span>STUDIO</span></span>
+      <nav style="display: flex; gap: var(--space-1); flex-wrap: wrap;">
+        <md-text-button href="case-studies.html" onclick="window.location.href='case-studies.html'">Case Studies</md-text-button>
+        <md-text-button href="equipment.html" onclick="window.location.href='equipment.html'">Equipment</md-text-button>
+        <md-text-button href="services.html" onclick="window.location.href='services.html'">Services</md-text-button>
+        <md-text-button href="faq.html" onclick="window.location.href='faq.html'">FAQ</md-text-button>
+        <md-text-button href="rfp.html" onclick="window.location.href='rfp.html'">Custom RFP</md-text-button>
+      </nav>
+      <div class="footer-text">
+        &copy; 2026 KS Studio. All rights reserved. Strict 8px Grid & Material 3 integration.
+      </div>
+    </div>
+  </footer>
+
+  <!-- SCRIPTS -->
+  <script src="js/state.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
