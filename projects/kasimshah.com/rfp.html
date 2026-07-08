@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Strategic RFP Form | Kasim Shah UX</title>
-  <meta name="description" content="Detailed request for proposal pipeline setup. High-conversion digital architecture.">
+  <title>Strategic Qualification Wizard | Kasim Shah UX</title>
+  <meta name="description" content="Pre-qualify your local B2B campaign and reserve your setup slot in our live conversion protection pipeline.">
   
   <!-- Playfair & Inter Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -12,6 +12,37 @@
 
   <link rel="stylesheet" href="css/style.css">
   <script type="module" src="https://esm.run/@material/web/all.js"></script>
+
+  <!-- Entity-First Schema (GEO & Technical SEO) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Person",
+        "@id": "https://kasimshah.com/#person",
+        "name": "Kasim Shah",
+        "jobTitle": "Strategic UX Architect & Conversion Marketer",
+        "url": "https://kasimshah.com"
+      },
+      {
+        "@type": "LocalBusiness",
+        "@id": "https://kasimshah.com/#organization",
+        "name": "Kasim Shah Conversion Engineering",
+        "url": "https://kasimshah.com",
+        "telephone": "+441610000000",
+        "priceRange": "£££",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Manchester Business District",
+          "addressLocality": "Manchester",
+          "postalCode": "M1 1AD",
+          "addressCountry": "GB"
+        }
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
 
@@ -27,6 +58,7 @@
       <nav class="m3-nav-wrapper">
         <md-text-button href="index.html" onclick="window.location.href='index.html'">Home</md-text-button>
         <md-text-button href="about.html" onclick="window.location.href='about.html'">Pedigree</md-text-button>
+        <md-text-button href="rates.html" onclick="window.location.href='rates.html'">Rates</md-text-button>
         <md-text-button href="ux-audit.html" onclick="window.location.href='ux-audit.html'">UX Audit</md-text-button>
         <md-text-button href="case-studies.html" onclick="window.location.href='case-studies.html'">Case Studies</md-text-button>
         <md-text-button href="rfp.html" onclick="window.location.href='rfp.html'">RFP Form</md-text-button>
@@ -35,29 +67,141 @@
   </header>
 
   <main>
-    <!-- EDITORIAL ARCH CORE CONTENT -->
     <section class="section">
       <div class="container fade-in-up">
-        <div class="creative-shell-arch">
-          <span style="color: var(--color-accent); font-size: var(--font-size-sm); text-transform: uppercase; letter-spacing: 2px;">Authority Engine Section</span>
-          <h1 class="font-serif" style="margin-top: var(--space-2); margin-bottom: var(--space-3);">Strategic RFP Form</h1>
-          <p style="font-size: var(--font-size-h4); color: var(--color-muted); font-family: var(--font-serif); font-style: italic; margin-bottom: var(--space-4);">
-            "Detailed request for proposal pipeline setup."
+        
+        <div style="text-align: center; max-width: 600px; margin: 0 auto var(--space-5) auto;">
+          <span style="color: var(--color-accent); font-size: var(--font-size-sm); text-transform: uppercase; letter-spacing: 2px;">Intake Funnel</span>
+          <h1 class="font-serif" style="margin-top: var(--space-2);">Lead Qualification Wizard</h1>
+          <p>
+            Qualify your website profile, identify your revenue leakage bottlenecks, select your ambition plan, and lock in your setup slot.
           </p>
-          <div style="text-align: left; max-width: 650px; margin: 0 auto;">
-            <p>
-              In high-conversion digital architecture, generic layouts are the enemy of revenue. Following Kasim Shah's design principles, this section implements strict usability controls, consistent graphic tokens, and clear semantic typography scaling.
-            </p>
-            <p>
-              By utilizing multi-million pound user testing paradigms inherited from senior UX engineering at <strong>AO.com</strong> and <strong>Zuto</strong>, we resolve customer friction points before they impact your balance sheet.
-            </p>
-          </div>
-          
-          <div class="m3-hero-actions-wrapper" style="justify-content: center; margin-top: var(--space-5);">
-            <md-filled-button href="https://form.kasimshah.com" target="_blank">Qualify Your Campaign</md-filled-button>
-            <md-outlined-button href="index.html" onclick="window.location.href='index.html'">Return Home</md-outlined-button>
-          </div>
         </div>
+
+        <!-- Wizard Progress Bar -->
+        <div class="wizard-progress">
+          <div class="wizard-progress-bar">
+            <div class="wizard-progress-fill" id="progress-fill"></div>
+          </div>
+          <div class="wizard-step-node active" data-step="1">1</div>
+          <div class="wizard-step-node" data-step="2">2</div>
+          <div class="wizard-step-node" data-step="3">3</div>
+          <div class="wizard-step-node" data-step="4">4</div>
+        </div>
+
+        <!-- Wizard Form Container -->
+        <div class="lead-form-wrapper" style="max-width: 650px;">
+          <form id="qualification-wizard-form" onsubmit="return false;">
+            
+            <!-- STEP 1: BUSINESS PROFILE -->
+            <div class="wizard-step active" id="step-1">
+              <h2 class="font-serif" style="color: var(--color-accent); margin-bottom: var(--space-3); font-size: var(--font-size-h3);">Step 1: Business Profile</h2>
+              
+              <div class="form-group">
+                <md-outlined-text-field id="biz-name" label="Company Name" required></md-outlined-text-field>
+              </div>
+              <div class="form-group">
+                <md-outlined-text-field id="biz-url" label="Website URL" type="url" required></md-outlined-text-field>
+              </div>
+              <div class="form-group">
+                <md-outlined-text-field id="contact-name" label="Contact Person Name" required></md-outlined-text-field>
+              </div>
+              <div class="form-group">
+                <md-outlined-text-field id="contact-email" label="Contact Email Address" type="email" required></md-outlined-text-field>
+              </div>
+            </div>
+
+            <!-- STEP 2: LEAK DETECTION & BOTTLENECK -->
+            <div class="wizard-step" id="step-2">
+              <h2 class="font-serif" style="color: var(--color-accent); margin-bottom: var(--space-3); font-size: var(--font-size-h3);">Step 2: Conversion Leak Detection</h2>
+              
+              <div class="form-group">
+                <label style="font-size: var(--font-size-sm); color: var(--color-secondary); margin-bottom: 5px;">What is your primary business model / industry vertical?</label>
+                <select id="biz-vertical" style="background-color: var(--color-primary); border: 1px solid var(--color-dark-border); color: #FFF; padding: 12px; border-radius: var(--md-sys-shape-corner-small); width: 100%; font-family: var(--font-sans);">
+                  <option value="medical">Medical Clinics / Aesthetics (High Ticket)</option>
+                  <option value="trades">Premium Home Trades (Installations / Renovation)</option>
+                  <option value="manufacturing">Customized Manufacturing / B2B Supply</option>
+                  <option value="professional">Professional Services (Tutoring / Legal / Consulting)</option>
+                  <option value="other">Other High-Value local business</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="margin-top: var(--space-3);">
+                <label style="font-size: var(--font-size-sm); color: var(--color-secondary); margin-bottom: 5px;">Where is your website bleeding prospects right now?</label>
+                <select id="biz-leak" style="background-color: var(--color-primary); border: 1px solid var(--color-dark-border); color: #FFF; padding: 12px; border-radius: var(--md-sys-shape-corner-small); width: 100%; font-family: var(--font-sans);">
+                  <option value="mobile">Mobile drop-off (60%+ users bouncing on cell phones)</option>
+                  <option value="speed">Slow loading speed (takes more than 3 seconds on 4G)</option>
+                  <option value="leads">Low lead quality (plenty of submissions but tire-kickers)</option>
+                  <option value="calendar">Empty scheduling calendar (friction in appointment booking)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- STEP 3: AMBITION LEVEL -->
+            <div class="wizard-step" id="step-3">
+              <h2 class="font-serif" style="color: var(--color-accent); margin-bottom: var(--space-3); font-size: var(--font-size-h3);">Step 3: Ambassador Plan Selection</h2>
+              
+              <div class="form-group">
+                <label style="font-size: var(--font-size-sm); color: var(--color-secondary); margin-bottom: 5px;">Select your desired retainer level:</label>
+                <select id="selected-tier" style="background-color: var(--color-primary); border: 1px solid var(--color-dark-border); color: #FFF; padding: 12px; border-radius: var(--md-sys-shape-corner-small); width: 100%; font-family: var(--font-sans);">
+                  <option value="Silver">Silver Plan — £97/mo (£197 Setup Deposit)</option>
+                  <option value="Gold" selected>Gold Plan — £297/mo (£397 Setup Deposit)</option>
+                  <option value="Platinum">Platinum Plan — £497/mo (£397 Setup Deposit)</option>
+                </select>
+              </div>
+
+              <p style="font-size: var(--font-size-xs); color: var(--color-muted); line-height: 1.5; margin-top: var(--space-3);">
+                *All setup deposits go directly towards the visual asset audits and database mapping work. We lock in setup deposits while buying intent is peak to schedule implementation kickoff meetings.
+              </p>
+            </div>
+
+            <!-- STEP 4: CHEKOUT COMPILATION -->
+            <div class="wizard-step" id="step-4">
+              <h2 class="font-serif" style="color: var(--color-accent); margin-bottom: var(--space-3); font-size: var(--font-size-h3);">Step 4: Invoice Compiler & Checkout</h2>
+              
+              <div class="pricing-compiler">
+                <div class="pricing-compiler-row">
+                  <span>Selected Retainer Tier:</span>
+                  <strong id="compiler-tier-name">Gold Plan</strong>
+                </div>
+                <div class="pricing-compiler-row">
+                  <span>Ongoing Retainer Fee:</span>
+                  <strong id="compiler-tier-monthly">£297 / month</strong>
+                </div>
+                <div class="pricing-compiler-row">
+                  <span>Initial Setup / Audit Work:</span>
+                  <strong id="compiler-tier-setup">£397 (Flat Setup)</strong>
+                </div>
+                <div class="pricing-compiler-total">
+                  <span>Setup Deposit Due Today:</span>
+                  <span id="compiler-deposit-due">£397</span>
+                </div>
+              </div>
+
+              <div class="checkout-deposit-card">
+                <p style="font-size: var(--font-size-sm); color: var(--color-secondary); margin-bottom: var(--space-3);">
+                  To protect our senior UX capacity, we require a setup deposit to queue your project layout design. Select your secure deposit mandate method:
+                </p>
+                <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+                  <md-filled-button id="stripe-checkout-btn" href="#" target="_blank" style="width: 100%;">
+                    Pay <span id="stripe-price-label">£397</span> via Secure Stripe Card Mandate
+                  </md-filled-button>
+                  <md-outlined-button id="gocardless-checkout-btn" href="#" target="_blank" style="width: 100%;">
+                    Setup Direct Deposit via GoCardless
+                  </md-outlined-button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Wizard Navigation -->
+            <div class="wizard-nav">
+              <md-outlined-button id="btn-prev" type="button">Back</md-outlined-button>
+              <md-filled-button id="btn-next" type="button">Continue</md-filled-button>
+            </div>
+
+          </form>
+        </div>
+
       </div>
     </section>
   </main>
@@ -68,6 +212,7 @@
       <span class="logo" style="font-size: 1.25rem;">KASIM <span>SHAH</span></span>
       <nav style="display: flex; gap: var(--space-1); flex-wrap: wrap;">
         <md-text-button href="faq.html" onclick="window.location.href='faq.html'">FAQ</md-text-button>
+        <md-text-button href="rates.html" onclick="window.location.href='rates.html'">Rates</md-text-button>
         <md-text-button href="ux-audit.html" onclick="window.location.href='ux-audit.html'">UX Audit</md-text-button>
         <md-text-button href="cro.html" onclick="window.location.href='cro.html'">CRO</md-text-button>
         <md-text-button href="contact.html" onclick="window.location.href='contact.html'">Contact</md-text-button>
@@ -79,7 +224,11 @@
     </div>
   </footer>
 
+  <!-- DYNAMIC DIALOG COMPONENT -->
+  <div id="m3-dialog-root"></div>
+
   <!-- SCRIPTS -->
   <script src="js/main.js"></script>
+  <script src="js/wizard.js"></script>
 </body>
 </html>

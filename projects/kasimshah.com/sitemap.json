@@ -3,6 +3,7 @@
     "Foundation": [
       { "file": "index.html", "name": "Home" },
       { "file": "about.html", "name": "About (Pedigree)" },
+      { "file": "rates.html", "name": "Pricing Value Stacks" },
       { "file": "mission.html", "name": "Agency Mission" },
       { "file": "contact.html", "name": "Contact" },
       { "file": "faq.html", "name": "FAQ" }

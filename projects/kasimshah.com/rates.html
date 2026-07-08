@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pricing Value Stacks | Kasim Shah UX</title>
+  <meta name="description" content="Value-based retainer tiers for local business growth and revenue protection. Scannable, transparent price specs.">
+  
+  <!-- Playfair & Inter Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="https://esm.run/@material/web/all.js"></script>
+
+  <!-- Entity-First Schema & PriceSpecification (GEO & Technical SEO) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Person",
+        "@id": "https://kasimshah.com/#person",
+        "name": "Kasim Shah",
+        "jobTitle": "Strategic UX Architect & Conversion Marketer",
+        "url": "https://kasimshah.com"
+      },
+      {
+        "@type": "Product",
+        "@id": "https://kasimshah.com/#pricing",
+        "name": "Kasim Shah Conversion Engineering Retainers",
+        "description": "Continuous UX optimization and conversion protection value stacks.",
+        "offers": [
+          {
+            "@type": "Offer",
+            "name": "Silver Plan",
+            "price": "97.00",
+            "priceCurrency": "GBP",
+            "priceSpecification": {
+              "@type": "UnitPriceSpecification",
+              "price": "97.00",
+              "priceCurrency": "GBP",
+              "referenceQuantity": {
+                "@type": "QuantitativeValue",
+                "value": "1",
+                "unitCode": "MON"
+              }
+            }
+          },
+          {
+            "@type": "Offer",
+            "name": "Gold Plan",
+            "price": "297.00",
+            "priceCurrency": "GBP",
+            "priceSpecification": {
+              "@type": "UnitPriceSpecification",
+              "price": "297.00",
+              "priceCurrency": "GBP",
+              "referenceQuantity": {
+                "@type": "QuantitativeValue",
+                "value": "1",
+                "unitCode": "MON"
+              }
+            }
+          },
+          {
+            "@type": "Offer",
+            "name": "Platinum Plan",
+            "price": "497.00",
+            "priceCurrency": "GBP",
+            "priceSpecification": {
+              "@type": "UnitPriceSpecification",
+              "price": "497.00",
+              "priceCurrency": "GBP",
+              "referenceQuantity": {
+                "@type": "QuantitativeValue",
+                "value": "1",
+                "unitCode": "MON"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="container nav-container">
+      <a href="index.html" class="logo" style="text-decoration: none;">
+        KASIM <span>SHAH</span>
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        ☰
+      </button>
+      <nav class="m3-nav-wrapper">
+        <md-text-button href="index.html" onclick="window.location.href='index.html'">Home</md-text-button>
+        <md-text-button href="about.html" onclick="window.location.href='about.html'">Pedigree</md-text-button>
+        <md-text-button href="rates.html" onclick="window.location.href='rates.html'">Rates</md-text-button>
+        <md-text-button href="ux-audit.html" onclick="window.location.href='ux-audit.html'">UX Audit</md-text-button>
+        <md-text-button href="case-studies.html" onclick="window.location.href='case-studies.html'">Case Studies</md-text-button>
+        <md-text-button href="rfp.html" onclick="window.location.href='rfp.html'">RFP Form</md-text-button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- PRICING VALUE STACKS (Bento Grid Shell) -->
+    <section class="section" style="background: radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.03) 0%, transparent 80%);">
+      <div class="container fade-in-up">
+        
+        <div style="text-align: center; margin-bottom: var(--space-6); max-width: 700px; margin-left: auto; margin-right: auto;">
+          <span style="color: var(--color-accent); font-size: var(--font-size-sm); text-transform: uppercase; letter-spacing: 2px;">Value Stacks</span>
+          <h1 class="font-serif" style="margin-top: var(--space-2);">Retainer Value Stack Options</h1>
+          <p>
+            No hourly billing. Select the flat-rate pricing stack that aligns with your operational scale and conversion growth ambitions.
+          </p>
+        </div>
+
+        <div class="creative-shell-bento">
+          
+          <!-- Silver Tier -->
+          <div class="bento-card bento-span-4">
+            <div>
+              <h3 class="bento-card-title font-serif">Silver Plan</h3>
+              <p style="font-size: var(--font-size-sm); color: var(--color-muted);">The Care Package</p>
+              <div class="price-value">£97<span style="font-size: 14px; color: var(--color-muted);">/mo</span></div>
+              <p style="font-size: var(--font-size-sm);">
+                Digital insurance for local B2B foundations. Focused entirely on security updates, mobile loading maintenance, and cloud caching stability.
+              </p>
+              <ul class="price-features-list">
+                <li>Secure HTTPS SSL Encryption</li>
+                <li>Uptime Monitoring & Edge Caching</li>
+                <li>Monthly Speed Maintenance checks</li>
+                <li>Compliance Statement Updates</li>
+              </ul>
+            </div>
+            <div class="m3-button-full-wrapper" style="margin-top: var(--space-3);">
+              <md-outlined-button onclick="selectTier('Silver')">Select Silver Plan</md-outlined-button>
+            </div>
+          </div>
+
+          <!-- Gold Tier (Highlighted) -->
+          <div class="bento-card bento-span-4" style="border-color: var(--color-accent);">
+            <div style="position: absolute; top: var(--space-1); right: var(--space-2); background: var(--color-accent); color: var(--color-primary); font-size: 9px; font-weight: bold; padding: 2px 6px; text-transform: uppercase; letter-spacing: 1px; border-radius: var(--md-sys-shape-corner-extra-small);">
+              Most Popular
+            </div>
+            <div>
+              <h3 class="bento-card-title font-serif">Gold Plan</h3>
+              <p style="font-size: var(--font-size-sm); color: var(--color-muted);">The Growth Package</p>
+              <div class="price-value">£297<span style="font-size: 14px; color: var(--color-muted);">/mo</span></div>
+              <p style="font-size: var(--font-size-sm);">
+                Operational efficiency. Perfect for active local businesses requiring continuous UX checkouts updates and active bookings tweaks.
+              </p>
+              <ul class="price-features-list">
+                <li>Everything in Silver</li>
+                <li>Unlimited Text & Layout Edits</li>
+                <li>Active UX & Button A/B Tweaks</li>
+                <li>Monthly Analytical Conversion report</li>
+                <li>2-hour urgent support guarantees</li>
+              </ul>
+            </div>
+            <div class="m3-button-full-wrapper" style="margin-top: var(--space-3);">
+              <md-filled-button onclick="selectTier('Gold')">Select Gold Plan</md-filled-button>
+            </div>
+          </div>
+
+          <!-- Platinum Tier -->
+          <div class="bento-card bento-span-4">
+            <div>
+              <h3 class="bento-card-title font-serif">Platinum Plan</h3>
+              <p style="font-size: var(--font-size-sm); color: var(--color-muted);">The Domination Package</p>
+              <div class="price-value">£497<span style="font-size: 14px; color: var(--color-muted);">/mo</span></div>
+              <p style="font-size: var(--font-size-sm);">
+                The complete local market domination suite. Marries local search algorithms with physical and automated email follow-up vector layers.
+              </p>
+              <ul class="price-features-list">
+                <li>Everything in Gold</li>
+                <li>1,000 Custom Physical Flyers/Cards QTR</li>
+                <li>Monthly Local Search (AIO) Audits</li>
+                <li>Automated Email Marketing flows</li>
+                <li>Monthly Competitor tracking analysis</li>
+              </ul>
+            </div>
+            <div class="m3-button-full-wrapper" style="margin-top: var(--space-3);">
+              <md-outlined-button onclick="selectTier('Platinum')">Select Platinum Plan</md-outlined-button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <span class="logo" style="font-size: 1.25rem;">KASIM <span>SHAH</span></span>
+      <nav style="display: flex; gap: var(--space-1); flex-wrap: wrap;">
+        <md-text-button href="faq.html" onclick="window.location.href='faq.html'">FAQ</md-text-button>
+        <md-text-button href="rates.html" onclick="window.location.href='rates.html'">Rates</md-text-button>
+        <md-text-button href="ux-audit.html" onclick="window.location.href='ux-audit.html'">UX Audit</md-text-button>
+        <md-text-button href="cro.html" onclick="window.location.href='cro.html'">CRO</md-text-button>
+        <md-text-button href="contact.html" onclick="window.location.href='contact.html'">Contact</md-text-button>
+        <md-text-button href="rfp.html" onclick="window.location.href='rfp.html'">RFP Form</md-text-button>
+      </nav>
+      <div class="footer-text">
+        &copy; 2026 KasimShah. All rights reserved. Playfair Editorial theme.
+      </div>
+    </div>
+  </footer>
+
+  <!-- DYNAMIC MODAL CONTAINER INJECTED ON LOAD -->
+  <div id="m3-dialog-root"></div>
+
+  <!-- SCRIPTS -->
+  <script src="js/main.js"></script>
+  <script>
+    // State-based selector confirmation dialog
+    function showM3Dialog(headline, text, buttonLabel, callback) {
+      const root = document.getElementById('m3-dialog-root');
+      root.innerHTML = `
+        <md-dialog id="dyn-dialog" style="--md-dialog-container-color: var(--color-dark-surface); border: 1px solid var(--color-dark-border);">
+          <div slot="headline" class="font-serif" style="color: var(--color-accent); font-size: 20px;">${headline}</div>
+          <form slot="content" method="dialog">
+            <p style="font-size: var(--font-size-sm); color: var(--color-secondary); margin: 0; line-height: 1.5;">${text}</p>
+          </form>
+          <div slot="actions" style="display: flex; gap: var(--space-1);">
+            <md-text-button onclick="document.getElementById('dyn-dialog').close()">Cancel</md-text-button>
+            <md-filled-button id="dialog-confirm-action">${buttonLabel}</md-filled-button>
+          </div>
+        </md-dialog>
+      `;
+
+      const dialog = document.getElementById('dyn-dialog');
+      const actionBtn = document.getElementById('dialog-confirm-action');
+
+      actionBtn.addEventListener('click', () => {
+        dialog.close();
+        if (callback) callback();
+      });
+
+      dialog.show();
+    }
+
+    function selectTier(planName) {
+      showM3Dialog(
+        `${planName} Plan Selected`,
+        `You have selected the ${planName} Value Stack. Next, proceed to our Lead Qualification Wizard to lock in your setup deposit.`,
+        "Go to Qualification Wizard",
+        () => {
+          window.location.href = "rfp.html?tier=" + planName;
+        }
+      );
+    }
+  </script>
+</body>
+</html>

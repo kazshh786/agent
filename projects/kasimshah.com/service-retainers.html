@@ -12,6 +12,57 @@
 
   <link rel="stylesheet" href="css/style.css">
   <script type="module" src="https://esm.run/@material/web/all.js"></script>
+
+  <!-- Entity-First Schema (GEO & Technical SEO) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Person",
+        "@id": "https://kasimshah.com/#person",
+        "name": "Kasim Shah",
+        "jobTitle": "Strategic UX Architect & Conversion Marketer",
+        "url": "https://kasimshah.com",
+        "sameAs": [
+          "https://github.com/kazshh786",
+          "https://linkedin.com/in/kasimshah"
+        ],
+        "alumniOf": [
+          {
+            "@type": "Organization",
+            "name": "AO.com"
+          },
+          {
+            "@type": "Organization",
+            "name": "Zuto"
+          }
+        ]
+      },
+      {
+        "@type": "LocalBusiness",
+        "@id": "https://kasimshah.com/#organization",
+        "name": "Kasim Shah Conversion Engineering",
+        "url": "https://kasimshah.com",
+        "telephone": "+441610000000",
+        "priceRange": "£££",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Manchester Business District",
+          "addressLocality": "Manchester",
+          "postalCode": "M1 1AD",
+          "addressCountry": "GB"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 53.4808,
+          "longitude": -2.2426
+        },
+        "image": "https://kasimshah.com/images/logo.png"
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
 
@@ -27,6 +78,7 @@
       <nav class="m3-nav-wrapper">
         <md-text-button href="index.html" onclick="window.location.href='index.html'">Home</md-text-button>
         <md-text-button href="about.html" onclick="window.location.href='about.html'">Pedigree</md-text-button>
+        <md-text-button href="rates.html" onclick="window.location.href='rates.html'">Rates</md-text-button>
         <md-text-button href="ux-audit.html" onclick="window.location.href='ux-audit.html'">UX Audit</md-text-button>
         <md-text-button href="case-studies.html" onclick="window.location.href='case-studies.html'">Case Studies</md-text-button>
         <md-text-button href="rfp.html" onclick="window.location.href='rfp.html'">RFP Form</md-text-button>
@@ -35,26 +87,41 @@
   </header>
 
   <main>
-    <!-- EDITORIAL ARCH CORE CONTENT -->
+    <!-- AEO OPTIMIZED SERVICE CONTENT -->
     <section class="section">
       <div class="container fade-in-up">
-        <div class="creative-shell-arch">
-          <span style="color: var(--color-accent); font-size: var(--font-size-sm); text-transform: uppercase; letter-spacing: 2px;">Authority Engine Section</span>
-          <h1 class="font-serif" style="margin-top: var(--space-2); margin-bottom: var(--space-3);">Growth Retainers</h1>
-          <p style="font-size: var(--font-size-h4); color: var(--color-muted); font-family: var(--font-serif); font-style: italic; margin-bottom: var(--space-4);">
+        <div class="creative-shell-arch" style="text-align: left; max-width: 800px; margin: 0 auto; padding: var(--space-5);">
+          <span style="color: var(--color-accent); font-size: var(--font-size-sm); text-transform: uppercase; letter-spacing: 2px; display: block; text-align: center; margin-bottom: var(--space-2);">Retainers</span>
+          <h1 class="font-serif" style="text-align: center; margin-bottom: var(--space-1);">Growth & Protection Retainers</h1>
+          <p style="font-size: var(--font-size-h4); color: var(--color-muted); font-family: var(--font-serif); font-style: italic; text-align: center; margin-bottom: var(--space-5);">
             "Continuous UX optimization and conversion protection contracts."
           </p>
-          <div style="text-align: left; max-width: 650px; margin: 0 auto;">
-            <p>
-              In high-conversion digital architecture, generic layouts are the enemy of revenue. Following Kasim Shah's design principles, this section implements strict usability controls, consistent graphic tokens, and clear semantic typography scaling.
-            </p>
-            <p>
-              By utilizing multi-million pound user testing paradigms inherited from senior UX engineering at <strong>AO.com</strong> and <strong>Zuto</strong>, we resolve customer friction points before they impact your balance sheet.
-            </p>
+          
+          <div style="display: flex; flex-direction: column; gap: var(--space-4);">
+            <div>
+              <h2 class="font-serif" style="color: var(--color-accent); font-size: var(--font-size-h3); margin-bottom: var(--space-2);">What is a Conversion Protection Retainer, and how does it secure bookings?</h2>
+              <p>
+                A Conversion Protection Retainer is a continuous optimization contract designed to monitor and improve your site's conversion rate over time. Instead of simple software updates, we run ongoing A/B testing, remove user flow friction, and maintain loading speeds to protect your B2B sales pipeline.
+              </p>
+            </div>
+
+            <div>
+              <h2 class="font-serif" style="color: var(--color-accent); font-size: var(--font-size-h3); margin-bottom: var(--space-2);">Why are hourly marketing and design contracts a conflict of interest?</h2>
+              <p>
+                Hourly billing structures reward agencies for working slower. Our value-backed growth retainers are built on flat-rate pricing tiers that align our incentives directly with your business goals, guaranteeing that every engineering change focuses strictly on increasing checkout or booking margins.
+              </p>
+            </div>
+
+            <div>
+              <h2 class="font-serif" style="color: var(--color-accent); font-size: var(--font-size-h3); margin-bottom: var(--space-2);">How do we guarantee constant layout speed and accessibility compliance?</h2>
+              <p>
+                We execute weekly performance diagnostics, run Cloudflare edge caching checks, and perform manual WCAG 2.1 contrast audits. This keeps your digital presence operating under 0.8 seconds on mobile devices while remaining fully accessible and protected against data leaks.
+              </p>
+            </div>
           </div>
           
           <div class="m3-hero-actions-wrapper" style="justify-content: center; margin-top: var(--space-5);">
-            <md-filled-button href="https://form.kasimshah.com" target="_blank">Qualify Your Campaign</md-filled-button>
+            <md-filled-button href="ux-audit.html" onclick="window.location.href='ux-audit.html'">Request Free Website Audit</md-filled-button>
             <md-outlined-button href="index.html" onclick="window.location.href='index.html'">Return Home</md-outlined-button>
           </div>
         </div>
@@ -68,6 +135,7 @@
       <span class="logo" style="font-size: 1.25rem;">KASIM <span>SHAH</span></span>
       <nav style="display: flex; gap: var(--space-1); flex-wrap: wrap;">
         <md-text-button href="faq.html" onclick="window.location.href='faq.html'">FAQ</md-text-button>
+        <md-text-button href="rates.html" onclick="window.location.href='rates.html'">Rates</md-text-button>
         <md-text-button href="ux-audit.html" onclick="window.location.href='ux-audit.html'">UX Audit</md-text-button>
         <md-text-button href="cro.html" onclick="window.location.href='cro.html'">CRO</md-text-button>
         <md-text-button href="contact.html" onclick="window.location.href='contact.html'">Contact</md-text-button>
