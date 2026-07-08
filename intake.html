@@ -66,6 +66,32 @@
         .routing-card p { font-size: 8.5pt; margin: 0; color: #6b7280; }
         .routing-card input[type="radio"] { display: none; }
         
+        /* Non-Negotiable Requirements Styling */
+        .non-negotiable-box {
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        .non-negotiable-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .requirement-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 9.5pt;
+            color: #166534;
+        }
+        .requirement-item span.icon {
+            color: #10b981;
+            font-weight: bold;
+        }
+
         /* Dynamic Mapping Output Box */
         .mapping-preview {
             background-color: #1e293b;
@@ -81,6 +107,14 @@
         .btn-container { text-align: right; margin-top: 30px; border-top: 1px solid #e5e7eb; padding-top: 20px; }
         button { background-color: #10b981; color: white; border: none; padding: 12px 24px; font-size: 11pt; font-weight: 600; border-radius: 6px; cursor: pointer; }
         button:hover { background-color: #059669; }
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 9pt;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -104,6 +138,21 @@
             </div>
         </div>
 
+        <!-- 7 Non-Negotiable Website Requirements checklist -->
+        <div class="non-negotiable-box">
+            <label style="color: #14532d; font-size: 11pt; margin-bottom: 4px;">🛡️ 7 Non-Negotiable Website Requirements (Auto-Included)</label>
+            <span class="label-desc" style="color: #166534; margin-bottom: 12px;">Every site is automatically structured with critical legal, compliance, and security frameworks:</span>
+            <div class="non-negotiable-grid">
+                <div class="requirement-item"><span class="icon">✓</span> Privacy Policy page</div>
+                <div class="requirement-item"><span class="icon">✓</span> Terms and Conditions page</div>
+                <div class="requirement-item"><span class="icon">✓</span> HTTPS Encryption Protocol</div>
+                <div class="requirement-item"><span class="icon">✓</span> Accessibility Statement page</div>
+                <div class="requirement-item"><span class="icon">✓</span> Cookie Policy & Consent Notification</div>
+                <div class="requirement-item"><span class="icon">✓</span> Data Storage Disclosure page</div>
+                <div class="requirement-item" style="grid-column: span 2;"><span class="icon">✓</span> Copyright Footer Notice: © 2026 KasimShah. All rights reserved.</div>
+            </div>
+        </div>
+
         <div class="section-title">📐 Sitemap Architecture Builder</div>
         
         <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
@@ -111,17 +160,23 @@
                 <label for="site_scale">Target Website Scale</label>
                 <select id="site_scale" onchange="updateSitemapOutput()">
                     <option value="10">10 Page Website (Top 3 services)</option>
-                    <option value="20">20 Page Website (Top 13 services)</option>
-                    <option value="30">30 Page Website (Top 23 services)</option>
+                    <option value="20">20 Page Website</option>
+                    <option value="30">30 Page Website</option>
                 </select>
             </div>
             <div class="form-group" style="flex: 1; min-width: 250px;">
-                <label for="optional_page">Optional Authority Page</label>
-                <select id="optional_page" onchange="updateSitemapOutput()">
-                    <option value="gallery">Gallery / Portfolio / Case Study</option>
-                    <option value="faq">FAQ</option>
-                    <option value="team">Our Team</option>
-                </select>
+                <label>Optional Authority Pages</label>
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+                    <label style="font-weight: normal; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="opt_gallery" checked onchange="updateSitemapOutput()"> Gallery / Portfolio / Case Study
+                    </label>
+                    <label style="font-weight: normal; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="opt_faq" onchange="updateSitemapOutput()"> FAQ
+                    </label>
+                    <label style="font-weight: normal; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="opt_team" onchange="updateSitemapOutput()"> Our Team
+                    </label>
+                </div>
             </div>
         </div>
 
@@ -181,6 +236,10 @@
             <button type="button" onclick="generateSystemPrompt()">Generate Antigravity Master Brief</button>
         </div>
     </form>
+    
+    <footer>
+        &copy; 2026 KasimShah. All rights reserved.
+    </footer>
 </div>
 
 <script>
@@ -208,7 +267,14 @@
     };
 
     let selectedMechanismType = null;
-    let computedSitemap = [];
+    let computedMarketingSitemap = [];
+    let computedComplianceSitemap = [
+        "Privacy Policy",
+        "Terms and Conditions",
+        "Accessibility Statement",
+        "Cookie Policy",
+        "Data Storage Disclosure"
+    ];
 
     function selectMechanism(type) {
         selectedMechanismType = type;
@@ -222,29 +288,27 @@
 
     function calculateSitemap() {
         const scale = parseInt(document.getElementById('site_scale').value) || 10;
-        const optional = document.getElementById('optional_page').value;
+        const optGallery = document.getElementById('opt_gallery').checked;
+        const optFaq = document.getElementById('opt_faq').checked;
+        const optTeam = document.getElementById('opt_team').checked;
         const servicesInput = document.getElementById('services_list').value;
         
         // Default core pages (all sites have these)
-        const corePages = ["Homepage", "About Us", "Contact Us", "Book Now", "Our Services", "Location"];
+        const list = ["Homepage", "About Us", "Contact Us", "Book Now", "Our Services", "Location"];
         
-        // Add optional page
-        let optionalPageName = "Gallery & Portfolio";
-        if (optional === "faq") optionalPageName = "FAQ";
-        if (optional === "team") optionalPageName = "Our Team";
-        
-        const list = [
-            ...corePages,
-            optionalPageName
-        ];
+        // Track optional count
+        let optionalCount = 0;
+        if (optGallery) { list.push("Gallery & Portfolio"); optionalCount++; }
+        if (optFaq) { list.push("FAQ"); optionalCount++; }
+        if (optTeam) { list.push("Our Team"); optionalCount++; }
         
         // Parse services list
         const services = servicesInput.split(',')
             .map(s => s.trim())
             .filter(s => s.length > 0);
             
-        // Max service slots = scale - core pages (6) - optional page (1) = scale - 7
-        const serviceCap = scale - 7;
+        // Max service slots = scale - core pages (6) - optionalCount
+        const serviceCap = scale - 6 - optionalCount;
         
         const validServices = services.slice(0, serviceCap);
         validServices.forEach(srv => {
@@ -252,7 +316,7 @@
         });
         
         // Fill remainder if services entered is less than capacity
-        const remainderFiller = ["Privacy Policy", "Terms of Service", "Blog & Articles", "Testimonials", "Careers"];
+        const remainderFiller = ["Blog & Articles", "Testimonials", "Careers", "Case Studies Detail", "Pricing Estimator"];
         let fillerIdx = 0;
         while (list.length < scale && fillerIdx < remainderFiller.length) {
             list.push(remainderFiller[fillerIdx]);
@@ -262,28 +326,31 @@
         // Safety pad if somehow still under
         let padCount = 1;
         while (list.length < scale) {
-            list.push(`Additional Resource Page ${padCount}`);
+            list.push(`Additional Marketing Page ${padCount}`);
             padCount++;
         }
         
-        // Slice to absolute scale to guarantee exact page count
+        // Slice to absolute scale to guarantee exact marketing page budget
         return list.slice(0, scale);
     }
 
     function updateSitemapOutput() {
-        computedSitemap = calculateSitemap();
+        computedMarketingSitemap = calculateSitemap();
         const previewBox = document.getElementById('mappingPreviewBox');
         
         if (!selectedMechanismType) {
-            previewBox.innerText = `[SITEMAP CONFIGURATION COMPILING - ${computedSitemap.length} Pages]\n` +
-                                   `• Pages List: ${JSON.stringify(computedSitemap, null, 2)}\n\n` +
+            previewBox.innerText = `[SITEMAP CONFIGURATION COMPILING]\n\n` +
+                                   `• Core & Marketing Pages Budget (${computedMarketingSitemap.length} Pages):\n${JSON.stringify(computedMarketingSitemap, null, 2)}\n\n` +
+                                   `• Legal Compliance Pages (Auto-Included):\n${JSON.stringify(computedComplianceSitemap, null, 2)}\n\n` +
                                    `Please select a Core Conversion Mechanism to compile the full blueprint.`;
             return;
         }
 
         const config = logicEngine[selectedMechanismType];
         previewBox.innerText = `[ANTIGRAVITY ROUTER ENGINE MATCH: ${config.desc}]\n\n` +
-                               `• Required Sitemap (${computedSitemap.length} Pages):\n${JSON.stringify(computedSitemap, null, 2)}\n\n` +
+                               `• Core & Marketing Pages Budget (${computedMarketingSitemap.length} Pages):\n${JSON.stringify(computedMarketingSitemap, null, 2)}\n\n` +
+                               `• Legal Compliance Pages (Auto-Included):\n${JSON.stringify(computedComplianceSitemap, null, 2)}\n\n` +
+                               `• Target Footers & Meta:\n  - Security: HTTPS Encrypted\n  - Copyright: © 2026 KasimShah. All rights reserved.\n\n` +
                                `• Injected Functional UI Blocks: ${JSON.stringify(config.components, null, 2)}\n\n` +
                                `• Essential Conversion Psychology Focus:\n  ${config.ux_focus}`;
     }
@@ -301,7 +368,12 @@
             `Target Business: ${brand} (${niche})\n` +
             `Core Conversion Protocol: ${selectedMechanismType.toUpperCase()} INGESTION PIPELINE\n` +
             `Tone Profile: ${tone}\n\n` +
-            `[SITEMAP PROTOCOL]\nGenerate sitemap.json with the following targets:\n${JSON.stringify(computedSitemap, null, 4)}\n\n` +
+            `[SITEMAP PROTOCOL]\n` +
+            `Marketing Pages: ${JSON.stringify(computedMarketingSitemap, null, 4)}\n` +
+            `Compliance Pages: ${JSON.stringify(computedComplianceSitemap, null, 4)}\n\n` +
+            `[LEGAL & SECURITY MANDATES]\n` +
+            `1. Auto-generate footer copyright: "© 2026 KasimShah. All rights reserved."\n` +
+            `2. Serve all assets over secure HTTPS encryption.\n\n` +
             `[COMPONENT DIRECTIVE]\nGenerate component_map.json allocating these specific modules to their logical pages:\n${JSON.stringify(config.components, null, 4)}\n\n` +
             `[UX ENGINE ARCHITECTURE CONSTRAINTS]\n1. Build layouts exclusively prioritizing: ${config.ux_focus}\n` +
             `2. Write high-conversion copy designed to tackle the primary user hurdle: "${objection}".\n` +
