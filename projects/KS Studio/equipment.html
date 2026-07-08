@@ -133,5 +133,25 @@
   <!-- SCRIPTS -->
   <script src="js/state.js"></script>
   <script src="js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const tabsContainer = document.querySelector('md-tabs');
+      const contentItems = document.querySelectorAll('.specs-content-item');
+      
+      if (!tabsContainer || contentItems.length === 0) return;
+      
+      tabsContainer.addEventListener('change', (e) => {
+        const selectedIndex = tabsContainer.activeTabIndex;
+        
+        contentItems.forEach((item, idx) => {
+          if (idx === selectedIndex) {
+            item.style.display = 'block';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+    });
+  </script>
 </body>
 </html>

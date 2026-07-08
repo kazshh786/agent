@@ -223,7 +223,8 @@
             `2. Write high-conversion copy designed to tackle the primary user hurdle: "${objection}".\n` +
             `3. Ensure primary CTA elements map natively to the configured ${type} mechanism.`;
 
-        alert("Master Brief compiled for your Antigravity Engine! View the console output or save code directly.");
+        navigator.clipboard.writeText(templatePrompt);
+        alert("Master Brief copied to clipboard! Paste it directly into Antigravity.");
         console.log(templatePrompt);
     }
 </script>

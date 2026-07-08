@@ -144,7 +144,8 @@ const YesLadder = {
   }
 };
 
-// Initialize on page load
+// Initialize on page load and export globally
 document.addEventListener('DOMContentLoaded', () => {
   YesLadder.init();
 });
+window.YesLadder = YesLadder;

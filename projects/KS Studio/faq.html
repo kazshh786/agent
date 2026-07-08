@@ -120,5 +120,28 @@
   <!-- SCRIPTS -->
   <script src="js/state.js"></script>
   <script src="js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const triggers = document.querySelectorAll('.faq-trigger');
+      
+      triggers.forEach(trigger => {
+        trigger.addEventListener('click', () => {
+          const parent = trigger.parentElement;
+          const isActive = parent.classList.contains('active');
+          
+          // Close other accordions
+          document.querySelectorAll('.faq-item').forEach(item => {
+            item.classList.remove('active');
+            item.querySelector('.faq-trigger').setAttribute('aria-expanded', 'false');
+          });
+          
+          if (!isActive) {
+            parent.classList.add('active');
+            trigger.setAttribute('aria-expanded', 'true');
+          }
+        });
+      });
+    });
+  </script>
 </body>
 </html>
