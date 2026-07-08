@@ -1,0 +1,7 @@
+name = "ks-intake-form"
+main = "index.js"
+compatibility_date = "2026-07-08"
+
+[[routes]]
+pattern = "form.kasimshah.com"
+custom_domain = true
