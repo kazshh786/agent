@@ -1,0 +1,44 @@
+{
+  "categories": {
+    "Foundation": [
+      { "file": "index.html", "name": "Home" },
+      { "file": "about.html", "name": "About (Pedigree)" },
+      { "file": "mission.html", "name": "Agency Mission" },
+      { "file": "contact.html", "name": "Contact" },
+      { "file": "faq.html", "name": "FAQ" }
+    ],
+    "Strategy & Science": [
+      { "file": "ux-audit.html", "name": "UX Audit" },
+      { "file": "conversion-principles.html", "name": "Conversion Principles" },
+      { "file": "leaky-bucket.html", "name": "The Leaky Bucket Concept" },
+      { "file": "data-driven.html", "name": "Data-Driven Design" },
+      { "file": "cro.html", "name": "CRO" }
+    ],
+    "Niche & Verticals": [
+      { "file": "vertical-hair.html", "name": "Hair & Beauty" },
+      { "file": "vertical-pet.html", "name": "Canine & Pet" },
+      { "file": "vertical-aesthetics.html", "name": "Aesthetics Clinics" },
+      { "file": "vertical-trades.html", "name": "High-Ticket Trades" },
+      { "file": "vertical-medical.html", "name": "Private Medical" },
+      { "file": "vertical-manufacturing.html", "name": "Custom Manufacturing" },
+      { "file": "vertical-saas.html", "name": "B2B SaaS" },
+      { "file": "vertical-tutoring.html", "name": "Elite Tutoring" },
+      { "file": "vertical-realestate.html", "name": "Real Estate" },
+      { "file": "vertical-leisure.html", "name": "Premium Leisure" }
+    ],
+    "Services": [
+      { "file": "service-web.html", "name": "Web Engineering" },
+      { "file": "service-seo.html", "name": "Local SEO/AIO" },
+      { "file": "service-collateral.html", "name": "Physical Collateral" },
+      { "file": "service-email.html", "name": "Email Automation" },
+      { "file": "service-retainers.html", "name": "Growth Retainers" }
+    ],
+    "Authority": [
+      { "file": "case-studies.html", "name": "Case Studies" },
+      { "file": "research.html", "name": "Industry Research" },
+      { "file": "blog.html", "name": "Revenue Protection Blog" },
+      { "file": "login.html", "name": "Client Portal Login" },
+      { "file": "rfp.html", "name": "Strategic RFP Form" }
+    ]
+  }
+}

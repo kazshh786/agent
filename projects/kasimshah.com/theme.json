@@ -1,0 +1,34 @@
+{
+  "theme": {
+    "vibe": "Editorial Luxe",
+    "colors": {
+      "--md-sys-color-primary": "#D4AF37",
+      "--md-sys-color-on-primary": "#0A0A0A",
+      "--md-sys-color-primary-container": "#151515",
+      "--md-sys-color-on-primary-container": "#F5F5F7",
+      "--md-sys-color-surface": "#151515",
+      "--md-sys-color-on-surface": "#F5F5F7",
+      "--md-sys-color-on-surface-variant": "#A0A0A5",
+      "--md-sys-color-outline": "#2C2C2C",
+      "--md-sys-color-background": "#0A0A0A",
+      "--md-sys-color-on-background": "#F5F5F7",
+      "--md-sys-color-surface-container": "#151515",
+      "--md-sys-color-surface-container-high": "#151515"
+    },
+    "shape_tokens": {
+      "--md-sys-shape-corner-extra-small": "0px",
+      "--md-sys-shape-corner-small": "0px",
+      "--md-sys-shape-corner-medium": "0px",
+      "--md-sys-shape-corner-large": "0px",
+      "--md-sys-shape-corner-extra-large": "0px"
+    },
+    "elevation_tokens": {
+      "--md-sys-elevation-level-0": "none",
+      "--md-sys-elevation-level-1": "none",
+      "--md-sys-elevation-level-2": "none",
+      "--md-sys-elevation-level-3": "none",
+      "--md-sys-elevation-level-4": "none",
+      "--md-sys-elevation-level-5": "none"
+    }
+  }
+}

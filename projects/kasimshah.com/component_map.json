@@ -1,0 +1,33 @@
+{
+  "index.html": {
+    "macro_layout": ".creative-shell-split",
+    "sections": [
+      {
+        "name": "hero",
+        "shell": "creative-shell-split",
+        "elements": [
+          { "tag": "h1", "role": "editorial_title" },
+          { "tag": "p", "role": "pedigree_copy" },
+          { "tag": "md-filled-button", "role": "cta_qualify" }
+        ]
+      },
+      {
+        "name": "pricing_matrix",
+        "shell": "creative-shell-bento",
+        "elements": [
+          { "tag": "div", "class": "bento-card", "role": "silver_tier" },
+          { "tag": "div", "class": "bento-card", "role": "gold_tier" },
+          { "tag": "div", "class": "bento-card", "role": "platinum_tier" }
+        ]
+      },
+      {
+        "name": "pedigree_block",
+        "shell": "creative-shell-arch",
+        "elements": [
+          { "tag": "h2", "role": "credentials" },
+          { "tag": "p", "role": "conversion_math_copy" }
+        ]
+      }
+    ]
+  }
+}
