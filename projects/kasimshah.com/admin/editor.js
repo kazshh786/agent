@@ -7,7 +7,7 @@ const API_BASE = ''; // Same-origin relative paths
 let currentProject = '';
 let currentPageFile = 'index.html';
 let projectData = null;
-let editableElementsMap = []; // Maps sidebar input ID to iframe elements
+let editableElementsMap = {}; // Maps sidebar input ID to iframe elements
 
 // Get URL parameters
 const urlParams = new URLSearchParams(window.location.search);
@@ -122,6 +122,10 @@ function initThemePanel() {
   const theme = projectData.theme || {};
   const colors = theme.colors || {};
   const shapes = theme.shape_tokens || {};
+
+  // Load booking link
+  const clientData = projectData.clientData || {};
+  document.getElementById('editorBookingLink').value = clientData.booking_link || '';
 
   // Vibes
   if (theme.vibe) {
@@ -253,8 +257,9 @@ function loadPageInPreview(file) {
 
   const iframe = document.getElementById('previewIframe');
   
-  // Reset maps
-  editableElementsMap = [];
+  editableElementsMap = {};
+  const toolbar = document.getElementById('floatingToolbar');
+  if (toolbar) toolbar.style.display = 'none';
 
   // Listen for DOM content load inside the iframe
   iframe.onload = () => {
@@ -283,6 +288,11 @@ function setupIframeVisualEditing() {
     .editor-active-outline {
       outline: 2px solid #D4AF37 !important;
       outline-offset: -1px !important;
+    }
+    [contenteditable="true"]:focus {
+      outline: 2px solid #D4AF37 !important;
+      outline-offset: -1px !important;
+      background-color: rgba(212, 175, 55, 0.1) !important;
     }
   `;
   iframeDoc.head.appendChild(helperStyle);
@@ -340,7 +350,85 @@ function setupIframeVisualEditing() {
     accItem.appendChild(accContent);
     inspectorForm.appendChild(accItem);
 
-    // Track active nodes to filter child buttons to avoid double listing
+    // Render Repeating Grid Cards Manager for Repeating Content (Services, FAQs, reviews)
+    const isServices = section.className.toLowerCase().includes('services') || section.id.toLowerCase().includes('services');
+    const isTestimonials = section.className.toLowerCase().includes('testimonials') || section.className.toLowerCase().includes('reviews') || section.id.toLowerCase().includes('testimonials') || section.id.toLowerCase().includes('reviews');
+    const isFaq = section.className.toLowerCase().includes('faq') || section.id.toLowerCase().includes('faq');
+
+    const repeatCards = Array.from(section.querySelectorAll('.service-card, .testimonial-card, .faq-item, .card, [class*="card"]'));
+
+    if (repeatCards.length > 0 && (isServices || isTestimonials || isFaq)) {
+      const repeaterContainer = document.createElement('div');
+      repeaterContainer.className = 'repeating-items-container';
+      
+      repeatCards.forEach((cardNode, cardIdx) => {
+        const cardTitle = `${isServices ? 'Service' : isTestimonials ? 'Review' : 'FAQ'} Card #${cardIdx + 1}`;
+        const cardId = `repeating-sec-${secIdx}-card-${cardIdx}`;
+        
+        const cardTexts = Array.from(cardNode.querySelectorAll('h3, h4, h5, p, span.material-icons'));
+        
+        const cardItem = document.createElement('div');
+        cardItem.className = 'repeating-item-card';
+        
+        let cardHtml = `
+          <div class="repeating-item-card-header">
+            <span>${cardTitle}</span>
+            <button type="button" class="repeating-item-card-remove" onclick="removeRepeatingItem('${secIdx}', ${cardIdx})" style="background:transparent; border:none; color:var(--color-error); cursor:pointer; display:flex; align-items:center;" title="Delete Card">
+              <span class="material-icons" style="font-size:1.05rem;">delete</span>
+            </button>
+          </div>
+        `;
+        
+        cardTexts.forEach((tNode, tIdx) => {
+          const tTag = tNode.tagName.toLowerCase();
+          const tText = tNode.innerText ? tNode.innerText.trim() : '';
+          const inpId = `${cardId}-text-${tIdx}`;
+          
+          editableElementsMap[inpId] = tNode;
+          
+          if (tNode.classList.contains('material-icons')) {
+            cardHtml += `
+              <div class="form-group" style="margin-bottom:6px;">
+                <label style="font-size:0.65rem; color:var(--color-muted); display:block; margin-bottom:2px;">Icon Name</label>
+                <input type="text" id="${inpId}" class="form-control" value="${tText}" style="font-size:0.75rem; padding:6px 10px; min-height:28px;" oninput="updateIconText('${inpId}', this.value)">
+              </div>
+            `;
+          } else if (tTag === 'p') {
+            cardHtml += `
+              <div class="form-group" style="margin-bottom:6px;">
+                <label style="font-size:0.65rem; color:var(--color-muted); display:block; margin-bottom:2px;">Description Copy</label>
+                <textarea id="${inpId}" class="form-control" rows="2" style="font-size:0.75rem; padding:6px 10px; min-height:48px;" oninput="updateCardText('${inpId}', this.value)">${tText}</textarea>
+              </div>
+            `;
+          } else {
+            cardHtml += `
+              <div class="form-group" style="margin-bottom:6px;">
+                <label style="font-size:0.65rem; color:var(--color-muted); display:block; margin-bottom:2px;">Heading / Title</label>
+                <input type="text" id="${inpId}" class="form-control" value="${tText}" style="font-size:0.75rem; padding:6px 10px; min-height:28px;" oninput="updateCardText('${inpId}', this.value)">
+              </div>
+            `;
+          }
+        });
+        
+        cardItem.innerHTML = cardHtml;
+        repeaterContainer.appendChild(cardItem);
+      });
+      
+      const addBtn = document.createElement('button');
+      addBtn.type = 'button';
+      addBtn.className = 'btn btn-secondary';
+      addBtn.style.width = '100%';
+      addBtn.style.marginTop = '12px';
+      addBtn.style.minHeight = '36px';
+      addBtn.style.fontSize = '0.8rem';
+      addBtn.innerHTML = `<span class="material-icons" style="font-size:0.95rem; vertical-align:middle; margin-right:4px;">add</span> Add Card Item`;
+      addBtn.onclick = () => addRepeatingItem(secIdx);
+      
+      accContent.appendChild(repeaterContainer);
+      accContent.appendChild(addBtn);
+      return;
+    }
+
     textNodes.forEach((node, nodeIdx) => {
       // Skip empty or purely layout containers
       if (node.tagName.toLowerCase() === 'a' && node.querySelector('md-filled-button, md-outlined-button')) {
@@ -355,11 +443,7 @@ function setupIframeVisualEditing() {
 
       const inputId = `input-sec-${secIdx}-node-${nodeIdx}`;
       
-      // Store reference
-      editableElementsMap.push({
-        id: inputId,
-        element: node
-      });
+      editableElementsMap[inputId] = node;
 
       // Bind iframe DOM triggers to highlight matching sidebar inputs
       node.addEventListener('mouseover', (e) => {
@@ -378,30 +462,62 @@ function setupIframeVisualEditing() {
         e.preventDefault();
         e.stopPropagation();
         
-        // Remove outline on all other nodes
-        iframeDoc.querySelectorAll('.editor-active-outline').forEach(el => el.classList.remove('editor-active-outline'));
+        // Remove outline and disable contenteditable on other active nodes
+        iframeDoc.querySelectorAll('.editor-active-outline').forEach(el => {
+          el.classList.remove('editor-active-outline');
+          el.contentEditable = "false";
+        });
         
         // Add outline to clicked node
         node.classList.add('editor-active-outline');
+
+        const isIcon = node.classList.contains('material-icons');
+        const isImg = node.tagName.toLowerCase() === 'img';
+        
+        if (!isIcon && !isImg) {
+          node.contentEditable = "true";
+          node.focus();
+          
+          // Sync text back to sidebar input in real-time
+          node.addEventListener('input', () => {
+            const sidebarInput = document.getElementById(inputId);
+            if (sidebarInput) {
+              sidebarInput.value = node.innerText || node.textContent;
+            }
+            const statusEl = document.getElementById('editorStatusText');
+            if (statusEl) {
+              statusEl.innerText = 'Page modified inline. Save pending...';
+              statusEl.style.color = 'var(--color-accent)';
+            }
+          });
+
+          // Disable editing on blur
+          node.addEventListener('blur', () => {
+            node.contentEditable = "false";
+          }, { once: true });
+        }
 
         // Focus matching input card in sidebar
         const sidebarInput = document.getElementById(inputId);
         if (sidebarInput) {
           switchTab('content');
-          // Open parent accordion if closed
           accContent.classList.add('active');
           accHeader.querySelector('.material-icons').innerText = 'expand_more';
           
-          // Container-bounded scrolling: scrolls ONLY the sidebar element, avoiding window jumps!
           setTimeout(() => {
             const container = document.getElementById('editorSidebarContent');
             const topPos = sidebarInput.offsetTop - container.offsetTop - (container.clientHeight / 2) + (sidebarInput.clientHeight / 2);
             container.scrollTo({ top: Math.max(0, topPos), behavior: 'smooth' });
             
-            // Focus input without triggering default browser window shifts
-            sidebarInput.focus({ preventScroll: true });
+            // Only focus sidebar input if it is an icon or image (to avoid stealing keyboard focus from inline cursor!)
+            if (isIcon || isImg) {
+              sidebarInput.focus({ preventScroll: true });
+            }
           }, 100);
         }
+
+        // Show absolute-positioned floating context toolbar
+        showFloatingToolbar(node, inputId);
       });
 
       // Render the sidebar editing control form element
@@ -515,6 +631,18 @@ function setupIframeVisualEditing() {
       }
 
     });
+  });
+
+  // 3. Dismiss active visual selection outlines and hide toolbar on canvas background click
+  iframeDoc.addEventListener('click', (e) => {
+    if (!e.target.closest('h1, h2, h3, h4, h5, h6, p, md-filled-button, md-outlined-button, md-text-button, a, img, .material-icons')) {
+      iframeDoc.querySelectorAll('.editor-active-outline').forEach(el => {
+        el.classList.remove('editor-active-outline');
+        el.contentEditable = "false";
+      });
+      const toolbar = document.getElementById('floatingToolbar');
+      if (toolbar) toolbar.style.display = 'none';
+    }
   });
 }
 
@@ -861,6 +989,436 @@ style.innerHTML = `
   }
 `;
 document.head.appendChild(style);
+
+// --- FLOATING CONTEXT TOOLBAR CONTROLLER & HELPER ACTIONS ---
+
+function showFloatingToolbar(node, inputId) {
+  const toolbar = document.getElementById('floatingToolbar');
+  if (!toolbar) return;
+
+  const nodeTag = node.tagName.toLowerCase();
+  const isIcon = node.classList.contains('material-icons');
+  const isImg = nodeTag === 'img';
+  const isButton = nodeTag === 'md-filled-button' || nodeTag === 'md-outlined-button' || nodeTag === 'md-text-button' || nodeTag === 'a';
+
+  let html = '';
+
+  if (isImg) {
+    const currentSrc = node.getAttribute('src') || '';
+    const currentAlt = node.getAttribute('alt') || '';
+    html = `
+      <button class="floating-toolbar-btn" onclick="triggerFileInput('${inputId}')" title="Upload Local File">
+        <span class="material-icons">upload_file</span>
+      </button>
+      <button class="floating-toolbar-btn" onclick="triggerAiImage('${inputId}')" title="✨ AI Generate/Stock Image">
+        <span class="material-icons">auto_awesome</span>
+      </button>
+      <input type="text" class="floating-toolbar-input" id="toolbar-img-src" placeholder="Image URL..." value="${currentSrc}" style="width: 140px;" onchange="updateImageSrc('${inputId}', this.value)">
+      <input type="text" class="floating-toolbar-input" id="toolbar-img-alt" placeholder="Alt text..." value="${currentAlt}" style="width: 90px;" onchange="updateImageAlt('${inputId}', this.value)">
+    `;
+  } else if (isIcon) {
+    const iconName = node.innerText ? node.innerText.trim() : '';
+    html = `
+      <span style="font-size:0.75rem; color:var(--color-accent); font-weight:600; margin-right:4px;">Icon:</span>
+      <input type="text" class="floating-toolbar-input" id="toolbar-icon-name" placeholder="Search icon..." value="${iconName}" style="width: 100px;" oninput="updateIconText('${inputId}', this.value)">
+      <button class="floating-toolbar-btn" onclick="openIconSearch('${inputId}')" title="Browse Icon Set">
+        <span class="material-icons">search</span>
+      </button>
+    `;
+  } else {
+    // Text elements & Link Buttons
+    html = `
+      <button class="floating-toolbar-btn" onclick="applyInlineStyle('bold')" title="Bold">
+        <span class="material-icons">format_bold</span>
+      </button>
+      <button class="floating-toolbar-btn" onclick="applyInlineStyle('italic')" title="Italic">
+        <span class="material-icons">format_italic</span>
+      </button>
+    `;
+
+    if (isButton) {
+      const linkHref = node.getAttribute('href') || node.getAttribute('onclick') || '';
+      let cleanLink = linkHref;
+      if (cleanLink.includes("window.location.href='")) {
+        cleanLink = cleanLink.split("window.location.href='")[1].replace("'", "");
+      }
+      const isCustomLink = !['index.html', 'about.html', 'services.html', 'qualification.html', ''].includes(cleanLink);
+
+      html += `
+        <div class="floating-toolbar-divider"></div>
+        <select class="floating-toolbar-input" onchange="updateButtonDest('${inputId}', this.value)" style="width: 100px;">
+          <option value="">Link page...</option>
+          <option value="index.html" ${cleanLink === 'index.html' ? 'selected' : ''}>Home Page</option>
+          <option value="about.html" ${cleanLink === 'about.html' ? 'selected' : ''}>About Page</option>
+          <option value="services.html" ${cleanLink === 'services.html' ? 'selected' : ''}>Services Page</option>
+          <option value="qualification.html" ${cleanLink === 'qualification.html' ? 'selected' : ''}>Booking Form</option>
+          <option value="custom" ${isCustomLink ? 'selected' : ''}>Custom URL...</option>
+        </select>
+        <input type="text" class="floating-toolbar-input" id="toolbar-custom-link" placeholder="Custom URL..." value="${cleanLink}" style="width: 110px; display: ${isCustomLink ? 'inline-block' : 'none'};" onchange="updateButtonDest('${inputId}', this.value)">
+      `;
+    }
+
+    // AI Copywriter Integration
+    html += `
+      <div class="floating-toolbar-divider"></div>
+      <button class="floating-toolbar-btn" onclick="toggleAiMenu()" title="✨ AI Copywriter" id="ai-assistant-btn" style="position: relative;">
+        <span class="material-icons" style="color: #D4AF37;">auto_awesome</span>
+      </button>
+      <div id="aiToolbarDropdown" style="display: none; position: absolute; bottom: 100%; right: 0; margin-bottom: 6px; background-color: #161618; border: 1px solid #D4AF37; border-radius: 4px; padding: 4px; box-shadow: 0 4px 16px rgba(0,0,0,0.5); z-index: 10002; flex-direction: column; width: 140px; gap: 2px;">
+        <button class="tab-btn" style="text-align: left; font-size: 0.7rem; padding: 6px 10px; border-bottom: none; width: 100%; text-transform:none; letter-spacing:0;" onclick="triggerAiRewrite('${inputId}', 'Shorter')">Make Shorter</button>
+        <button class="tab-btn" style="text-align: left; font-size: 0.7rem; padding: 6px 10px; border-bottom: none; width: 100%; text-transform:none; letter-spacing:0;" onclick="triggerAiRewrite('${inputId}', 'Longer')">Make Longer</button>
+        <button class="tab-btn" style="text-align: left; font-size: 0.7rem; padding: 6px 10px; border-bottom: none; width: 100%; text-transform:none; letter-spacing:0;" onclick="triggerAiRewrite('${inputId}', 'More Luxury')">More Luxury</button>
+        <button class="tab-btn" style="text-align: left; font-size: 0.7rem; padding: 6px 10px; border-bottom: none; width: 100%; text-transform:none; letter-spacing:0;" onclick="triggerAiRewrite('${inputId}', 'More Professional')">More Clinical/Pro</button>
+        <button class="tab-btn" style="text-align: left; font-size: 0.7rem; padding: 6px 10px; border-bottom: none; width: 100%; text-transform:none; letter-spacing:0;" onclick="triggerAiRewrite('${inputId}', 'More Friendly')">More Friendly</button>
+        <button class="tab-btn" style="text-align: left; font-size: 0.7rem; padding: 6px 10px; border-bottom: none; width: 100%; text-transform:none; letter-spacing:0;" onclick="triggerAiRewrite('${inputId}', 'Improve SEO Headline')">Improve SEO Copy</button>
+      </div>
+    `;
+  }
+
+  toolbar.innerHTML = html;
+
+  const iframe = document.getElementById('previewIframe');
+  const iframeRect = iframe.getBoundingClientRect();
+  const rect = node.getBoundingClientRect();
+
+  toolbar.style.opacity = '0';
+  toolbar.style.display = 'flex';
+
+  setTimeout(() => {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
+
+    const topPos = rect.top + iframeRect.top + scrollTop - toolbar.offsetHeight - 10;
+    const leftPos = rect.left + iframeRect.left + scrollLeft + (rect.width / 2) - (toolbar.offsetWidth / 2);
+
+    toolbar.style.top = `${Math.max(10, topPos)}px`;
+    toolbar.style.left = `${Math.max(10, leftPos)}px`;
+    toolbar.style.opacity = '1';
+  }, 0);
+}
+
+function triggerFileInput(inputId) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      showToast('Uploading replacing image asset...', 'info');
+      try {
+        const filename = `images/img_${Date.now()}.${file.name.split('.').pop()}`;
+        const res = await fetch(`${API_BASE}/api/project/${encodeURIComponent(currentProject)}/upload`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filePath: filename, content: reader.result })
+        });
+        if (!res.ok) throw new Error('Failed to upload image file');
+
+        const data = await res.json();
+        const el = editableElementsMap[inputId];
+        if (el) {
+          el.setAttribute('src', data.url);
+          const sidebarInp = document.getElementById(inputId);
+          if (sidebarInp) sidebarInp.value = data.url;
+        }
+
+        showToast('Image replaced successfully!', 'success');
+        if (el) showFloatingToolbar(el, inputId);
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+async function triggerAiImage(inputId) {
+  const promptText = prompt('Enter a prompt to search or generate image (e.g. dental clinic office interior, smiling client):');
+  if (!promptText) return;
+
+  showToast('Generating/Searching matching assets...', 'info');
+  try {
+    const res = await fetch(`${API_BASE}/api/ai/image`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: promptText })
+    });
+    if (!res.ok) throw new Error('AI asset load error');
+    const data = await res.json();
+
+    const el = editableElementsMap[inputId];
+    if (el) {
+      el.setAttribute('src', data.url);
+      const sidebarInp = document.getElementById(inputId);
+      if (sidebarInp) sidebarInp.value = data.url;
+      showFloatingToolbar(el, inputId);
+    }
+    showToast('AI Image applied successfully!', 'success');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+function updateImageSrc(inputId, val) {
+  const el = editableElementsMap[inputId];
+  if (el) {
+    el.setAttribute('src', val);
+    const sidebarInp = document.getElementById(inputId);
+    if (sidebarInp) sidebarInp.value = val;
+  }
+}
+
+function updateImageAlt(inputId, val) {
+  const el = editableElementsMap[inputId];
+  if (el) {
+    el.setAttribute('alt', val);
+    const sidebarAlt = document.getElementById(`${inputId}-alt`);
+    if (sidebarAlt) sidebarAlt.value = val;
+  }
+}
+
+function updateIconText(inputId, val) {
+  const el = editableElementsMap[inputId];
+  if (el) {
+    el.innerText = val;
+    const sidebarInp = document.getElementById(inputId);
+    if (sidebarInp) sidebarInp.value = val;
+  }
+}
+
+function openIconSearch(inputId) {
+  const icon = prompt('Type any Material Icon name (e.g. speed, dental, medical, check, info, home):');
+  if (icon) {
+    updateIconText(inputId, icon.toLowerCase().trim());
+  }
+}
+
+function updateButtonDest(inputId, val) {
+  const customInput = document.getElementById('toolbar-custom-link');
+  if (val === 'custom') {
+    if (customInput) {
+      customInput.style.display = 'inline-block';
+      customInput.focus();
+    }
+    return;
+  }
+
+  const el = editableElementsMap[inputId];
+  if (el) {
+    let dest = val;
+    if (val === 'qualification.html' && projectData.clientData && projectData.clientData.booking_link) {
+      dest = projectData.clientData.booking_link;
+    }
+
+    if (el.hasAttribute('onclick')) {
+      el.setAttribute('onclick', `window.location.href='${dest}'`);
+    } else {
+      el.setAttribute('href', dest);
+    }
+
+    const sidebarLink = document.getElementById(`${inputId}-link`);
+    if (sidebarLink) sidebarLink.value = dest;
+  }
+}
+
+function applyInlineStyle(cmd) {
+  const iframe = document.getElementById('previewIframe');
+  iframe.contentWindow.document.execCommand(cmd, false, null);
+}
+
+function toggleAiMenu() {
+  const dropdown = document.getElementById('aiToolbarDropdown');
+  if (dropdown) {
+    dropdown.style.display = dropdown.style.display === 'flex' ? 'none' : 'flex';
+  }
+}
+
+async function triggerAiRewrite(inputId, commandName) {
+  const dropdown = document.getElementById('aiToolbarDropdown');
+  if (dropdown) dropdown.style.display = 'none';
+
+  const el = editableElementsMap[inputId];
+  if (!el) return;
+
+  const originalText = el.innerText || el.textContent || '';
+  showToast(`Running conversion AI framework '${commandName}'...`, 'info');
+
+  try {
+    const res = await fetch(`${API_BASE}/api/ai/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        originalText,
+        command: commandName,
+        industry: projectData ? projectData.industry : ''
+      })
+    });
+    if (!res.ok) throw new Error('AI service error');
+    const data = await res.json();
+
+    el.innerText = data.text;
+
+    const sidebarInp = document.getElementById(inputId);
+    if (sidebarInp) sidebarInp.value = data.text;
+
+    showToast('AI copywriting generated and applied!', 'success');
+    showFloatingToolbar(el, inputId);
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+// --- CARD REPEATING GRID MANAGER ACTIONS ---
+
+function addRepeatingItem(secIdx) {
+  const iframe = document.getElementById('previewIframe');
+  const iframeDoc = iframe.contentWindow.document;
+  const sections = Array.from(iframeDoc.querySelectorAll('section, header, footer'));
+  const section = sections[secIdx];
+  if (!section) return;
+
+  const repeatCards = Array.from(section.querySelectorAll('.service-card, .testimonial-card, .faq-item, .card, [class*="card"]'));
+  if (repeatCards.length === 0) return;
+
+  const clone = repeatCards[0].cloneNode(true);
+  
+  clone.querySelectorAll('h3, h4, h5, p').forEach(el => {
+    if (el.tagName.toLowerCase() === 'p') {
+      el.innerText = 'New item description text goes here.';
+    } else {
+      el.innerText = 'New Card Item';
+    }
+  });
+  
+  repeatCards[0].parentElement.appendChild(clone);
+  
+  document.getElementById('statusIndicator').innerText = 'Unsaved modifications on canvas.';
+  document.getElementById('statusIndicator').style.color = 'var(--color-accent)';
+
+  setupIframeVisualEditing();
+  showToast('New card item appended successfully!', 'success');
+}
+
+function removeRepeatingItem(secIdx, cardIdx) {
+  const iframe = document.getElementById('previewIframe');
+  const iframeDoc = iframe.contentWindow.document;
+  const sections = Array.from(iframeDoc.querySelectorAll('section, header, footer'));
+  const section = sections[secIdx];
+  if (!section) return;
+
+  const repeatCards = Array.from(section.querySelectorAll('.service-card, .testimonial-card, .faq-item, .card, [class*="card"]'));
+  if (repeatCards.length <= 1) {
+    showToast('Cannot delete the last remaining item. Visual grid requires at least one template card.', 'error');
+    return;
+  }
+
+  repeatCards[cardIdx].remove();
+
+  document.getElementById('statusIndicator').innerText = 'Unsaved modifications on canvas.';
+  document.getElementById('statusIndicator').style.color = 'var(--color-accent)';
+
+  setupIframeVisualEditing();
+  showToast('Card item deleted successfully!', 'success');
+}
+
+function updateCardText(inpId, val) {
+  const el = editableElementsMap[inpId];
+  if (el) {
+    el.innerText = val;
+    document.getElementById('statusIndicator').innerText = 'Unsaved modifications on canvas.';
+    document.getElementById('statusIndicator').style.color = 'var(--color-accent)';
+  }
+}
+
+// Save global booking link configuration and rewrite all CTAs on all pages
+async function saveBookingLink() {
+  const input = document.getElementById('editorBookingLink');
+  const newLink = input.value.trim();
+  
+  showToast('Updating booking redirects across all pages...', 'info');
+
+  try {
+    // 1. Fetch client_data.json
+    const dataRes = await fetch(`${API_BASE}/api/project/${encodeURIComponent(currentProject)}/file?path=client_data.json`);
+    if (!dataRes.ok) throw new Error('Failed to read client data config');
+    const clientData = await dataRes.json();
+
+    const oldLink = clientData.booking_link || 'qualification.html';
+    
+    // Update memory & config
+    clientData.booking_link = newLink;
+    projectData.clientData.booking_link = newLink;
+
+    // 2. Fetch sitemap.json to get pages index
+    const sitemapRes = await fetch(`${API_BASE}/api/project/${encodeURIComponent(currentProject)}/file?path=sitemap.json`);
+    if (!sitemapRes.ok) throw new Error('Failed to load sitemap pages index');
+    const sitemap = await sitemapRes.json();
+    const pages = sitemap.pages || [];
+
+    // Unique list of all site views to update
+    const filesToUpdate = ['index.html', ...pages.map(p => p.file)];
+    const uniqueFiles = [...new Set(filesToUpdate)];
+
+    // 3. Update occurrences on all pages
+    for (const file of uniqueFiles) {
+      try {
+        const fileRes = await fetch(`${API_BASE}/api/project/${encodeURIComponent(currentProject)}/file?path=${encodeURIComponent(file)}`);
+        if (!fileRes.ok) continue;
+        
+        let html = await fileRes.text();
+        
+        if (newLink) {
+          if (oldLink && oldLink !== 'qualification.html') {
+            const escapedOld = oldLink.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+            const regexHref = new RegExp(`href="${escapedOld}"`, 'g');
+            const regexOnclick = new RegExp(`window\\.location\\.href='${escapedOld}'`, 'g');
+            html = html.replace(regexHref, `href="${newLink}"`);
+            html = html.replace(regexOnclick, `window.location.href='${newLink}'`);
+          } else {
+            html = html.replace(/href="qualification\.html"/g, `href="${newLink}"`);
+            html = html.replace(/onclick="window\.location\.href='qualification\.html'"/g, `onclick="window.location.href='${newLink}'"`);
+            html = html.replace(/window\.location\.href='qualification\.html'/g, `window.location.href='${newLink}'`);
+          }
+        } else {
+          // If clearing, revert back to qualification.html
+          const escapedOld = oldLink.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+          const regexHref = new RegExp(`href="${escapedOld}"`, 'g');
+          const regexOnclick = new RegExp(`window\\.location\\.href='${escapedOld}'`, 'g');
+          html = html.replace(regexHref, `href="qualification.html"`);
+          html = html.replace(regexOnclick, `window.location.href='qualification.html'`);
+        }
+
+        // Save customized page
+        await fetch(`${API_BASE}/api/project/${encodeURIComponent(currentProject)}/file?path=${encodeURIComponent(file)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: html })
+        });
+      } catch (e) {
+        console.error(`Failed to update booking redirects on ${file}`, e);
+      }
+    }
+
+    // 4. Save updated client_data.json configuration
+    await fetch(`${API_BASE}/api/project/${encodeURIComponent(currentProject)}/file?path=client_data.json`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: JSON.stringify(clientData, null, 2) })
+    });
+
+    showToast('All page call-to-actions successfully updated!', 'success');
+    
+    // Refresh visual iframe canvas preview
+    const iframe = document.getElementById('previewIframe');
+    if (iframe) iframe.contentWindow.location.reload();
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
 
 // Initialise
 document.addEventListener('DOMContentLoaded', () => {

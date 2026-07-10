@@ -82,75 +82,161 @@
 
   <!-- MODAL: GENERATE NEW WEBSITE INSTANCE -->
   <div class="modal-overlay" id="createModal">
-    <div class="modal-card" id="create-modal-card">
+    <div class="modal-card" style="max-width: 700px; padding: 32px; max-height: 90vh; overflow-y: auto;" id="create-modal-card">
       <button class="modal-close" id="closeCreateModalBtn" aria-label="Close modal">&times;</button>
       
       <div class="modal-header">
-        <h2 style="font-size: 1.8rem; margin-bottom: 8px;">Create Website Instance</h2>
-        <p style="color: var(--color-muted); font-size: 0.9rem; font-family: var(--font-serif); font-style: italic;">
-          Configuring a performance-tuned architecture targeting immediate user friction.
+        <h2 style="font-size: 1.6rem; margin-bottom: 4px;">Website Creation Wizard</h2>
+        <p style="color: var(--color-muted); font-size: 0.85rem; font-family: var(--font-serif); font-style: italic;">
+          Configure design assets, tone guidelines, and duplicate services subpages automatically.
         </p>
       </div>
 
       <form id="createWebsiteForm">
         
-        <!-- Business Name -->
-        <div class="form-group">
-          <label for="newProjName">Business Name / Project slug</label>
-          <input type="text" id="newProjName" class="form-control" placeholder="e.g. London Dental Clinic" required>
-        </div>
-
-        <!-- Industry Vertical Selector -->
-        <div class="form-group">
-          <label for="newProjIndustry">Primary Industry Vertical</label>
-          <select id="newProjIndustry" class="form-control select-control" required>
-            <option value="Professional Services">Professional & B2B Services</option>
-            <option value="Aesthetics Clinics">Aesthetics & Medical Clinics</option>
-            <option value="High-Ticket Trades">High-Ticket Trades & Construction</option>
-            <option value="Hair & Beauty">Hair & Beauty Salons</option>
-            <option value="Canine & Pet">Canine & Pet Services</option>
-            <option value="B2B SaaS">B2B SaaS & Tech Startups</option>
-            <option value="Elite Tutoring">Elite Education & Tutoring</option>
-            <option value="Premium Leisure">Premium Leisure & Entertainment</option>
-          </select>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-          <!-- Primary Revenue Bottleneck -->
-          <div class="form-group">
-            <label for="newProjBottleneck">Primary Bottleneck</label>
-            <select id="newProjBottleneck" class="form-control select-control" required>
-              <option value="conversion">Conversion Leak (High bounces)</option>
-              <option value="outdated">Outdated Stack (Slow speed)</option>
-              <option value="traffic">Traffic Quality (Low intent)</option>
-            </select>
+        <!-- STEP 1: Core details -->
+        <div style="margin-bottom: 24px; border-bottom: 1px solid var(--color-dark-border); padding-bottom: 16px;">
+          <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--color-accent); margin-bottom: 12px; font-weight: 600;">1. General Details</div>
+          
+          <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 16px;">
+            <div class="form-group">
+              <label for="newProjName">Business Name / Project slug</label>
+              <input type="text" id="newProjName" class="form-control" placeholder="e.g. Boutique Dental Studio" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="newProjTemplate">Select Template Base</label>
+              <select id="newProjTemplate" class="form-control select-control" required>
+                <!-- Populated dynamically -->
+              </select>
+            </div>
           </div>
 
-          <!-- Sales / Lead Ingestion Flow -->
-          <div class="form-group">
-            <label for="newProjSalesProcess">Lead Ingestion Flow</label>
-            <select id="newProjSalesProcess" class="form-control select-control" required>
-              <option value="sales_call">Strategic Discovery Call</option>
-              <option value="diary_booking">Direct Booking Calendar</option>
-              <option value="rfp_form">Structured RFP Form</option>
-            </select>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label for="newProjIndustry">Industry Vertical</label>
+              <select id="newProjIndustry" class="form-control select-control" required>
+                <option value="Aesthetics Clinics">Aesthetics & Medical Clinics</option>
+                <option value="Professional Services">Professional & B2B Services</option>
+                <option value="High-Ticket Trades">High-Ticket Trades & Construction</option>
+                <option value="Hair & Beauty">Hair & Beauty Salons</option>
+                <option value="Canine & Pet">Canine & Pet Services</option>
+                <option value="B2B SaaS">B2B SaaS & Tech Startups</option>
+                <option value="Elite Tutoring">Elite Education & Tutoring</option>
+                <option value="Premium Leisure">Premium Leisure & Entertainment</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="newProjBottleneck">Primary Funnel Bottleneck</label>
+              <select id="newProjBottleneck" class="form-control select-control" required>
+                <option value="conversion">Conversion Leak (High bounce rate)</option>
+                <option value="outdated">Outdated Stack (Slow load speed)</option>
+                <option value="traffic">Traffic Quality (Low intent leads)</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 16px;">
+            <div class="form-group">
+              <label for="newProjBookingLink">Booking Form Link (e.g. Calendly, Cal.com)</label>
+              <input type="url" id="newProjBookingLink" class="form-control" placeholder="e.g. https://calendly.com/your-agency" value="">
+            </div>
+            
+            <div class="form-group">
+              <label for="newProjPageSize">Website Size (Page Count)</label>
+              <select id="newProjPageSize" class="form-control select-control" required>
+                <option value="10">10 pages (Standard Authority)</option>
+                <option value="20">20 pages (Growth Local SEO)</option>
+                <option value="30">30 pages (Enterprise Dominance)</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        <!-- Primary Brand Accent Color Picker -->
-        <div class="form-group color-picker-row">
-          <div>
-            <label style="margin-bottom: 4px;">Primary Brand Accent Color</label>
-            <span style="font-size: 0.75rem; color: var(--color-muted);">Used for major Call-To-Action (CTA) triggers</span>
+        <!-- STEP 2: Branding & Design -->
+        <div style="margin-bottom: 24px; border-bottom: 1px solid var(--color-dark-border); padding-bottom: 16px;">
+          <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--color-accent); margin-bottom: 12px; font-weight: 600;">2. Theme Branding & Vibe</div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label for="newProjVibe">Visual Design Vibe</label>
+              <select id="newProjVibe" class="form-control select-control" required onchange="updateThemePreviewImage(this.value)">
+                <option value="Luxury/Editorial">Luxury / Editorial (Flat, serif-accented)</option>
+                <option value="Tech Sleek">Tech Sleek (Rounded corners, modern shadows)</option>
+                <option value="Boutique Warm">Boutique Warm (Soft corners, organic shapes)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="newProjTone">Tone of Voice Copywriting</label>
+              <select id="newProjTone" class="form-control select-control" required>
+                <option value="Sophisticated/Editorial">Sophisticated & Editorial Print Look</option>
+                <option value="Professional/Corporate">High-Authority & Professional Corporate</option>
+                <option value="Conversational/Warm">Conversational, Warm & Direct Personal</option>
+              </select>
+            </div>
           </div>
-          <div class="color-input-container">
-            <input type="color" id="newProjColor" class="color-picker-input" value="#D4AF37">
+
+          <div id="themePreviewContainer" style="margin-top: 16px; border: 1px solid var(--color-dark-border); border-radius: 4px; padding: 12px; background-color: var(--color-dark-surface);">
+            <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--color-muted); margin-bottom: 8px; font-weight: 600; letter-spacing: 0.5px;">Theme Vibe Visual Preview</div>
+            <img id="themeVibePreviewImg" src="editorial_luxe_preview.jpg" alt="Editorial Luxe Preview" style="width: 100%; height: auto; border-radius: 4px; border: 1px solid var(--color-dark-border); transition: opacity 0.3s ease;">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 16px; align-items: center;">
+            <div class="form-group">
+              <label for="newProjLogoText">Logo Mark HTML / Text Copy</label>
+              <input type="text" id="newProjLogoText" class="form-control" placeholder="e.g. DENTAL &lt;span&gt;STUDIO&lt;/span&gt;" value="CLIENT <span>SITE</span>">
+            </div>
+            
+            <div class="form-group color-picker-row" style="margin-bottom: 0;">
+              <div>
+                <label style="margin-bottom: 2px;">Brand Accent</label>
+                <span style="font-size: 0.65rem; color: var(--color-muted); display: block;">Buttons/Highlight color</span>
+              </div>
+              <input type="color" id="newProjColor" class="color-picker-input" value="#D4AF37">
+            </div>
           </div>
         </div>
 
+        <!-- STEP 3: Images upload -->
+        <div style="margin-bottom: 24px; border-bottom: 1px solid var(--color-dark-border); padding-bottom: 16px;">
+          <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--color-accent); margin-bottom: 12px; font-weight: 600;">3. Image Uploads</div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label for="newProjLogoImg">Upload Logo Image (Overrides Logo Text)</label>
+              <input type="file" id="newProjLogoImg" class="form-control" accept="image/*" style="font-size: 0.8rem; padding: 8px 12px;">
+            </div>
+            <div class="form-group">
+              <label for="newProjHeroImg">Upload Hero Canvas Image</label>
+              <input type="file" id="newProjHeroImg" class="form-control" accept="image/*" style="font-size: 0.8rem; padding: 8px 12px;">
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4: Services subpages list -->
+        <div style="margin-bottom: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--color-accent); font-weight: 600;">4. Services subpages generation</div>
+            <button type="button" class="btn btn-secondary" style="min-height: 32px; padding: 0 12px; font-size: 0.75rem;" onclick="addServiceInput()">+ Add Service</button>
+          </div>
+          <p style="font-size: 0.8rem; color: var(--color-muted); margin-bottom: 12px; font-family: var(--font-serif); font-style: italic;">
+            Entering services duplicates the single service template page (service-single.html) into standalone pages and links them in sitemap.json.
+          </p>
+          <div id="servicesInputsContainer" style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- Start with one service input as guide -->
+            <div style="display: flex; gap: 8px;">
+              <input type="text" class="form-control service-name-input" placeholder="e.g. Dental Implants" required>
+              <button type="button" class="btn btn-secondary" onclick="this.parentElement.remove()" style="min-height:42px; padding: 0 16px; color: var(--color-error); border-color: var(--color-error);">&times;</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit actions -->
         <div style="display: flex; gap: 16px; margin-top: 32px;">
           <button type="button" class="btn btn-secondary" style="flex: 1;" id="cancelCreateModalBtn">Cancel</button>
-          <button type="submit" class="btn btn-primary" style="flex: 2;" id="submitNewProjBtn">Generate Website</button>
+          <button type="submit" class="btn btn-primary" style="flex: 2;" id="submitNewProjBtn">Compile Web Engine Instance</button>
         </div>
 
       </form>

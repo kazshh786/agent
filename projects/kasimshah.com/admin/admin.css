@@ -633,3 +633,107 @@ a:hover {
 .toast.error {
   border-left-color: var(--color-error);
 }
+
+/* Floating Context Toolbar */
+.floating-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #161618 !important;
+  border: 1px solid #D4AF37 !important;
+  border-radius: 6px !important;
+  padding: 6px 10px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  font-family: 'Outfit', sans-serif !important;
+  color: #F5F5F7 !important;
+  pointer-events: auto;
+}
+
+.floating-toolbar-btn {
+  background: transparent;
+  border: none;
+  color: #F5F5F7;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.floating-toolbar-btn:hover {
+  background-color: rgba(212, 175, 55, 0.2);
+  color: #D4AF37;
+}
+
+.floating-toolbar-btn span.material-icons {
+  font-size: 1.1rem;
+}
+
+.floating-toolbar-input {
+  background-color: #212124 !important;
+  border: 1px solid #323236 !important;
+  border-radius: 4px !important;
+  color: #F5F5F7 !important;
+  padding: 4px 8px !important;
+  font-size: 0.8rem !important;
+  min-height: 28px !important;
+  outline: none !important;
+}
+
+.floating-toolbar-input:focus {
+  border-color: #D4AF37 !important;
+}
+
+.floating-toolbar-divider {
+  width: 1px;
+  height: 18px;
+  background-color: #323236;
+  margin: 0 4px;
+}
+
+/* Repeating items list builder UI */
+.repeating-items-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.repeating-item-card {
+  background: #1c1c1e;
+  border: 1px solid #2c2c2e;
+  border-radius: 6px;
+  padding: 12px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.repeating-item-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #D4AF37;
+  border-bottom: 1px solid #2c2c2e;
+  padding-bottom: 4px;
+}
+
+.repeating-item-card-remove {
+  background: transparent;
+  border: none;
+  color: #ff453a;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+}
+
+.repeating-item-card-remove:hover {
+  opacity: 0.8;
+}

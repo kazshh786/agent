@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "api/server.js", "use": "@vercel/node" },
+    { "src": "projects/kasimshah.com/admin/**", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "api/server.js" },
+    { "src": "/admin/(.*)", "dest": "projects/kasimshah.com/admin/$1" },
+    { "src": "/projects/(.*)", "dest": "api/server.js" }
+  ]
+}

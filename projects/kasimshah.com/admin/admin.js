@@ -114,11 +114,68 @@ async function loadProjects() {
   }
 }
 
+// Fetch and load templates list from templates/ folder
+async function loadTemplates() {
+  const select = document.getElementById('newProjTemplate');
+  if (!select) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/templates`);
+    if (!res.ok) throw new Error('Failed to fetch templates');
+    const templates = await res.json();
+    
+    select.innerHTML = '';
+    templates.forEach((tpl) => {
+      const opt = document.createElement('option');
+      opt.value = tpl;
+      // Format display name: editorial-luxe -> Editorial Luxe
+      const displayName = tpl.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      opt.innerText = displayName;
+      select.appendChild(opt);
+    });
+  } catch (e) {
+    console.error('Error loading templates', e);
+    // Add default fallback
+    select.innerHTML = '<option value="editorial-luxe">Editorial Luxe</option>';
+  }
+}
+
+// Add dynamic service input field
+function addServiceInput() {
+  const container = document.getElementById('servicesInputsContainer');
+  const div = document.createElement('div');
+  div.style.display = 'flex';
+  div.style.gap = '8px';
+  div.innerHTML = `
+    <input type="text" class="form-control service-name-input" placeholder="e.g. Root Canal Treatment" required>
+    <button type="button" class="btn btn-secondary" onclick="this.parentElement.remove()" style="min-height:42px; padding: 0 16px; color: var(--color-error); border-color: var(--color-error);">&times;</button>
+  `;
+  container.appendChild(div);
+}
+
+// Helper: Read file input as base64 string
+function readFileAsBase64(fileInput) {
+  return new Promise((resolve) => {
+    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+      resolve(null);
+      return;
+    }
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => resolve(e.target.result);
+    reader.onerror = () => resolve(null);
+    reader.readAsDataURL(file);
+  });
+}
+
 // Handle Modal Actions
 function toggleCreateModal(show = true) {
   const modal = document.getElementById('createModal');
   if (modal) {
     modal.style.display = show ? 'flex' : 'none';
+    if (show) {
+      loadTemplates();
+    }
   }
 }
 
@@ -132,25 +189,53 @@ async function handleCreateWebsite(e) {
   submitBtn.disabled = true;
 
   const name = document.getElementById('newProjName').value.trim();
+  const templateName = document.getElementById('newProjTemplate').value;
   const industry = document.getElementById('newProjIndustry').value;
   const bottleneck = document.getElementById('newProjBottleneck').value;
-  const salesProcess = document.getElementById('newProjSalesProcess').value;
+  const bookingLink = document.getElementById('newProjBookingLink').value.trim();
+  const pageSize = document.getElementById('newProjPageSize').value;
   const brandColor = document.getElementById('newProjColor').value;
+  const vibe = document.getElementById('newProjVibe').value;
+  const tone = document.getElementById('newProjTone').value;
+  const logoText = document.getElementById('newProjLogoText').value.trim();
+
+  // Read images as base64
+  const logoImgInput = document.getElementById('newProjLogoImg');
+  const heroImgInput = document.getElementById('newProjHeroImg');
+
+  // Gather services from dynamic input list
+  const services = [];
+  document.querySelectorAll('.service-name-input').forEach((input) => {
+    const val = input.value.trim();
+    if (val) services.push(val);
+  });
 
   try {
+    const logoImgBase64 = await readFileAsBase64(logoImgInput);
+    const heroImgBase64 = await readFileAsBase64(heroImgInput);
+
     const response = await fetch(`${API_BASE}/api/projects`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name,
+        templateName,
         industry,
         bottleneck,
-        salesProcess,
+        bookingLink,
+        pageSize,
+        salesProcess: 'diary_booking', // Bound from previous requirements
         brandColor,
+        vibe,
+        tone,
+        logoText,
+        logoImg: logoImgBase64,
+        heroImg: heroImgBase64,
+        services,
         goals: [
           `Frictionless booking flow targeting the ${bottleneck} bottleneck.`,
-          `High-conversion editorial framework optimized for ${industry} services.`,
-          `Value-stack architecture synchronized with a ${salesProcess === 'sales_call' ? 'discovery call' : 'direct diary reservation'} model.`
+          `High-conversion ${vibe} framework optimized for ${industry} services.`,
+          `Value-stack architecture written in a ${tone} copywriting tone.`
         ]
       })
     });
@@ -161,8 +246,14 @@ async function handleCreateWebsite(e) {
     showToast(`Successfully spun up '${name}' website!`, 'success');
     toggleCreateModal(false);
     
-    // Reset form
+    // Reset form & services container
     document.getElementById('createWebsiteForm').reset();
+    document.getElementById('servicesInputsContainer').innerHTML = `
+      <div style="display: flex; gap: 8px;">
+        <input type="text" class="form-control service-name-input" placeholder="e.g. Dental Implants" required>
+        <button type="button" class="btn btn-secondary" onclick="this.parentElement.remove()" style="min-height:42px; padding: 0 16px; color: var(--color-error); border-color: var(--color-error);">&times;</button>
+      </div>
+    `;
     
     // Reload website list
     loadProjects();
@@ -184,8 +275,33 @@ document.addEventListener('DOMContentLoaded', () => {
   const cancelBtn = document.getElementById('cancelCreateModalBtn');
   const form = document.getElementById('createWebsiteForm');
 
-  if (openBtn) openBtn.addEventListener('click', () => toggleCreateModal(true));
+  if (openBtn) openBtn.addEventListener('click', () => {
+    toggleCreateModal(true);
+    // Reset preview to default on open
+    updateThemePreviewImage('Luxury/Editorial');
+  });
   if (closeBtn) closeBtn.addEventListener('click', () => toggleCreateModal(false));
   if (cancelBtn) cancelBtn.addEventListener('click', () => toggleCreateModal(false));
   if (form) form.addEventListener('submit', handleCreateWebsite);
 });
+
+// Update the theme preview graphic based on chosen Vibe selector
+function updateThemePreviewImage(vibeValue) {
+  const img = document.getElementById('themeVibePreviewImg');
+  if (!img) return;
+
+  img.style.opacity = '0.3';
+  setTimeout(() => {
+    if (vibeValue === 'Luxury/Editorial') {
+      img.src = 'editorial_luxe_preview.jpg';
+      img.alt = 'Editorial Luxe Preview';
+    } else if (vibeValue === 'Tech Sleek') {
+      img.src = 'tech_sleek_preview.jpg';
+      img.alt = 'Tech Sleek Preview';
+    } else if (vibeValue === 'Boutique Warm') {
+      img.src = 'boutique_warm_preview.jpg';
+      img.alt = 'Boutique Warm Preview';
+    }
+    img.style.opacity = '1';
+  }, 150);
+}
