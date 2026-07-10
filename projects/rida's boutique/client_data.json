@@ -1,0 +1,18 @@
+{
+  "client_name": "rida's boutique",
+  "brand_color": "#580070",
+  "industry": "Hair & Beauty",
+  "revenue_bottleneck": "conversion",
+  "sales_process": "diary_booking",
+  "tone_of_voice": "Conversational/Warm",
+  "services": [
+    "Clothes",
+    "Bags",
+    "Shoes"
+  ],
+  "conversion_goals": [
+    "Frictionless booking flow targeting the conversion bottleneck.",
+    "High-conversion editorial framework optimized for Hair & Beauty services.",
+    "Value-stack architecture synchronized with a direct diary reservation model."
+  ]
+}

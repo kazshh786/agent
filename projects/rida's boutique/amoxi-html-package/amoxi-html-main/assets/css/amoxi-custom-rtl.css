@@ -1,0 +1,65 @@
+body {
+  overflow-x: hidden;
+  direction: rtl;
+}
+
+.owl-carousel {
+  direction: ltr;
+}
+
+.owl-carousel .owl-nav,
+.owl-carousel .owl-dots,
+.owl-carousel .owl-item {
+  direction: rtl;
+}
+
+.contact__input-box .bootstrap-select .dropdown-menu,
+.bootstrap-select .dropdown-toggle .filter-option {
+  text-align: right;
+}
+
+.list-unstyled {
+  padding-right: 0;
+}
+
+.sec-title__tagline.bw-split-text > div {
+  background-image: linear-gradient(to left, rgba(var(--amoxi-base-rgb), 0.4) 50%, var(--amoxi-base) 50%);
+}
+
+.sec-title__title.bw-split-text > div {
+  background-image: linear-gradient(to left, rgba(var(--amoxi-white-rgb), 0.2) 50%, var(--amoxi-white) 50%);
+}
+
+.sec-title__shape__inner {
+  clip-path: polygon(0 50%, 100% 0, 100% 100%);
+}
+
+.sec-title__shape--2 .sec-title__shape__inner {
+  clip-path: polygon(100% 50%, 0 0, 0 100%);
+}
+
+.hero-one__image__inner {
+  -webkit-mask: url("../images/shapes/hero-img-shape-1-1-rtl.png");
+  mask: url("../images/shapes/hero-img-shape-1-1-rtl.png");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+
+.amoxi-area__title__shape {
+  display: none;
+}
+
+.marquee--gsap .marquee__bottom,
+.marquee--gsap .marquee__top,
+.marquee-left--gsap .marquee__toleft,
+.marquee-right--gsap .marquee__toright {
+  translate: unset !important;
+  translate: unset !important;
+}
+
+.team-card__name a:last-child {
+  clip-path: inset(0 0 0 100%);
+}
+/*# sourceMappingURL=amoxi-custom-rtl.css.map */
