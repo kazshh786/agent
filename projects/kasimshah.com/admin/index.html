@@ -105,7 +105,12 @@
             </div>
             
             <div class="form-group">
-              <label for="newProjTemplate">Select Template Base</label>
+              <label for="newProjTemplate" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>Select Template Base</span>
+                <button type="button" onclick="reloadTemplatesList()" title="Refresh Template List" style="background:none; border:none; color:var(--color-accent); cursor:pointer; display:inline-flex; align-items:center; padding:0; outline:none;">
+                  <span class="material-icons" style="font-size:1rem;">refresh</span>
+                </button>
+              </label>
               <select id="newProjTemplate" class="form-control select-control" required>
                 <!-- Populated dynamically -->
               </select>

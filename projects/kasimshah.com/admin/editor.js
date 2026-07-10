@@ -59,6 +59,15 @@ function setViewport(size) {
   wrapper.className = `preview-iframe-wrapper ${size}`;
 }
 
+// Refresh visual preview canvas iframe contents
+function reloadPreviewCanvas() {
+  const iframe = document.getElementById('previewIframe');
+  if (iframe) {
+    showToast('Reloading visual canvas...', 'info');
+    iframe.contentWindow.location.reload();
+  }
+}
+
 // Load configurations and pages sitemap
 async function initEditor() {
   document.getElementById('projectNameHeading').innerText = currentProject;
@@ -311,7 +320,7 @@ function setupIframeVisualEditing() {
 
   sections.forEach((section, secIdx) => {
     // Find all potential editable nodes inside this section
-    const textNodes = Array.from(section.querySelectorAll('h1, h2, h3, h4, h5, h6, p, md-filled-button, md-outlined-button, md-text-button, a, img, .material-icons'));
+    const textNodes = Array.from(section.querySelectorAll('h1, h2, h3, h4, h5, h6, p, md-filled-button, md-outlined-button, md-text-button, a, img, .material-icons, span, li, small, label, td, th'));
     
     if (textNodes.length === 0) return;
 

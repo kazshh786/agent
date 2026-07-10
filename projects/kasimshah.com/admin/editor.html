@@ -202,13 +202,15 @@
           <span style="font-weight: 500;" id="canvasActivePageLabel">index.html (Home)</span>
         </div>
 
-        <!-- Viewport Controls -->
         <div class="canvas-viewport-controls" id="canvas-viewport-bar">
           <button class="viewport-btn active" id="viewport-desktop-btn" onclick="setViewport('desktop')" title="Desktop View">
             <span class="material-icons">desktop_windows</span>
           </button>
           <button class="viewport-btn" id="viewport-mobile-btn" onclick="setViewport('mobile')" title="Mobile View">
             <span class="material-icons">smartphone</span>
+          </button>
+          <button class="viewport-btn" onclick="reloadPreviewCanvas()" title="Refresh Visual Canvas" style="border-left: 1px solid var(--color-dark-border); margin-left: 4px; padding-left: 8px;">
+            <span class="material-icons">refresh</span>
           </button>
         </div>
 

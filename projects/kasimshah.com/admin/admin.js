@@ -140,6 +140,13 @@ async function loadTemplates() {
   }
 }
 
+// Reload templates options list dynamically
+async function reloadTemplatesList() {
+  showToast('Scanning templates folder for new themes...', 'info');
+  await loadTemplates();
+  showToast('Template options list updated!', 'success');
+}
+
 // Add dynamic service input field
 function addServiceInput() {
   const container = document.getElementById('servicesInputsContainer');
