@@ -1,0 +1,54 @@
+<section class="section hero" id="home">
+  <div class="container creative-shell-split">
+    
+    <!-- Left Side: Large typography & copy -->
+    <div class="split-hero-content">
+      <div class="hero-badge">Elite Creative Production</div>
+      <h1 class="hero-title">Elevate Your Campaign to <strong>Boutique Authority</strong></h1>
+      <p class="hero-subtitle">Stop bleeding production hours on scheduling friction and unequipped studio bookings.</p>
+      <p>KS Studio provides ready-to-shoot creative spaces featuring dual-isolated acoustics, pre-rigged wireless Arri SkyPanel grids, and dedicated concierge crew. We eliminate administrative bottlenecks so your creative vision runs flawless.</p>
+      
+      <!-- Loss Aversion Warning -->
+      <div class="loss-aversion-banner">
+        <div class="loss-aversion-title">⚠️ Q3 Peak Calendar Scarcity</div>
+        <p class="loss-aversion-desc">Our booking diary is at 88% capacity. Every day of delay risks your campaign timeline. Securing a slot takes less than 3 minutes.</p>
+      </div>
+
+      <!-- Strict Container Rule wrapping for buttons -->
+      <div class="m3-hero-actions-wrapper">
+        <md-filled-button href="#qualification" onclick="window.location.hash='qualification'" id="hero-cta-qualify">Qualify Your Project</md-filled-button>
+        <md-outlined-button href="#services" onclick="window.location.hash='services'" id="hero-cta-space">Explore Spaces</md-outlined-button>
+      </div>
+    </div>
+
+    <!-- Right Side: Interaction card with shadow -->
+    <div class="split-side-panel">
+      <h3 class="font-display" style="margin-bottom: var(--space-2);">Establish Your Needs</h3>
+      <p style="font-size: var(--font-size-sm); margin-bottom: var(--space-3); color: var(--color-muted);">Confirm the bottlenecks you want KS Studio to solve:</p>
+      
+      <!-- Checkbox containers aligning elements -->
+      <div style="display: flex; flex-direction: column; gap: var(--space-3); margin-bottom: var(--space-4);">
+        <div class="m3-checkbox-wrapper" onclick="document.getElementById('chk-friction').click();">
+          <md-checkbox id="chk-friction" aria-label="Instantly book slots"></md-checkbox>
+          <span style="font-size: var(--font-size-sm); color: #FFF;">"I want to eliminate email tennis and book slots instantly."</span>
+        </div>
+        
+        <div class="m3-checkbox-wrapper" onclick="document.getElementById('chk-gear').click();">
+          <md-checkbox id="chk-gear" aria-label="Include high-end gear"></md-checkbox>
+          <span style="font-size: var(--font-size-sm); color: #FFF;">"I need high-end lighting and grip included to save gear rental costs."</span>
+        </div>
+
+        <div class="m3-checkbox-wrapper" onclick="document.getElementById('chk-crew').click();">
+          <md-checkbox id="chk-crew" aria-label="On-site assistant crew"></md-checkbox>
+          <span style="font-size: var(--font-size-sm); color: #FFF;">"I want dedicated assistant crew on-site to handle load-in."</span>
+        </div>
+      </div>
+      
+      <!-- Parent wrapper forces button full width dynamically, obeying the Container Rule -->
+      <div class="m3-button-full-wrapper">
+        <md-filled-button id="btn-submit-ladder" disabled>Confirm Bottlenecks</md-filled-button>
+      </div>
+    </div>
+
+  </div>
+</section>

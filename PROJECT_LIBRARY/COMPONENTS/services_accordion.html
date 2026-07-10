@@ -1,0 +1,69 @@
+<section class="section services" id="services">
+  <div class="container">
+    <div class="creative-shell-split">
+      
+      <!-- Left Heading -->
+      <div>
+        <div class="hero-badge">Production Chambers</div>
+        <h2 class="font-display">Specialized Shooting Spaces</h2>
+        <p style="margin-top: var(--space-3);">Choose between our specialized production spaces, optimized for commercial video, editorial photography, and high-value brand launches.</p>
+        
+        <!-- Interactive Service Image that swaps based on active item -->
+        <div class="services-image-container">
+          <div class="services-image active" id="service-img-1" style="background-image: linear-gradient(135deg, rgba(15,15,16,0.3) 0%, rgba(15,15,16,0.8) 100%), url('https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=1200&auto=format&fit=crop');">
+            <div class="space-dimension">1,200 SQ FT</div>
+          </div>
+          <div class="services-image" id="service-img-2" style="background-image: linear-gradient(135deg, rgba(15,15,16,0.3) 0%, rgba(15,15,16,0.8) 100%), url('https://images.unsplash.com/photo-1603172591854-e7e235d97f90?q=80&w=1200&auto=format&fit=crop');">
+            <div class="space-dimension">800 SQ FT</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Accordion List -->
+      <div class="accordion-services-list">
+        
+        <!-- Accordion Item 1 -->
+        <div class="accordion-service-item active" id="acc-item-1" onclick="selectAccordion(1)">
+          <div class="accordion-service-header">
+            <h3 class="font-display">Studio Alpha — The Commercial Hub</h3>
+            <span class="accordion-number">(01)</span>
+          </div>
+          <div class="accordion-service-content">
+            <p>Our flagship space. 1,200 sq. ft. of pristine shooting environment featuring a full 3-sided infinity cyclorama wall, pre-rigged wireless Arri SkyPanel S60-C overhead lighting grid, and NC-25 double soundproof insulation.</p>
+            <div class="list-tags">
+              <span class="tags-item">15ft ceiling height</span>
+              <span class="tags-item">63A 3-Phase power</span>
+              <span class="tags-item">Automated motor grid</span>
+              <span class="tags-item">Vehicle entry access</span>
+            </div>
+            <div style="margin-top: var(--space-3);">
+              <md-filled-button href="#qualification" onclick="window.location.hash='qualification'; event.stopPropagation();">Check Alpha Availability</md-filled-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Accordion Item 2 -->
+        <div class="accordion-service-item" id="acc-item-2" onclick="selectAccordion(2)">
+          <div class="accordion-service-header">
+            <h3 class="font-display">Studio Beta — The Editorial Lounge</h3>
+            <span class="accordion-number">(02)</span>
+          </div>
+          <div class="accordion-service-content">
+            <p>800 sq. ft. of daylight-filled space optimized for high-end fashion, editorial photography, and close-up interview sessions. Equipped with multi-tone textured backdrops and motorized paper roll systems.</p>
+            <div class="list-tags">
+              <span class="tags-item">Floor-to-ceiling glass panel</span>
+              <span class="tags-item">12s Blackout shutter array</span>
+              <span class="tags-item">Profoto D2 Lighting suite</span>
+              <span class="tags-item">Espresso bar & vanity</span>
+            </div>
+            <div style="margin-top: var(--space-3);">
+              <md-filled-button href="#qualification" onclick="window.location.hash='qualification'; event.stopPropagation();">Check Beta Availability</md-filled-button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</section>

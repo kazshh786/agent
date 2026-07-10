@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KS Studio - Boutique Luxury Production & Event Space</title>
+  <meta name="description" content="Secure your next campaign at KS Studio. Premium cycloramas, integrated high-end lighting, and zero scheduling friction in London.">
+  
+  <!-- OpenGraph Meta Tags for Social Sharing -->
+  <meta property="og:title" content="KS Studio - Boutique Luxury Production Space">
+  <meta property="og:description" content="Secure London's leading high-value boutique production space. Direct booking calendar.">
+  <meta property="og:type" content="website">
+
+  <!-- Link Purified Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Load Material Design 3 Web Components via CDN -->
+  <script type="module" src="https://esm.run/@material/web/all.js"></script>
+</head>
+<body>
+
+  <!-- 1. STICKY HEADER -->
+  <header class="header">
+    <div class="container nav-container">
+      <a href="#home" class="logo" id="header-logo">
+        KS <span>STUDIO</span>
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" id="nav-toggle-btn">
+        ☰
+      </button>
+      <nav class="m3-nav-wrapper" id="navigation-menu">
+        <md-text-button href="#home" onclick="document.getElementById('home').scrollIntoView({behavior: 'smooth'})">Home</md-text-button>
+        <md-text-button href="#features" onclick="document.getElementById('features').scrollIntoView({behavior: 'smooth'})">Specs</md-text-button>
+        <md-text-button href="#services" onclick="document.getElementById('services').scrollIntoView({behavior: 'smooth'})">Spaces</md-text-button>
+        <md-text-button href="#rates" onclick="document.getElementById('rates').scrollIntoView({behavior: 'smooth'})">Rates</md-text-button>
+        <md-text-button href="#qualification" onclick="document.getElementById('qualification').scrollIntoView({behavior: 'smooth'})">Qualify</md-text-button>
+        <md-text-button href="#diary" onclick="document.getElementById('diary').scrollIntoView({behavior: 'smooth'})">Diary</md-text-button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MAIN ASSEMBLY -->
+  <main>
+
+    <!-- 2. ASYMMETRICAL SPLIT HERO & YES-LADDER CHECKLIST -->
+    <section class="section hero" id="home">
+      <div class="container creative-shell-split">
+        
+        <!-- Left Side: Large typography & copy -->
+        <div class="split-hero-content">
+          <div class="hero-badge">Elite Creative Production</div>
+          <h1 class="hero-title">Elevate Your Campaign to <strong>Boutique Authority</strong></h1>
+          <p class="hero-subtitle">Stop bleeding production hours on scheduling friction and unequipped studio bookings.</p>
+          <p>KS Studio provides ready-to-shoot creative spaces featuring dual-isolated acoustics, pre-rigged wireless Arri SkyPanel grids, and dedicated concierge crew. We eliminate administrative bottlenecks so your creative vision runs flawless.</p>
+          
+          <!-- Loss Aversion Warning -->
+          <div class="loss-aversion-banner">
+            <div class="loss-aversion-title">⚠️ Q3 Peak Calendar Scarcity</div>
+            <p class="loss-aversion-desc">Our booking diary is at 88% capacity. Every day of delay risks your campaign timeline. Securing a slot takes less than 3 minutes.</p>
+          </div>
+
+          <!-- Strict Container Rule wrapping for buttons -->
+          <div class="m3-hero-actions-wrapper">
+            <md-filled-button href="#qualification" onclick="document.getElementById('qualification').scrollIntoView({behavior: 'smooth'})" id="hero-cta-qualify">Qualify Your Project</md-filled-button>
+            <md-outlined-button href="#services" onclick="document.getElementById('services').scrollIntoView({behavior: 'smooth'})" id="hero-cta-space">Explore Spaces</md-outlined-button>
+          </div>
+        </div>
+
+        <!-- Right Side: Interaction card with shadow -->
+        <div class="split-side-panel">
+          <h3 class="font-display" style="margin-bottom: var(--space-2);">Establish Your Needs</h3>
+          <p style="font-size: var(--font-size-sm); margin-bottom: var(--space-3); color: var(--color-muted);">Confirm the bottlenecks you want KS Studio to solve:</p>
+          
+          <!-- Checkbox containers aligning elements -->
+          <div style="display: flex; flex-direction: column; gap: var(--space-3); margin-bottom: var(--space-4);">
+            <div class="m3-checkbox-wrapper" onclick="document.getElementById('chk-friction').click();">
+              <md-checkbox id="chk-friction" aria-label="Instantly book slots"></md-checkbox>
+              <span style="font-size: var(--font-size-sm); color: #FFF;">"I want to eliminate email tennis and book slots instantly."</span>
+            </div>
+            
+            <div class="m3-checkbox-wrapper" onclick="document.getElementById('chk-gear').click();">
+              <md-checkbox id="chk-gear" aria-label="Include high-end gear"></md-checkbox>
+              <span style="font-size: var(--font-size-sm); color: #FFF;">"I need high-end lighting and grip included to save gear rental costs."</span>
+            </div>
+
+            <div class="m3-checkbox-wrapper" onclick="document.getElementById('chk-crew').click();">
+              <md-checkbox id="chk-crew" aria-label="On-site assistant crew"></md-checkbox>
+              <span style="font-size: var(--font-size-sm); color: #FFF;">"I want dedicated assistant crew on-site to handle load-in."</span>
+            </div>
+          </div>
+          
+          <!-- Parent wrapper forces button full width dynamically -->
+          <div class="m3-button-full-wrapper">
+            <md-filled-button id="btn-submit-ladder" disabled>Confirm Bottlenecks</md-filled-button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 3. BENTO GRID FEATURES -->
+    <section class="section features" id="features">
+      <div class="container">
+        <div style="text-align: center; margin-bottom: var(--space-6);">
+          <div class="hero-badge">Designed For Production</div>
+          <h2 class="font-display">Studio Specifications</h2>
+          <p style="max-width: 600px; margin: 0 auto;">High-end specs integrated as standard. No surprise hire bills at checkout.</p>
+        </div>
+
+        <!-- Bento Grid Shell -->
+        <div class="creative-shell-bento">
+          
+          <!-- Card 1: Soundproofing (Bento Span 8) -->
+          <div class="bento-card bento-span-8">
+            <div class="bento-icon">🛡️</div>
+            <h3 class="font-display" style="margin-top: var(--space-2); margin-bottom: var(--space-1);">Double-Isolated Acoustics (NC-25 Rating)</h3>
+            <p style="font-size: var(--font-size-sm); color: var(--color-muted); margin-bottom: 0;">Dual-layer acoustic wall treatments ensure perfect sound isolation. Record dialogue without street noise interference, avoiding costly reshoots.</p>
+          </div>
+
+          <!-- Card 2: Power Grid (Bento Span 4) -->
+          <div class="bento-card bento-span-4">
+            <div class="bento-icon">⚡</div>
+            <h3 class="font-display" style="margin-top: var(--space-2); margin-bottom: var(--space-1);">63A 3-Phase Power</h3>
+            <p style="font-size: var(--font-size-sm); color: var(--color-muted); margin-bottom: 0;">High-capacity power distribution boards located directly on-set for heavy lighting loads.</p>
+          </div>
+
+          <!-- Card 3: Natural Light (Bento Span 4) -->
+          <div class="bento-card bento-span-4">
+            <div class="bento-icon">☀️</div>
+            <h3 class="font-display" style="margin-top: var(--space-2); margin-bottom: var(--space-1);">South-Facing Daylight</h3>
+            <p style="font-size: var(--font-size-sm); color: var(--color-muted); margin-bottom: 0;">Floor-to-ceiling glass panels for soft natural illumination in Studio Beta. 12-second blackout shutters available.</p>
+          </div>
+
+          <!-- Card 4: Crew Support & Concierge (Bento Span 8) -->
+          <div class="bento-card bento-span-8">
+            <div class="bento-icon">🤝</div>
+            <h3 class="font-display" style="margin-top: var(--space-2); margin-bottom: var(--space-1);">On-Site Grip & Assistant Crew</h3>
+            <p style="font-size: var(--font-size-sm); color: var(--color-muted); margin-bottom: 0;">Two dedicated crew assistants included in our commercial buyout packages. Handles load-in, lighting rig setups, and general logistics so you focus entirely on creative execution.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. SERVICES ACCORDION -->
+    <section class="section services" id="services">
+      <div class="container">
+        <div class="creative-shell-split">
+          
+          <!-- Left Heading -->
+          <div>
+            <div class="hero-badge">Production Chambers</div>
+            <h2 class="font-display">Specialized Shooting Spaces</h2>
+            <p style="margin-top: var(--space-3); color: var(--color-muted);">Choose between our specialized production spaces, optimized for commercial video, editorial photography, and high-value brand launches.</p>
+            
+            <!-- Interactive Service Image that swaps based on active item -->
+            <div class="services-image-container">
+              <div class="services-image active" id="service-img-1" style="background-image: linear-gradient(135deg, rgba(15,15,16,0.3) 0%, rgba(15,15,16,0.8) 100%), url('https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=1200&auto=format&fit=crop');">
+                <div class="space-dimension">1,200 SQ FT</div>
+              </div>
+              <div class="services-image" id="service-img-2" style="background-image: linear-gradient(135deg, rgba(15,15,16,0.3) 0%, rgba(15,15,16,0.8) 100%), url('https://images.unsplash.com/photo-1603172591854-e7e235d97f90?q=80&w=1200&auto=format&fit=crop');">
+                <div class="space-dimension">800 SQ FT</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Accordion List -->
+          <div class="accordion-services-list">
+            
+            <!-- Accordion Item 1 -->
+            <div class="accordion-service-item active" id="acc-item-1" onclick="selectAccordion(1)">
+              <div class="accordion-service-header">
+                <h3 class="font-display">Studio Alpha — The Commercial Hub</h3>
+                <span class="accordion-number">(01)</span>
+              </div>
+              <div class="accordion-service-content">
+                <p>Our flagship space. 1,200 sq. ft. of pristine shooting environment featuring a full 3-sided infinity cyclorama wall, pre-rigged wireless Arri SkyPanel S60-C overhead lighting grid, and NC-25 double soundproof insulation.</p>
+                <div class="list-tags">
+                  <span class="tags-item">15ft ceiling height</span>
+                  <span class="tags-item">63A 3-Phase power</span>
+                  <span class="tags-item">Automated motor grid</span>
+                  <span class="tags-item">Vehicle entry access</span>
+                </div>
+                <div style="margin-top: var(--space-3);">
+                  <md-filled-button href="#qualification" onclick="document.getElementById('qualification').scrollIntoView({behavior:'smooth'}); selectAccordion(1); event.stopPropagation();">Check Alpha Availability</md-filled-button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Accordion Item 2 -->
+            <div class="accordion-service-item" id="acc-item-2" onclick="selectAccordion(2)">
+              <div class="accordion-service-header">
+                <h3 class="font-display">Studio Beta — The Editorial Lounge</h3>
+                <span class="accordion-number">(02)</span>
+              </div>
+              <div class="accordion-service-content">
+                <p>800 sq. ft. of daylight-filled space optimized for high-end fashion, editorial photography, and close-up interview sessions. Equipped with multi-tone textured backdrops and motorized paper roll systems.</p>
+                <div class="list-tags">
+                  <span class="tags-item">Floor-to-ceiling glass panel</span>
+                  <span class="tags-item">12s Blackout shutter array</span>
+                  <span class="tags-item">Profoto D2 Lighting suite</span>
+                  <span class="tags-item">Espresso bar & vanity</span>
+                </div>
+                <div style="margin-top: var(--space-3);">
+                  <md-filled-button href="#qualification" onclick="document.getElementById('qualification').scrollIntoView({behavior:'smooth'}); selectAccordion(2); event.stopPropagation();">Check Beta Availability</md-filled-button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. TESTIMONIALS SLIDER -->
+    <section class="section testimonials" id="testimonials">
+      <div class="container">
+        <div style="text-align: center; margin-bottom: var(--space-6);">
+          <div class="hero-badge">Proven Execution</div>
+          <h2 class="font-display">What Campaign Producers Say</h2>
+          <p style="max-width: 600px; margin: 0 auto; color: var(--color-muted);">Trusted by leading agencies and production teams. Real outcomes, zero excuses.</p>
+        </div>
+
+        <!-- Scroll Snap Container -->
+        <div class="snap-slider-container">
+          <div class="snap-slider" id="testimonial-slider-track">
+            
+            <!-- Slide 1 -->
+            <div class="snap-slide">
+              <div class="testimonial-card">
+                <div class="testimonial-rating">⭐⭐⭐⭐⭐</div>
+                <p class="testimonial-text">"We saved £2,500 on grip and lighting rental fees. The pre-rigged Arri SkyPanels in Studio Alpha cut our setup time in half, meaning we finished our commercial shoot ahead of schedule."</p>
+                <div class="testimonial-author">
+                  <div class="author-name">Elena Ruiz</div>
+                  <div class="author-title">VP Product, Cantos SaaS</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="snap-slide">
+              <div class="testimonial-card">
+                <div class="testimonial-rating">⭐⭐⭐⭐⭐</div>
+                <p class="testimonial-text">"The noise isolation rating NC-25 is no joke. We recorded clean dialogue tracks while traffic was crawling outside in Central London. Saved us a week of voiceover replacement sessions."</p>
+                <div class="testimonial-author">
+                  <div class="author-name">Marcus Tan</div>
+                  <div class="author-title">CTO, VectorPay</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Slide 3 -->
+            <div class="snap-slide">
+              <div class="testimonial-card">
+                <div class="testimonial-rating">⭐⭐⭐⭐⭐</div>
+                <p class="testimonial-text">"Studio Beta's natural light panels were absolutely spectacular for our Q3 fashion campaign. The espresso bar and luxury vanities kept our clients extremely happy throughout a long shoot day."</p>
+                <div class="testimonial-author">
+                  <div class="author-name">David Kim</div>
+                  <div class="author-title">Creative Director, Northway Co</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Slider Controls -->
+          <div class="slider-controls">
+            <button class="slider-arrow" id="slider-prev-btn" aria-label="Previous slide" onclick="scrollTestimonials(-1)">⟵</button>
+            <div class="slider-dots" id="slider-dots-container">
+              <span class="slider-dot active" onclick="scrollToSlide(0)"></span>
+              <span class="slider-dot" onclick="scrollToSlide(1)"></span>
+              <span class="slider-dot" onclick="scrollToSlide(2)"></span>
+            </div>
+            <button class="slider-arrow" id="slider-next-btn" aria-label="Next slide" onclick="scrollTestimonials(1)">⟶</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. PRICING VALUE STACKS -->
+    <section class="section pricing" id="rates">
+      <div class="container">
+        <div style="text-align: center; margin-bottom: var(--space-4);">
+          <div class="hero-badge">Transparent Packaging</div>
+          <h2 class="font-display">Value Stacks — High ROI Studio Booking</h2>
+          <p style="max-width: 600px; margin: 0 auto; color: var(--color-muted);">No hourly games. No surprise equipment rental bills at checkout. Every rate is structured as a value stack to eliminate project risk.</p>
+        </div>
+
+        <!-- Loss Aversion Notice -->
+        <div class="loss-aversion-banner" style="margin-bottom: var(--space-6);">
+          <div class="loss-aversion-title">⚠️ The Hidden Cost of Hourly Rates</div>
+          <p class="loss-aversion-desc">Most studios rent empty walls, charging extra for power, tables, standard grip, and even Wi-Fi. A 4-hour delay in courier delivery for a rented camera lens can waste £1,500 of crew salaries. Our packages stack in-house gear and setup support to guarantee project execution.</p>
+        </div>
+
+        <!-- Yes-Ladder Confirmation Step -->
+        <div class="split-side-panel" style="margin-bottom: var(--space-6); text-align: center; max-width: 800px; margin-left: auto; margin-right: auto;">
+          <h4 class="font-display" style="margin-bottom: var(--space-1);">Price Integrity Agreement</h4>
+          <p style="font-size: var(--font-size-sm); margin-bottom: var(--space-3); color: var(--color-muted);">Do you agree that securing all-inclusive packaging is safer than paying micro-fees for gear, space, and support separately?</p>
+          <div style="display: flex; justify-content: center;">
+            <md-filled-button id="btn-agree-value">Yes, I prefer price certainty</md-filled-button>
+          </div>
+        </div>
+
+        <!-- PRICING STACK GRID -->
+        <div class="creative-shell-bento">
+          
+          <!-- Package 1: Editorial -->
+          <div class="bento-card bento-span-4">
+            <div class="price-title">Editorial Stack</div>
+            <div class="price-desc">Optimized for high-end fashion, portraiture, and editorial campaigns.</div>
+            <div class="price-amount">£1,200 <span>/ Half-Day</span></div>
+            <div class="price-stack-label">Total Value Stack: £2,400 value</div>
+            <ul class="price-features">
+              <li>4-Hour Studio Beta Booking</li>
+              <li>Profoto D2 Lighting Suite (3 heads)</li>
+              <li>Motorized backdrop setup + 2 rolls</li>
+              <li>1x Studio Assistant crew member</li>
+              <li>High-Speed 1Gbps Fiber Wi-Fi</li>
+            </ul>
+            <md-outlined-button href="#qualification" onclick="document.getElementById('qualification').scrollIntoView({behavior:'smooth'}); selectPackage('editorial')" style="width: 100%; margin-top: auto;">Select Editorial Stack</md-outlined-button>
+          </div>
+
+          <!-- Package 2: Commercial (Featured) -->
+          <div class="bento-card bento-span-4 pricing-card-featured">
+            <div class="price-title">Commercial Stack</div>
+            <div class="price-desc">Perfect for commercial shoots, major video productions, and brand campaigns.</div>
+            <div class="price-amount">£2,400 <span>/ Full-Day</span></div>
+            <div class="price-stack-label">Total Value Stack: £5,100 value</div>
+            <ul class="price-features">
+              <li>9-Hour Studio Alpha Buyout</li>
+              <li>Full Arri SkyPanel Rigging Grid</li>
+              <li>63A 3-Phase power grid access</li>
+              <li>2x Grip Assistants for load-in & rig</li>
+              <li>Private client green room & styling suite</li>
+              <li>Zero-downtime backup gear insurance</li>
+            </ul>
+            <md-filled-button href="#qualification" onclick="document.getElementById('qualification').scrollIntoView({behavior:'smooth'}); selectPackage('commercial')" style="width: 100%; margin-top: auto;">Select Commercial Stack</md-filled-button>
+          </div>
+
+          <!-- Package 3: Residency -->
+          <div class="bento-card bento-span-4">
+            <div class="price-title">Residency Stack</div>
+            <div class="price-desc">For multi-day film shoots, set builds, and high-value productions.</div>
+            <div class="price-amount">£6,500 <span>/ 3-Day Buyout</span></div>
+            <div class="price-stack-label">Total Value Stack: £14,200 value</div>
+            <ul class="price-features">
+              <li>72-Hour Full Studio Lockout</li>
+              <li>Unlimited camera & lens library access</li>
+              <li>Dedicated set-builder crew support</li>
+              <li>In-house production coordinator</li>
+              <li>VIP gourmet catering for crew (up to 15)</li>
+              <li>Overnight secure gear storage</li>
+            </ul>
+            <md-outlined-button href="#qualification" onclick="document.getElementById('qualification').scrollIntoView({behavior:'smooth'}); selectPackage('residency')" style="width: 100%; margin-top: auto;">Select Residency Stack</md-outlined-button>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. QUALIFICATION WIZARD FORM -->
+    <section class="section qualification" id="qualification">
+      <div class="container">
+        <div style="text-align: center; margin-bottom: var(--space-4);">
+          <div class="hero-badge">Lead Qualification</div>
+          <h2 class="font-display">Qualify Your Production</h2>
+          <p style="max-width: 600px; margin: 0 auto; color: var(--color-muted);">Submit your creative brief details to unlock real-time diary booking. It ensures our equipment arrays are tailored to your needs.</p>
+        </div>
+
+        <!-- Editorial Arch Shell for Form -->
+        <div class="creative-shell-arch">
+          
+          <!-- Step Indicators -->
+          <div class="wizard-progress" style="margin-bottom: var(--space-5);">
+            <div class="wizard-progress-bar">
+              <div class="wizard-progress-fill"></div>
+            </div>
+            <div class="wizard-step-node active">1</div>
+            <div class="wizard-step-node">2</div>
+            <div class="wizard-step-node">3</div>
+          </div>
+
+          <form id="qualification-form" onsubmit="event.preventDefault();" class="arch-form-container">
+            
+            <!-- STEP 1: Project Scope -->
+            <div class="wizard-step active" id="step-1">
+              <h3 class="font-display" style="text-align: center; margin-bottom: var(--space-4);">1. Tell Us About Your Campaign</h3>
+              
+              <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+                <div class="md3-form-group">
+                  <md-outlined-select id="projectType" label="Project Format" required style="width: 100%;">
+                    <md-select-option value="commercial_video">Commercial Video & film shoot</md-select-option>
+                    <md-select-option value="editorial_photo">High-End Editorial Photography</md-select-option>
+                    <md-select-option value="brand_launch">Brand Launch / VIP Event</md-select-option>
+                    <md-select-option value="other">Other Complex Production</md-select-option>
+                  </md-outlined-select>
+                </div>
+
+                <div class="md3-form-group">
+                  <md-outlined-select id="studioPreference" label="Preferred Studio Space" required style="width: 100%;">
+                    <md-select-option value="alpha">Studio Alpha (1,200 sq. ft. Commercial Grid)</md-select-option>
+                    <md-select-option value="beta">Studio Beta (800 sq. ft. Natural Light)</md-select-option>
+                  </md-outlined-select>
+                </div>
+              </div>
+            </div>
+
+            <!-- STEP 2: Scale & Budget -->
+            <div class="wizard-step" id="step-2">
+              <h3 class="font-display" style="text-align: center; margin-bottom: var(--space-4);">2. Scope & Budget Scale</h3>
+              
+              <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+                <div class="md3-form-group">
+                  <md-outlined-select id="budget" label="Production Budget Range" required style="width: 100%;">
+                    <md-select-option value="under_3k">Under £3,000 (Consultation required)</md-select-option>
+                    <md-select-option value="3k_5k">£3,000 - £5,000 (Standard Commercial Stack)</md-select-option>
+                    <md-select-option value="5k_10k">£5,000 - £10,000 (Residency Stack)</md-select-option>
+                    <md-select-option value="10k_plus">£10,000+ (Custom RFP/Enterprise)</md-select-option>
+                  </md-outlined-select>
+                </div>
+
+                <div class="md3-form-group">
+                  <md-outlined-select id="timeline" label="Target Production Date" required style="width: 100%;">
+                    <md-select-option value="this_week">Within next 7 days</md-select-option>
+                    <md-select-option value="this_month">Within next 30 days</md-select-option>
+                    <md-select-option value="next_quarter">Within Q3/Q4</md-select-option>
+                  </md-outlined-select>
+                </div>
+              </div>
+            </div>
+
+            <!-- STEP 3: Contact & Brand Details -->
+            <div class="wizard-step" id="step-3">
+              <h3 class="font-display" style="text-align: center; margin-bottom: var(--space-4);">3. Contact & Brand Profile</h3>
+              
+              <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+                <div class="md3-form-group">
+                  <md-outlined-text-field id="name" label="Producer Name" placeholder="E.g. Sarah Jenkins" required style="width: 100%;"></md-outlined-text-field>
+                </div>
+
+                <div class="md3-form-group">
+                  <md-outlined-text-field id="email" type="email" label="Production Email" placeholder="sarah@agency.com" required style="width: 100%;"></md-outlined-text-field>
+                </div>
+
+                <div class="md3-form-group">
+                  <md-outlined-text-field id="company" label="Company / Agency Name" placeholder="E.g. Nexus Media Group" required style="width: 100%;"></md-outlined-text-field>
+                </div>
+
+                <div class="md3-form-group">
+                  <md-outlined-text-field id="productionBrief" type="textarea" rows="3" label="Campaign Description (Optional)" placeholder="Describe set build or rigging requirements..." style="width: 100%;"></md-outlined-text-field>
+                </div>
+              </div>
+            </div>
+
+            <!-- Navigation (Strict MD3 Buttons) -->
+            <div class="wizard-nav" style="display: flex; justify-content: space-between; margin-top: var(--space-4);">
+              <md-outlined-button type="button" id="btn-prev" style="visibility: hidden;">Previous</md-outlined-button>
+              <md-filled-button type="button" id="btn-next">Continue</md-filled-button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. REAL-TIME BOOKING DIARY CALENDAR -->
+    <section class="section diary" id="diary">
+      <div class="container">
+        
+        <div style="text-align: center; margin-bottom: var(--space-4);">
+          <div class="hero-badge">Live Availability</div>
+          <h2 class="font-display">Real-Time Booking Diary</h2>
+          <p style="max-width: 600px; margin: 0 auto; color: var(--color-muted);">Select your target dates directly. Unqualified bookings are subject to automatic cancellation within 12 hours.</p>
+        </div>
+
+        <!-- Dynamic warning based on wizard profile completion -->
+        <div id="diary-warning" class="loss-aversion-banner" style="margin-bottom: var(--space-6);">
+          <!-- Injected dynamically -->
+        </div>
+
+        <!-- Asymmetrical Split Shell -->
+        <div class="creative-shell-split">
+          
+          <!-- Left Side: Calendar Widget -->
+          <div>
+            <div class="calendar-widget">
+              <div class="calendar-header">
+                <h3 class="font-display" id="calendar-month-year">June 2026</h3>
+                <div style="display: flex; gap: var(--space-1);">
+                  <md-outlined-button style="min-width: 48px; height: 48px;" id="btn-prev-month">&lt;</md-outlined-button>
+                  <md-outlined-button style="min-width: 48px; height: 48px;" id="btn-next-month">&gt;</md-outlined-button>
+                </div>
+              </div>
+
+              <div class="calendar-days" id="calendar-days-grid">
+                <div class="day-name">Mon</div>
+                <div class="day-name">Tue</div>
+                <div class="day-name">Wed</div>
+                <div class="day-name">Thu</div>
+                <div class="day-name">Fri</div>
+                <div class="day-name">Sat</div>
+                <div class="day-name">Sun</div>
+                <!-- Generated dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Side: Times & Summary Checkout Card -->
+          <div class="split-side-panel">
+            <h3 class="font-display">Select Studio Session</h3>
+            <p style="font-size: var(--font-size-sm); color: var(--color-muted); margin-bottom: var(--space-3);">Choose an available time slot for your selected date:</p>
+
+            <div class="time-slots" style="margin-bottom: var(--space-4);">
+              <md-outlined-button id="slot-am" style="width: 100%;" data-time="09:00 - 13:00">09:00 AM Half-Day</md-outlined-button>
+              <md-outlined-button id="slot-pm" style="width: 100%;" data-time="13:00 - 17:00">01:00 PM Half-Day</md-outlined-button>
+              <md-outlined-button id="slot-full" style="width: 100%;" data-time="09:00 - 18:00">09:00 AM Full-Day</md-outlined-button>
+            </div>
+
+            <div style="margin-top: var(--space-4); border-top: 1px solid var(--color-dark-border); padding-top: var(--space-3);" id="booking-details-box">
+              <p style="font-size: var(--font-size-sm); color: #FFF;">Date Selected: <strong id="selected-date-str" style="color: var(--color-accent);">None</strong></p>
+              <p style="font-size: var(--font-size-sm); margin-bottom: var(--space-4); color: #FFF;">Slot Selected: <strong id="selected-time-str" style="color: var(--color-accent);">None</strong></p>
+              <md-filled-button id="btn-secure-booking" disabled style="width: 100%;">Secure Studio Booking</md-filled-button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 9. FAQS ACCORDION -->
+    <section class="section faq" id="faq">
+      <div class="container" style="max-width: 800px;">
+        <div style="text-align: center; margin-bottom: var(--space-6);">
+          <div class="hero-badge">Got Questions?</div>
+          <h2 class="font-display">Frequently Asked Questions</h2>
+          <p style="max-width: 600px; margin: 0 auto; color: var(--color-muted);">Everything you need to know about booking, gear integration, and crew support at KS Studio.</p>
+        </div>
+
+        <div class="faq-accordion-group">
+          
+          <details class="faq-item" open>
+            <summary class="faq-summary">
+              <span>What’s the typical timeline from booking to shoot?</span>
+              <span class="faq-icon"></span>
+            </summary>
+            <div class="faq-content">
+              <p>For qualified bookings, you can secure your slots instantly in our real-time diary once you complete the brief qualification wizard. Set builds or complex custom gear rigs require a quick 15-minute alignment call with our production lead at least 48 hours prior to load-in.</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-summary">
+              <span>Are lighting and grip gear really included in the packages?</span>
+              <span class="faq-icon"></span>
+            </summary>
+            <div class="faq-content">
+              <p>Yes. Our rates are structured as complete value stacks to eliminate hidden checkout fees. The Editorial Stack includes our Profoto lighting suite, and the Commercial Stack buyout includes full overhead Arri SkyPanel grids rigged as standard. Basic grip stands and sandbags are always free of charge.</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-summary">
+              <span>What happens if we run over our booked session times?</span>
+              <span class="faq-icon"></span>
+            </summary>
+            <div class="faq-content">
+              <p>We frame our spaces in full-day buyouts (9 hours) and half-day blocks (4 hours) to avoid clock-watching anxiety. In the event of a critical campaign delay, overtime can be requested at a flat rate of £250/hour, subject to next-day booking availability.</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-summary">
+              <span>Do you support custom set constructions?</span>
+              <span class="faq-icon"></span>
+            </summary>
+            <div class="faq-content">
+              <p>Absolutely. Studio Alpha features direct high-clearance shutter doors for vehicle loading and scenic flat deliveries. The Residency Stack includes dedicated setup crew hours to support your set builders during load-in days.</p>
+            </div>
+          </details>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 10. MINIMALIST LUXURY FOOTER -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <div class="footer-left">
+        <a href="#home" class="logo" onclick="window.scrollTo({top:0, behavior:'smooth'})">KS <span>STUDIO</span></a>
+        <p style="font-size: var(--font-size-xs); color: var(--color-muted); margin-top: var(--space-2); max-width: 320px;">
+          London's leading premium boutique creative production environment. Built on a strict 8px grid and Material Design 3 guidelines.
+        </p>
+      </div>
+      <div class="footer-links-group">
+        <nav style="display: flex; gap: var(--space-3); flex-wrap: wrap;">
+          <md-text-button href="#home" onclick="document.getElementById('home').scrollIntoView({behavior:'smooth'})">Home</md-text-button>
+          <md-text-button href="#features" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Specs</md-text-button>
+          <md-text-button href="#services" onclick="document.getElementById('services').scrollIntoView({behavior:'smooth'})">Spaces</md-text-button>
+          <md-text-button href="#rates" onclick="document.getElementById('rates').scrollIntoView({behavior:'smooth'})">Rates</md-text-button>
+          <md-text-button href="#qualification" onclick="document.getElementById('qualification').scrollIntoView({behavior:'smooth'})">Qualify</md-text-button>
+          <md-text-button href="#diary" onclick="document.getElementById('diary').scrollIntoView({behavior:'smooth'})">Diary</md-text-button>
+        </nav>
+      </div>
+      <div class="footer-bottom-row" style="width: 100%; border-top: 1px solid var(--color-dark-border); padding-top: var(--space-3); margin-top: var(--space-4); display: flex; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2);">
+        <div class="footer-text">&copy; 2026 KS Studio. All rights reserved. Zero-template performance architecture.</div>
+        <div class="footer-text" style="color: var(--color-accent);">Strict 8px Grid & MD3 Compliant</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Loaded App Script -->
+  <script src="app.js"></script>
+</body>
+</html>

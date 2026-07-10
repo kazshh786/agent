@@ -1,0 +1,61 @@
+{
+  "project": "KS Studio",
+  "deployment_target": "Cloudflare Pages",
+  "theme_reference": "projects/KS Studio/theme.json",
+  "components": [
+    {
+      "name": "header",
+      "target_file": "PROJECT_LIBRARY/COMPONENTS/header.html",
+      "source_pattern": "aigocy/Header",
+      "purification": "Removed Bootstrap classes, custom script dependencies, and multi-level dropdowns. Replaced with pure flexbox and MD3-themed buttons."
+    },
+    {
+      "name": "hero_split",
+      "target_file": "PROJECT_LIBRARY/COMPONENTS/hero_split.html",
+      "source_pattern": "aigocy/section-hero + KS Studio/index.html (Yes-Ladder)",
+      "purification": "Extracted editorial-style typography sizes and dark ambient background gradients. Integrated a native HTML/MD3 checkboxes card to drive the Yes-Ladder commitment loop. Eliminated video background wrappers."
+    },
+    {
+      "name": "features_bento",
+      "target_file": "PROJECT_LIBRARY/COMPONENTS/features_bento.html",
+      "source_pattern": "aigocy/section-benefits + aigocy/section-features",
+      "purification": "Merged bloated feature and benefit listings into a unified CSS Grid Bento Layout. Removed animate.css library, replacing it with pure CSS transform hover glows."
+    },
+    {
+      "name": "services_accordion",
+      "target_file": "PROJECT_LIBRARY/COMPONENTS/services_accordion.html",
+      "source_pattern": "aigocy/section-services",
+      "purification": "Completely removed jQuery, nice-select, and Bootstrap collapse. Replaced with native HTML details/summary or a lightweight semantic markup driven by CSS transitions."
+    },
+    {
+      "name": "testimonials_slider",
+      "target_file": "PROJECT_LIBRARY/COMPONENTS/testimonials_slider.html",
+      "source_pattern": "aigocy/section-testimonials",
+      "purification": "Removed Swiper.js, custom pagination scripts, and main-image sync functions. Implemented pure CSS Scroll Snap with horizontal overflow."
+    },
+    {
+      "name": "pricing_cards",
+      "target_file": "PROJECT_LIBRARY/COMPONENTS/pricing_cards.html",
+      "source_pattern": "aigocy/section-pricing",
+      "purification": "Refactored the bootstrap column layout to CSS Flexbox. Changed hourly pricing models into 'Value Stacks' to eliminate micro-billing friction, aligning with Conversion Psychology guidelines."
+    },
+    {
+      "name": "qualification_wizard",
+      "target_file": "PROJECT_LIBRARY/COMPONENTS/qualification_wizard.html",
+      "source_pattern": "projects/KS Studio/qualification.html (wizard)",
+      "purification": "Standardized the lead intake wizard to use native MD3 outlines, adding budget threshold validations and strict error formatting."
+    },
+    {
+      "name": "faq_accordion",
+      "target_file": "PROJECT_LIBRARY/COMPONENTS/faq_accordion.html",
+      "source_pattern": "aigocy/section-faqs",
+      "purification": "Replaced Bootstrap collapse divs with semantic HTML `<details>` and `<summary>` tags for native screen-reader support."
+    },
+    {
+      "name": "footer",
+      "target_file": "PROJECT_LIBRARY/COMPONENTS/footer.html",
+      "source_pattern": "aigocy/Footer",
+      "purification": "Purged social SVG blocks and heavy font files. Simplified into a luxury text layout with MD3 text links."
+    }
+  ]
+}

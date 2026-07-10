@@ -1,0 +1,63 @@
+<section class="section testimonials" id="testimonials">
+  <div class="container">
+    <div style="text-align: center; margin-bottom: var(--space-6);">
+      <div class="hero-badge">Proven Execution</div>
+      <h2 class="font-display">What Campaign Producers Say</h2>
+      <p style="max-width: 600px; margin: 0 auto;">Trusted by leading agencies and production teams. Real outcomes, zero excuses.</p>
+    </div>
+
+    <!-- Scroll Snap Container -->
+    <div class="snap-slider-container">
+      <div class="snap-slider" id="testimonial-slider-track">
+        
+        <!-- Slide 1 -->
+        <div class="snap-slide">
+          <div class="testimonial-card">
+            <div class="testimonial-rating">⭐⭐⭐⭐⭐</div>
+            <p class="testimonial-text">"We saved £2,500 on grip and lighting rental fees. The pre-rigged Arri SkyPanels in Studio Alpha cut our setup time in half, meaning we finished our commercial shoot ahead of schedule."</p>
+            <div class="testimonial-author">
+              <div class="author-name">Elena Ruiz</div>
+              <div class="author-title">VP Product, Cantos SaaS</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 2 -->
+        <div class="snap-slide">
+          <div class="testimonial-card">
+            <div class="testimonial-rating">⭐⭐⭐⭐⭐</div>
+            <p class="testimonial-text">"The noise isolation rating NC-25 is no joke. We recorded clean dialogue tracks while traffic was crawling outside in Central London. Saved us a week of voiceover replacement sessions."</p>
+            <div class="testimonial-author">
+              <div class="author-name">Marcus Tan</div>
+              <div class="author-title">CTO, VectorPay</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 3 -->
+        <div class="snap-slide">
+          <div class="testimonial-card">
+            <div class="testimonial-rating">⭐⭐⭐⭐⭐</div>
+            <p class="testimonial-text">"Studio Beta's natural light panels were absolutely spectacular for our Q3 fashion campaign. The espresso bar and luxury vanities kept our clients extremely happy throughout a long shoot day."</p>
+            <div class="testimonial-author">
+              <div class="author-name">David Kim</div>
+              <div class="author-title">Creative Director, Northway Co</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Slider Controls -->
+      <div class="slider-controls">
+        <button class="slider-arrow" id="slider-prev-btn" aria-label="Previous slide" onclick="scrollTestimonials(-1)">⟵</button>
+        <div class="slider-dots" id="slider-dots-container">
+          <span class="slider-dot active" onclick="scrollToSlide(0)"></span>
+          <span class="slider-dot" onclick="scrollToSlide(1)"></span>
+          <span class="slider-dot" onclick="scrollToSlide(2)"></span>
+        </div>
+        <button class="slider-arrow" id="slider-next-btn" aria-label="Next slide" onclick="scrollTestimonials(1)">⟶</button>
+      </div>
+    </div>
+  </div>
+</section>

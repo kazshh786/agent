@@ -1,0 +1,103 @@
+<section class="section qualification" id="qualification">
+  <div class="container">
+    <div style="text-align: center; margin-bottom: var(--space-4);">
+      <div class="hero-badge">Lead Qualification</div>
+      <h2 class="font-display">Qualify Your Production</h2>
+      <p style="max-width: 600px; margin: 0 auto;">Submit your creative brief details to unlock real-time diary booking. It ensures our equipment arrays are tailored to your needs.</p>
+    </div>
+
+    <!-- Editorial Arch Shell for Form -->
+    <div class="creative-shell-arch">
+      
+      <!-- Step Indicators -->
+      <div class="wizard-progress" style="margin-bottom: var(--space-5);">
+        <div class="wizard-progress-bar">
+          <div class="wizard-progress-fill" style="width: 0%;"></div>
+        </div>
+        <div class="wizard-step-node active">1</div>
+        <div class="wizard-step-node">2</div>
+        <div class="wizard-step-node">3</div>
+      </div>
+
+      <form id="qualification-form" onsubmit="event.preventDefault();" class="arch-form-container">
+        
+        <!-- STEP 1: Project Scope -->
+        <div class="wizard-step active" id="step-1">
+          <h3 class="font-display" style="text-align: center; margin-bottom: var(--space-4);">1. Tell Us About Your Campaign</h3>
+          
+          <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+            <div class="md3-form-group">
+              <md-outlined-select id="projectType" label="Project Format" required style="width: 100%;">
+                <md-select-option value="commercial_video">Commercial Video & film shoot</md-select-option>
+                <md-select-option value="editorial_photo">High-End Editorial Photography</md-select-option>
+                <md-select-option value="brand_launch">Brand Launch / VIP Event</md-select-option>
+                <md-select-option value="other">Other Complex Production</md-select-option>
+              </md-outlined-select>
+            </div>
+
+            <div class="md3-form-group">
+              <md-outlined-select id="studioPreference" label="Preferred Studio Space" required style="width: 100%;">
+                <md-select-option value="alpha">Studio Alpha (1,200 sq. ft. Commercial Grid)</md-select-option>
+                <md-select-option value="beta">Studio Beta (800 sq. ft. Natural Light)</md-select-option>
+              </md-outlined-select>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: Scale & Budget -->
+        <div class="wizard-step" id="step-2">
+          <h3 class="font-display" style="text-align: center; margin-bottom: var(--space-4);">2. Scope & Budget Scale</h3>
+          
+          <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+            <div class="md3-form-group">
+              <md-outlined-select id="budget" label="Production Budget Range" required style="width: 100%;">
+                <md-select-option value="under_3k">Under £3,000 (Consultation required)</md-select-option>
+                <md-select-option value="3k_5k">£3,000 - £5,000 (Standard Commercial Stack)</md-select-option>
+                <md-select-option value="5k_10k">£5,000 - £10,000 (Residency Stack)</md-select-option>
+                <md-select-option value="10k_plus">£10,000+ (Custom RFP/Enterprise)</md-select-option>
+              </md-outlined-select>
+            </div>
+
+            <div class="md3-form-group">
+              <md-outlined-select id="timeline" label="Target Production Date" required style="width: 100%;">
+                <md-select-option value="this_week">Within next 7 days</md-select-option>
+                <md-select-option value="this_month">Within next 30 days</md-select-option>
+                <md-select-option value="next_quarter">Within Q3/Q4</md-select-option>
+              </md-outlined-select>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: Contact & Brand Details -->
+        <div class="wizard-step" id="step-3">
+          <h3 class="font-display" style="text-align: center; margin-bottom: var(--space-4);">3. Contact & Brand Profile</h3>
+          
+          <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+            <div class="md3-form-group">
+              <md-outlined-text-field id="name" label="Producer Name" placeholder="E.g. Sarah Jenkins" required style="width: 100%;"></md-outlined-text-field>
+            </div>
+
+            <div class="md3-form-group">
+              <md-outlined-text-field id="email" type="email" label="Production Email" placeholder="sarah@agency.com" required style="width: 100%;"></md-outlined-text-field>
+            </div>
+
+            <div class="md3-form-group">
+              <md-outlined-text-field id="company" label="Company / Agency Name" placeholder="E.g. Nexus Media Group" required style="width: 100%;"></md-outlined-text-field>
+            </div>
+
+            <div class="md3-form-group">
+              <md-outlined-text-field id="productionBrief" type="textarea" rows="3" label="Campaign Description (Optional)" placeholder="Describe set build or rigging requirements..." style="width: 100%;"></md-outlined-text-field>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="wizard-nav" style="display: flex; justify-content: space-between; margin-top: var(--space-4);">
+          <md-outlined-button type="button" id="btn-prev" style="visibility: hidden;">Previous</md-outlined-button>
+          <md-filled-button type="button" id="btn-next">Continue</md-filled-button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</section>

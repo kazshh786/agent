@@ -9,3 +9,6 @@ Thumbs.db
 *.log
 tmp/
 temp/
+scratch/
+templates/
+

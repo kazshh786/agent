@@ -1,85 +1,260 @@
 <!DOCTYPE html>
-<html lang="en">
+<!--[if (gte IE 9)|!(IE)]><!-->
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+<!--<![endif]-->
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Premium Leisure | Kasim Shah UX</title>
-  <meta name="description" content="Booking engines for hospitality, tours, and experiences. High-conversion digital architecture.">
-  
-  <!-- Playfair & Inter Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <meta charset="utf-8">
+    <title>Premium Leisure | Kasim Shah UX</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="Booking engines for hospitality, tours, and experiences. High-conversion digital architecture.">
+    <meta name="robots" content="noindex, nofollow">
 
-  <link rel="stylesheet" href="css/style.css">
-  <script type="module" src="https://esm.run/@material/web/all.js"></script>
+    <!-- font -->
+    <link rel="stylesheet" href="assets/fonts/fonts.css">
+    <link rel="stylesheet" href="assets/icon/icomoon/style.css">
+    <!-- css -->
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/swiper-bundle.min.css">
+    <link rel="stylesheet" href="assets/css/animate.css">
+    
+    <link rel="stylesheet" href="assets/css/slick.css">
+    <link rel="stylesheet" href="assets/css/slick.theme.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/styles.css">
+
+    <!-- Favicon and Touch Icons  -->
+    <link rel="shortcut icon" href="assets/images/logo/favicon.svg">
+    <link rel="apple-touch-icon-precomposed" href="assets/images/logo/favicon.svg">
 </head>
-<body>
 
-  <!-- HEADER -->
-  <header class="header">
-    <div class="container nav-container">
-      <a href="index.html" class="logo" style="text-decoration: none;">
-        KASIM <span>SHAH</span>
-      </a>
-      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
-        ☰
-      </button>
-      <nav class="m3-nav-wrapper">
-        <md-text-button href="index.html" onclick="window.location.href='index.html'">Home</md-text-button>
-        <md-text-button href="about.html" onclick="window.location.href='about.html'">Pedigree</md-text-button>
-        <md-text-button href="ux-audit.html" onclick="window.location.href='ux-audit.html'">UX Audit</md-text-button>
-        <md-text-button href="case-studies.html" onclick="window.location.href='case-studies.html'">Case Studies</md-text-button>
-        <md-text-button href="rfp.html" onclick="window.location.href='rfp.html'">RFP Form</md-text-button>
-      </nav>
-    </div>
-  </header>
+<body class="counter-scroll">
+    <!-- Scroll Top -->
+    <button id="goTop">
+        <span class="border-progress"></span>
+        <span class="ic-wrap">
+            <span class="icon icon-long-arrow-alt-up-solid"></span>
+        </span>
+    </button>
 
-  <main>
-    <!-- EDITORIAL ARCH CORE CONTENT -->
-    <section class="section">
-      <div class="container fade-in-up">
-        <div class="creative-shell-arch">
-          <span style="color: var(--color-accent); font-size: var(--font-size-sm); text-transform: uppercase; letter-spacing: 2px;">Authority Engine Section</span>
-          <h1 class="font-serif" style="margin-top: var(--space-2); margin-bottom: var(--space-3);">Premium Leisure</h1>
-          <p style="font-size: var(--font-size-h4); color: var(--color-muted); font-family: var(--font-serif); font-style: italic; margin-bottom: var(--space-4);">
-            "Booking engines for hospitality, tours, and experiences."
-          </p>
-          <div style="text-align: left; max-width: 650px; margin: 0 auto;">
-            <p>
+    <!-- #wrapper -->
+    <main id="wrapper">
+
+        <!-- Header -->
+        <header class="tf-header header2">
+            <div class="header-inner">
+                <a href="index.html" class="logo-site">
+                    <img src="assets/images/logo/logo.svg" alt="Kasim Shah Logo">
+                </a>
+                <div class="box-navigation">
+                    <ul class="nav-menu-main">
+                        <li class="menu-item">
+                            <a href="index.html" class="item-link link1">Home</a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="index.html#about" class="item-link link1">About</a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="index.html#services" class="item-link link1">Services</a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="index.html#works" class="item-link link1">Works</a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="index.html#pricing" class="item-link link1">Retainers</a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="index.html#contact" class="item-link link1">Contact</a>
+                        </li>
+                    </ul>
+                </div>
+                <a href="index.html#contact" class="tf-btn d-lg-flex d-none">
+                    Start a Project
+                </a>
+                <a href="#" class="tf-btn open-mb-menu mobile-menu d-lg-none d-flex">
+                    <i class="icon icon-grip-lines-solid"></i>
+                </a>
+            </div>
+        </header>
+
+        <!-- Hero Title Banner (Amoxi style spacing) -->
+        <div class="section-hero pt-80 pb-80" style="min-height: auto; padding-top: 150px; padding-bottom: 80px;">
+            <div class="container">
+                <div class="content-wrap text-center">
+                    <div class="sub fw-semibold effectFade fadeUp">
+                        Authority Engine Section
+                    </div>
+                    <div class="title text-display-2 effectFade fadeRotateX" style="margin-top: 15px;">
+                        <span class="title1 fw-semibold text-gradient-1">Premium Leisure</span>
+                    </div>
+                    <p class="text effectFade fadeUp" style="margin-top: 20px; font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.35rem; color: #8E8E93;">""Booking engines for hospitality, tours, and experiences.""</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area (Aigocy design cards) -->
+        <div class="box-white" style="background-color: #070708 !important; border-top: 1px solid #1C1C22;">
+            <div class="flat-spacing" style="padding-top: 80px; padding-bottom: 80px;">
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <div class="content-body-block effectFade fadeUp" style="color: #F5F5F7; font-size: 1.05rem; line-height: 1.8;">
+                                <p>
               In high-conversion digital architecture, generic layouts are the enemy of revenue. Following Kasim Shah's design principles, this section implements strict usability controls, consistent graphic tokens, and clear semantic typography scaling.
             </p>
             <p>
               By utilizing multi-million pound user testing paradigms inherited from senior UX engineering at <strong>AO.com</strong> and <strong>Zuto</strong>, we resolve customer friction points before they impact your balance sheet.
             </p>
-          </div>
-          
-          <div class="m3-hero-actions-wrapper" style="justify-content: center; margin-top: var(--space-5);">
-            <md-filled-button href="https://form.kasimshah.com" target="_blank">Qualify Your Campaign</md-filled-button>
-            <md-outlined-button href="index.html" onclick="window.location.href='index.html'">Return Home</md-outlined-button>
-          </div>
+                            </div>
+                            
+                            <!-- Conversion Actions -->
+                            <div class="d-flex gap-20 justify-content-center flex-wrap" style="margin-top: 60px;">
+                                <a href="index.html#contact" class="tf-btn">Qualify Your Campaign</a>
+                                <a href="index.html" class="tf-btn-2">Return Home</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-    </section>
-  </main>
 
-  <!-- FOOTER -->
-  <footer class="footer">
-    <div class="container footer-content">
-      <span class="logo" style="font-size: 1.25rem;">KASIM <span>SHAH</span></span>
-      <nav style="display: flex; gap: var(--space-1); flex-wrap: wrap;">
-        <md-text-button href="faq.html" onclick="window.location.href='faq.html'">FAQ</md-text-button>
-        <md-text-button href="ux-audit.html" onclick="window.location.href='ux-audit.html'">UX Audit</md-text-button>
-        <md-text-button href="cro.html" onclick="window.location.href='cro.html'">CRO</md-text-button>
-        <md-text-button href="contact.html" onclick="window.location.href='contact.html'">Contact</md-text-button>
-        <md-text-button href="rfp.html" onclick="window.location.href='rfp.html'">RFP Form</md-text-button>
-      </nav>
-      <div class="footer-text">
-        &copy; 2026 KasimShah. All rights reserved. Playfair Editorial theme.
-      </div>
+        <!-- footer -->
+        <footer>
+            <div class="footer-image">
+                <img class="effectFade fadeUp" src="assets/images/logo/logo-footer.png" alt="Kasim Shah bottom design line">
+            </div>
+            <div class="container">
+                <div class="footer-content">
+                    <a href="index.html" class="footer-logo">
+                        <img src="assets/images/logo/logo-2.svg" alt="Kasim Shah footer logo">
+                    </a>
+                    <div class="title h6 fw-semibold">Connect with <br> Kasim Shah UX agency</div>
+                    <div class="text">Manchester-based. Supporting local campaigns with global speed metrics.</div>
+                    <div class="tf-social-1 justify-content-center">
+                        <a href="https://linkedin.com/" target="_blank" class="text-body-1 fw-semibold">
+                            Linkedin
+                            <div class="social-item">
+                                <i class="icon icon-linkedin-in"></i>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <ul class="footer-links d-flex gap-24 align-items-center">
+                        <li>
+                            <a href="index.html#home" class="fw-semibold link-underline link1">Home</a>
+                        </li>
+                        <li>
+                            <a href="index.html#about" class="fw-semibold link-underline link1">About</a>
+                        </li>
+                        <li>
+                            <a href="index.html#services" class="fw-semibold link-underline link1">Services</a>
+                        </li>
+                        <li>
+                            <a href="index.html#contact" class="fw-semibold link-underline link1">Contact</a>
+                        </li>
+                    </ul>
+                    <p class="text-secondary coppy-rights text-center">© 2026 Kasim Shah. All Rights Reserved. Strict MD3 & 8px grid compliant.</p>
+                    <a href="#" class="action-go-top d-flex gap-8 align-items-center justify-content-end link1">
+                        <span class="fw-semibold">Back to top</span>
+                        <i class="icon icon-long-arrow-alt-up-solid fs-20"></i>
+                    </a>    
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <!-- Mobile Menu -->
+    <div class="offcanvas-menu">
+        <div class="offcanvas-content">
+            <div class="container h-100">
+                <div class="offcanvas-content_wrapin">
+                    <div class="canvas_head">
+                        <a href="index.html" class="logo-site">
+                            <img src="assets/images/logo/logo-2.svg" alt="Kasim Shah logo" style="max-height:30px;">
+                        </a>
+                        <div class="btn-mobile-menu close-mb-menu text-caption link">
+                            <i class="icon icon-close"></i>
+                            CLOSE
+                        </div>
+                    </div>
+                    <div class="canvas_center">
+                        <ul class="nav-ul-mb" id="mobile-menu">
+                            <li>
+                                <div class="item">
+                                    <a href="index.html#home" class="mb-menu-link text-display-1 close-mb-menu">
+                                        <span class="text">Home</span>
+                                    </a>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="item">
+                                    <a href="index.html#about" class="mb-menu-link text-display-1 close-mb-menu">
+                                        <span class="text">About</span>
+                                    </a>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="item">
+                                    <a href="index.html#services" class="mb-menu-link text-display-1 close-mb-menu">
+                                        <span class="text">Services</span>
+                                    </a>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="item">
+                                    <a href="index.html#works" class="mb-menu-link text-display-1 close-mb-menu">
+                                        <span class="text">Works</span>
+                                    </a>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="item">
+                                    <a href="index.html#pricing" class="mb-menu-link text-display-1 close-mb-menu">
+                                        <span class="text">Retainers</span>
+                                    </a>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="item">
+                                    <a href="index.html#contact" class="mb-menu-link text-display-1 close-mb-menu">
+                                        <span class="text">Contact</span>
+                                    </a>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="canvas_foot">
+                        <div class="left">
+                            <a href="mailto:hello@kasimshah.com" class="text-caption text-neutral-200">hello@kasimshah.com</a>
+                        </div>
+                        <div class="right">
+                            <a href="https://linkedin.com" target="_blank" class="tf-link-icon text-caption text-neutral-200">
+                                <i class="icon icon-arrow-top-right"></i>
+                                LINKEDIN
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </footer>
 
-  <!-- SCRIPTS -->
-  <script src="js/main.js"></script>
+    <!-- Javascript -->
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/bootstrap.min.js"></script>
+    <script src="assets/js/jquery.nice-select.min.js"></script>
+    <script src="assets/js/swiper-bundle.min.js"></script>
+    <script src="assets/js/slick.min.js"></script>
+    <script src="assets/js/countto.js"></script>
+    <script src="assets/js/carousel.js"></script>
+    <script src="assets/js/infinityslide.js"></script>
+    <script src="assets/js/ScrollSmooth.js"></script>
+    <script src="assets/js/gsap.min.js"></script>
+    
+    <script src="assets/js/ScrollTrigger.min.js"></script>
+    <script src="assets/js/ScrollToPlugin.min.js"></script>
+    <script src="assets/js/gsapAnimation.js"></script>
+
+    <script src="assets/js/main.js"></script>
 </body>
 </html>

@@ -1,313 +1,1387 @@
 <!DOCTYPE html>
-<html lang="en">
+
+<!--[if IE 8]><html class="ie" xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!-->
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+<!--<![endif]-->
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kasim Shah | Strategic UX Architect & Conversion Engineering</title>
-  <meta name="description" content="High-conversion digital architecture for ambitious local businesses. Built on AO.com and Zuto pedigree. 3-tier revenue protection.">
-  <meta property="og:title" content="Kasim Shah | Strategic UX Architect">
-  <meta property="og:description" content="High-conversion digital architecture and revenue protection plans.">
-  <meta property="og:type" content="website">
+    <meta charset="utf-8">
+    <title>Kasim Shah | Strategic UX Architect & Conversion Engineering</title>
+    <meta name="author" content="kasimshah.com">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description"
+        content="High-conversion digital architecture for ambitious businesses. Built on Zuto and AO.com pedigree. 3-tier revenue protection.">
+    <meta name="robots" content="noindex, nofollow">
 
-  <!-- Playfair & Inter Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- OpenGraph Meta Tags for Social Sharing -->
+    <meta property="og:title" content="Kasim Shah | Strategic UX Architect">
+    <meta property="og:description" content="High-conversion digital architecture and revenue protection plans.">
+    <meta property="og:type" content="website">
 
-  <link rel="stylesheet" href="css/style.css">
-  <script type="module" src="https://esm.run/@material/web/all.js"></script>
-</head>
-<body>
-
-  <!-- HEADER -->
-  <header class="header">
-    <div class="container nav-container">
-      <div class="logo">
-        KASIM <span>SHAH</span>
-      </div>
-      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
-        ☰
-      </button>
-      <nav class="m3-nav-wrapper">
-        <md-text-button href="index.html" onclick="window.location.href='index.html'">Home</md-text-button>
-        <md-text-button href="about.html" onclick="window.location.href='about.html'">Pedigree</md-text-button>
-        <md-text-button href="ux-audit.html" onclick="window.location.href='ux-audit.html'">UX Audit</md-text-button>
-        <md-text-button href="case-studies.html" onclick="window.location.href='case-studies.html'">Case Studies</md-text-button>
-        <md-text-button href="rfp.html" onclick="window.location.href='rfp.html'">RFP Form</md-text-button>
-      </nav>
-    </div>
-  </header>
-
-  <main>
+    <!-- font -->
+    <link rel="stylesheet" href="assets/fonts/fonts.css">
+    <link rel="stylesheet" href="assets/icon/icomoon/style.css">
+    <!-- css -->
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/swiper-bundle.min.css">
+    <link rel="stylesheet" href="assets/css/animate.css">
     
-    <!-- HERO SECTION (Asymmetrical Split Shell) -->
-    <section class="section hero">
-      <div class="container creative-shell-split fade-in-up">
-        
-        <!-- Left Side: Editorial Authority Hook -->
-        <div class="split-left">
-          <h1 class="font-serif">We Build <strong>Revenue Protection</strong> Engines, Not Generic Templates.</h1>
-          <p style="font-size: var(--font-size-h4); color: var(--color-muted); margin-bottom: var(--space-3); font-family: var(--font-serif); font-style: italic;">
-            "Most small business websites are leaky buckets, bleeding up to 60% of their mobile traffic due to basic engineering friction."
-          </p>
-          <p>
-            I am Kasim Shah, Strategic UX Architect. Over the last decade, I have engineered high-performance digital systems for industry giants like <strong>AO.com</strong> and <strong>Zuto</strong>. Today, I apply those same multi-million pound user-testing frameworks to protect and grow local businesses.
-          </p>
-          <p>
-            We eliminate the corporate fluff and focus entirely on conversion science. Every element is tested to deliver the shortest possible path to revenue.
-          </p>
+    <link rel="stylesheet" href="assets/css/slick.css">
+    <link rel="stylesheet" href="assets/css/slick.theme.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/styles.css">
 
-          <div class="m3-hero-actions-wrapper">
-            <md-filled-button href="https://form.kasimshah.com" target="_blank" id="btn-hero-qualify">Qualify Your Campaign</md-filled-button>
-            <md-outlined-button href="#pricing" id="btn-hero-pricing">View Value Tiers</md-outlined-button>
-          </div>
-        </div>
+    <!-- Favicon and Touch Icons  -->
+    <link rel="shortcut icon" href="assets/images/logo/favicon.svg">
+    <link rel="apple-touch-icon-precomposed" href="assets/images/logo/favicon.svg">
 
-        <!-- Right Side: Vetting / Onboarding Brief Card -->
-        <div class="split-right">
-          <h3 class="font-serif">Is Your Site Leaking Revenue?</h3>
-          <p style="font-size: var(--font-size-sm); color: var(--color-muted); margin-bottom: var(--space-4);">
-            Answer four quick questions to run an automated conversion audit on your digital architecture:
-          </p>
-
-          <div style="display: flex; flex-direction: column; gap: var(--space-3); margin-bottom: var(--space-4);">
-            <div class="m3-checkbox-wrapper" id="check-wrap-1">
-              <md-checkbox id="chk-leak-1"></md-checkbox>
-              <span style="font-size: var(--font-size-sm); color: #FFF;">"I don't know my exact mobile traffic drop-off rate."</span>
-            </div>
-
-            <div class="m3-checkbox-wrapper" id="check-wrap-2">
-              <md-checkbox id="chk-leak-2"></md-checkbox>
-              <span style="font-size: var(--font-size-sm); color: #FFF;">"My website takes longer than 2.5 seconds to load on mobile."</span>
-            </div>
-
-            <div class="m3-checkbox-wrapper" id="check-wrap-3">
-              <md-checkbox id="chk-leak-3"></md-checkbox>
-              <span style="font-size: var(--font-size-sm); color: #FFF;">"We lose potential bookings because our diary isn't real-time."</span>
-            </div>
-
-            <div class="m3-checkbox-wrapper" id="check-wrap-4">
-              <md-checkbox id="chk-leak-4"></md-checkbox>
-              <span style="font-size: var(--font-size-sm); color: #FFF;">"Our current platform has no data disclosures or SSL protection."</span>
-            </div>
-          </div>
-
-          <div class="m3-button-full-wrapper">
-            <md-filled-button id="btn-home-submit-vetting" disabled>Run Conversion Audit</md-filled-button>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- PRICING VALUE STACKS (Bento Grid Shell) -->
-    <section class="section" id="pricing" style="border-top: 1px solid var(--color-dark-border); background: radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.03) 0%, transparent 80%);">
-      <div class="container">
-        
-        <div class="reveal" style="text-align: center; margin-bottom: var(--space-6); max-width: 700px; margin-left: auto; margin-right: auto;">
-          <h2 class="font-serif">The Tiered <strong>Pricing Architecture</strong></h2>
-          <p>
-            No arbitrary billing. Select the package that aligns with your operational scale and growth ambitions.
-          </p>
-        </div>
-
-        <div class="creative-shell-bento reveal">
-          
-          <!-- Silver Tier -->
-          <div class="bento-card bento-span-4">
-            <div>
-              <h3 class="bento-card-title font-serif">Silver Plan</h3>
-              <p style="font-size: var(--font-size-sm); color: var(--color-muted);">The Care Package</p>
-              <div class="price-value">£97<span style="font-size: 14px; color: var(--color-muted);">/mo</span></div>
-              <p style="font-size: var(--font-size-sm);">
-                Digital insurance for local business foundations. Focused entirely on security, speed maintenance, and server updates.
-              </p>
-              <ul class="price-features-list">
-                <li>Secure HTTPS SSL Encryption</li>
-                <li>Uptime Monitoring & Backups</li>
-                <li>Fast Cloudflare Edge Caching</li>
-                <li>Compliance Statement Updates</li>
-              </ul>
-            </div>
-            <div class="m3-button-full-wrapper" style="margin-top: var(--space-3);">
-              <md-outlined-button onclick="selectTier('Silver')">Select Silver Plan</md-outlined-button>
-            </div>
-          </div>
-
-          <!-- Gold Tier (Highlighted) -->
-          <div class="bento-card bento-span-4" style="border-color: var(--color-accent);">
-            <div style="position: absolute; top: var(--space-1); right: var(--space-2); background: var(--color-accent); color: var(--color-primary); font-size: 9px; font-weight: bold; padding: 2px 6px; text-transform: uppercase; letter-spacing: 1px;">
-              Most Popular
-            </div>
-            <div>
-              <h3 class="bento-card-title font-serif">Gold Plan</h3>
-              <p style="font-size: var(--font-size-sm); color: var(--color-muted);">The Growth Package</p>
-              <div class="price-value">£297<span style="font-size: 14px; color: var(--color-muted);">/mo</span></div>
-              <p style="font-size: var(--font-size-sm);">
-                Operational efficiency. Perfect for active local businesses requiring regular content updates and active conversions tweaks.
-              </p>
-              <ul class="price-features-list">
-                <li>Everything in Silver</li>
-                <li>Unlimited Content & Text Edits</li>
-                <li>Active UX & Button A/B Tweaks</li>
-                <li>Monthly Analytical Audit report</li>
-                <li>2-hour turnaround guarantees</li>
-              </ul>
-            </div>
-            <div class="m3-button-full-wrapper" style="margin-top: var(--space-3);">
-              <md-filled-button onclick="selectTier('Gold')">Select Gold Plan</md-filled-button>
-            </div>
-          </div>
-
-          <!-- Platinum Tier -->
-          <div class="bento-card bento-span-4">
-            <div>
-              <h3 class="bento-card-title font-serif">Platinum Plan</h3>
-              <p style="font-size: var(--font-size-sm); color: var(--color-muted);">The Domination Package</p>
-              <div class="price-value">£497<span style="font-size: 14px; color: var(--color-muted);">/mo</span></div>
-              <p style="font-size: var(--font-size-sm);">
-                The complete local market domination suite. Marries local search algorithms with physical and email automation vectors.
-              </p>
-              <ul class="price-features-list">
-                <li>Everything in Gold</li>
-                <li>1,000 Cards/Flyers every 3 months</li>
-                <li>Monthly Local Search (AIO) Audits</li>
-                <li>Automated Email Newsletters</li>
-                <li>Competitor Analysis tracking</li>
-              </ul>
-            </div>
-            <div class="m3-button-full-wrapper" style="margin-top: var(--space-3);">
-              <md-outlined-button onclick="selectTier('Platinum')">Select Platinum Plan</md-outlined-button>
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-    </section>
-
-    <!-- PEDIGREE CREDENTIALS (Editorial Arch Shell) -->
-    <section class="section">
-      <div class="container reveal">
-        <div class="creative-shell-arch">
-          <h2 class="font-serif" style="margin-bottom: var(--space-3);">Enterprise Pedigree, Local Focus.</h2>
-          <p style="max-width: 600px; margin: 0 auto var(--space-4) auto;">
-            Before opening my independent architecture practice, I spent years optimizing interfaces where <strong>0.1% changes in conversion rate translated into millions of pounds</strong> of difference. 
-          </p>
-          <p style="max-width: 600px; margin: 0 auto var(--space-4) auto; font-style: italic; color: var(--color-accent);">
-            Pedigree: Former Senior UX Architect at AO.com and Conversion Engineer at Zuto.
-          </p>
-          <p style="max-width: 600px; margin: 0 auto;">
-            We design conversion machines using standard-validated Material Design 3 engineering systems to ensure speed, accessibility (WCAG), and visual consistency.
-          </p>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- FOOTER -->
-  <footer class="footer">
-    <div class="container footer-content">
-      <span class="logo" style="font-size: 1.25rem;">KASIM <span>SHAH</span></span>
-      <nav style="display: flex; gap: var(--space-1); flex-wrap: wrap;">
-        <md-text-button href="faq.html" onclick="window.location.href='faq.html'">FAQ</md-text-button>
-        <md-text-button href="ux-audit.html" onclick="window.location.href='ux-audit.html'">UX Audit</md-text-button>
-        <md-text-button href="cro.html" onclick="window.location.href='cro.html'">CRO</md-text-button>
-        <md-text-button href="contact.html" onclick="window.location.href='contact.html'">Contact</md-text-button>
-        <md-text-button href="rfp.html" onclick="window.location.href='rfp.html'">RFP Form</md-text-button>
-      </nav>
-      <div class="footer-text">
-        &copy; 2026 KasimShah. All rights reserved. Playfair Editorial theme.
-      </div>
-    </div>
-  </footer>
-
-  <!-- DYNAMIC MODAL CONTAINER INJECTED ON LOAD -->
-  <div id="m3-dialog-root"></div>
-
-  <!-- SCRIPTS -->
-  <script src="js/main.js"></script>
-  <script>
-    // State management for checkboxes and buttons
-    document.addEventListener('DOMContentLoaded', () => {
-      const chks = [
-        document.getElementById('chk-leak-1'),
-        document.getElementById('chk-leak-2'),
-        document.getElementById('chk-leak-3'),
-        document.getElementById('chk-leak-4')
-      ];
-      const btn = document.getElementById('btn-home-submit-vetting');
-
-      function evaluateCheckboxes() {
-        const anyChecked = chks.some(c => c.checked);
-        if (anyChecked) {
-          btn.removeAttribute('disabled');
-        } else {
-          btn.setAttribute('disabled', 'true');
-        }
-      }
-
-      chks.forEach(c => {
-        c.addEventListener('change', evaluateCheckboxes);
-      });
-
-      // Handle checkbox container clicks
-      document.getElementById('check-wrap-1').addEventListener('click', () => { chks[0].click(); });
-      document.getElementById('check-wrap-2').addEventListener('click', () => { chks[1].click(); });
-      document.getElementById('check-wrap-3').addEventListener('click', () => { chks[2].click(); });
-      document.getElementById('check-wrap-4').addEventListener('click', () => { chks[3].click(); });
-
-      // Run auditing process triggers
-      btn.addEventListener('click', () => {
-        showM3Dialog(
-          "Vetting Audit Registered ✓",
-          "Your conversion metrics have been analyzed. Next step: Please fill out our 4-Question Onboarding brief on our live router form.",
-          "Go to Onboarding Form",
-          () => {
-            window.open("https://form.kasimshah.com", "_blank");
+    <!-- JSON-LD LocalBusiness & FAQ Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "LocalBusiness",
+          "@id": "https://kasimshah.com/#organization",
+          "name": "Kasim Shah UX",
+          "url": "https://kasimshah.com",
+          "logo": "https://kasimshah.com/assets/images/logo/logo-2.svg",
+          "description": "Enterprise-grade Conversion UX Architecture and Revenue Protection retainers.",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Manchester",
+            "addressCountry": "UK"
+          },
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer support",
+            "email": "hello@kasimshah.com",
+            "telephone": "+44-161-555-0192"
           }
-        );
-      });
-    });
-
-    // Helper function to build MD3 Dialogue frames dynamically on load
-    function showM3Dialog(headline, text, buttonLabel, callback) {
-      const root = document.getElementById('m3-dialog-root');
-      root.innerHTML = `
-        <md-dialog id="dyn-dialog" style="--md-dialog-container-color: var(--color-dark-surface); border: 1px solid var(--color-dark-border);">
-          <div slot="headline" class="font-serif" style="color: var(--color-accent); font-size: 20px;">${headline}</div>
-          <form slot="content" method="dialog">
-            <p style="font-size: var(--font-size-sm); color: var(--color-secondary); margin: 0; line-height: 1.5;">${text}</p>
-          </form>
-          <div slot="actions" style="display: flex; gap: var(--space-1);">
-            <md-text-button onclick="document.getElementById('dyn-dialog').close()">Cancel</md-text-button>
-            <md-filled-button id="dialog-confirm-action">${buttonLabel}</md-filled-button>
-          </div>
-        </md-dialog>
-      `;
-
-      const dialog = document.getElementById('dyn-dialog');
-      const actionBtn = document.getElementById('dialog-confirm-action');
-
-      actionBtn.addEventListener('click', () => {
-        dialog.close();
-        if (callback) callback();
-      });
-
-      dialog.show();
-    }
-
-    // Select plan action triggers
-    function selectTier(planName) {
-      showM3Dialog(
-        `${planName} Plan Selected`,
-        `You have selected the ${planName} Value Stack. Next, proceed to our onboarding questionnaire to detail your technical constraints.`,
-        "Proceed to Onboarding Form",
-        () => {
-          window.open("https://form.kasimshah.com", "_blank");
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://kasimshah.com/#faq",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Why do you use flat-rate monthly value stacks?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Hourly rates penalize efficiency. Our retainers cover the complete setup of security, monitoring, and cache tuning as a flat stack, aligning our incentives with your uptime and speed."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What is your typical turnaround time for retainer changes?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Gold and Platinum retainer packages feature a 2-hour turnaround guarantee for content updates and minor structural tweaks. Silver retainer requests are handled within 12 hours."
+              }
+            }
+          ]
         }
-      );
+      ]
     }
-  </script>
+    </script>
+</head>
+
+<body class="counter-scroll">
+    <canvas class="cursor-trail" id="trail" style="display: none;"></canvas>
+
+    <!-- Scroll Top -->
+    <button id="goTop">
+        <span class="border-progress"></span>
+        <span class="ic-wrap">
+            <span class="icon icon-long-arrow-alt-up-solid"></span>
+        </span>
+    </button>
+    <!-- /Scroll Top -->
+
+    <!-- #wrapper -->
+    <main id="wrapper">
+
+        <!-- Header -->
+        <header class="tf-header header2">
+            <div class="header-inner">
+                <a href="index.html" class="logo-site">
+                    <img src="assets/images/logo/logo.svg" alt="Kasim Shah Logo">
+                </a>
+                <div class="box-navigation">
+                    <ul class="nav-menu-main">
+                        <li class="menu-item">
+                            <a href="#home" class="item-link link1 active" onclick="document.getElementById('home').scrollIntoView({behavior: 'smooth'})">Home</a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="#about" class="item-link link1" onclick="document.getElementById('about').scrollIntoView({behavior: 'smooth'})">About</a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="#services" class="item-link link1" onclick="document.getElementById('services').scrollIntoView({behavior: 'smooth'})">Services</a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="#works" class="item-link link1" onclick="document.getElementById('works').scrollIntoView({behavior: 'smooth'})">Works</a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="#pricing" class="item-link link1" onclick="document.getElementById('pricing').scrollIntoView({behavior: 'smooth'})">Retainers</a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="#contact" class="item-link link1" onclick="document.getElementById('contact').scrollIntoView({behavior: 'smooth'})">Contact</a>
+                        </li>
+                    </ul>
+                </div>
+                <a href="#contact" class="tf-btn d-lg-flex d-none" onclick="document.getElementById('contact').scrollIntoView({behavior: 'smooth'})">
+                    Start a Project
+                </a>
+                <a href="#" class="tf-btn open-mb-menu mobile-menu d-lg-none d-flex">
+                    <i class="icon icon-grip-lines-solid"></i>
+                </a>
+            </div>
+        </header>
+        <!-- /Header -->
+
+        <!-- Hero Banner -->
+        <div class="section-hero" id="home">
+            <div class="hero-image"></div>
+            <div class="container">
+                <div class="content-wrap text-center">
+                    <div class="sub fw-semibold effectFade fadeUp">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3.53252 12.0966C3.75106 11.5025 4.59108 11.5025 4.81645 12.0966L5.54037 14.0567C5.60866 14.2411 5.75891 14.3913 5.9433 14.4596L7.90335 15.1835C8.49751 15.4021 8.49751 16.2421 7.90335 16.4674L5.9433 17.1914C5.75891 17.2597 5.60866 17.4099 5.54037 17.5943L4.81645 19.5543C4.59791 20.1485 3.75789 20.1485 3.53252 19.5543L2.8086 17.5943C2.74031 17.4099 2.59006 17.2597 2.40566 17.1914L0.44562 16.4674C-0.14854 16.2489 -0.14854 15.4089 0.44562 15.1835L2.40566 14.4596C2.59006 14.3913 2.74031 14.2411 2.8086 14.0567L3.53252 12.0966Z" fill="url(#paint0_linear_580_105)"/>
+                            <path d="M3.53252 12.0966C3.75106 11.5025 4.59108 11.5025 4.81645 12.0966L5.54037 14.0567C5.60866 14.2411 5.75891 14.3913 5.9433 14.4596L7.90335 15.1835C8.49751 15.4021 8.49751 16.2421 7.90335 16.4674L5.9433 17.1914C5.75891 17.2597 5.60866 17.4099 5.54037 17.5943L4.81645 19.5543C4.59791 20.1485 3.75789 20.1485 3.53252 19.5543L2.8086 17.5943C2.74031 17.4099 2.59006 17.2597 2.40566 17.1914L0.44562 16.4674C-0.14854 16.2489 -0.14854 15.4089 0.44562 15.1835L2.40566 14.4596C2.59006 14.3913 2.74031 14.2411 2.8086 14.0567L3.53252 12.0966Z" fill="url(#paint1_linear_580_105)"/>
+                            <path d="M11.4068 0.670991C11.7346 -0.223664 12.9981 -0.223664 13.3259 0.670991L14.7874 4.61157C14.8898 4.89157 15.1152 5.11011 15.3952 5.21938L19.3358 6.68088C20.2304 7.00869 20.2304 8.27214 19.3358 8.59995L15.3952 10.0614C15.1152 10.1639 14.8967 10.3893 14.7874 10.6693L13.3259 14.6098C12.9981 15.5045 11.7346 15.5045 11.4068 14.6098L9.94534 10.6693C9.8429 10.3893 9.61753 10.1707 9.33752 10.0614L5.39694 8.59995C4.50229 8.27214 4.50229 7.00869 5.39694 6.68088L9.33752 5.21938C9.61753 5.11694 9.83607 4.89157 9.94534 4.61157L11.4068 0.670991Z" fill="url(#paint2_linear_580_105)"/>
+                            <path d="M11.4068 0.670991C11.7346 -0.223664 12.9981 -0.223664 13.3259 0.670991L14.7874 4.61157C14.8898 4.89157 15.1152 5.11011 15.3952 5.21938L19.3358 6.68088C20.2304 7.00869 20.2304 8.27214 19.3358 8.59995L15.3952 10.0614C15.1152 10.1639 14.8967 10.3893 14.7874 10.6693L13.3259 14.6098C12.9981 15.5045 11.7346 15.5045 11.4068 14.6098L9.94534 10.6693C9.8429 10.3893 9.61753 10.1707 9.33752 10.0614L5.39694 8.59995C4.50229 8.27214 4.50229 7.00869 5.39694 6.68088L9.33752 5.21938C9.61753 5.11694 9.83607 4.89157 9.94534 4.61157L11.4068 0.670991Z" fill="url(#paint3_linear_580_105)"/>
+                            <defs>
+                            <linearGradient id="paint0_linear_580_105" x1="10.2993" y1="-1.30435" x2="21.6031" y2="11.1057" gradientUnits="userSpaceOnUse">
+                            <stop offset="1" stop-color="#555D64"/>
+                            <stop offset="1" stop-color="#292C2E"/>
+                            </linearGradient>
+                            <linearGradient id="paint1_linear_580_105" x1="10.0034" y1="0" x2="10.0034" y2="20" gradientUnits="userSpaceOnUse">
+                            <stop offset="1" stop-color="#D4AF37"/>
+                            <stop offset="1" stop-color="#F5F5F7"/>
+                            </linearGradient>
+                            <linearGradient id="paint2_linear_580_105" x1="10.2993" y1="-1.30435" x2="21.6031" y2="11.1057" gradientUnits="userSpaceOnUse">
+                            <stop offset="1" stop-color="#555D64"/>
+                            <stop offset="1" stop-color="#292C2E"/>
+                            </linearGradient>
+                            <linearGradient id="paint3_linear_580_105" x1="10.0034" y1="0" x2="10.0034" y2="20" gradientUnits="userSpaceOnUse">
+                            <stop offset="1" stop-color="#D4AF37"/>
+                            <stop offset="1" stop-color="#F5F5F7"/>
+                            </linearGradient>
+                            </defs>
+                        </svg>
+                        Conversion Engineering
+                    </div>
+                    <div class="title text-display-2 effectFade fadeRotateX">
+                        <span class="title1 fw-semibold text-gradient-1">We Build Revenue Protection</span>
+                        <br>
+                        <div class="title2 d-flex gap-20 justify-content-center flex-wrap">
+                          <span class="fw-semibold text-gradient-1">Engines, Not Templates.</span>
+                            <div class="title-icon">
+                                <div class="box"></div>
+                                <div class="title-icon-wrap">
+                                    <img class="img-1 img-transform-3" src="assets/images/item/hero-1.svg" alt="UX Wireframe Icon">
+                                    <img class="img-2 img-transform-3" src="assets/images/item/hero-2.svg" alt="Code Sprint Icon">
+                                    <img class="img-3 img-transform-3" src="assets/images/item/hero-3.svg" alt="Shield Protection Icon">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text effectFade fadeUp">
+                        I am Kasim Shah, Strategic UX Architect. We plug into your digital channels to find and patch <br> mobile drop-offs that bleed up to 60% of your traffic.
+                    </p>
+                    <div class="bot-btns effectFade fadeRotateX">
+                        <a href="#contact" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})" class="tf-btn">
+                            Qualify Your Retainer
+                        </a>
+                        <a href="#pricing" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})" class="tf-btn-2">
+                            View Retainer Tiers
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <a href="#about" class="scroll-more">
+                <span class="fw-semibold link1">Scroll for more</span>
+                <i class="icon icon-long-arrow-alt-down-solid"></i>
+            </a>
+        </div>
+        <!-- /Hero Banner -->
+
+        <!-- section-about-us -->
+        <div class="section-about-us flat-spacing" id="about">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="heading-section">
+                            <div class="heading-sub fw-semibold effectFade fadeUp">About Us</div>
+                            <div class="heading-title text-gradient-2 effectFade fadeRotateX">Enterprise UX Audit Methods, <br> Applied to Local Scale</div>
+                        </div>
+                    </div>
+                    <div class="col-xxl-7 col-lg-6 lg-mb-24">
+                        <div class="col-left">
+                            <p class="text-neutral-300 text-body-1 effectFade fadeUp">
+                                Before founding my independent architecture practice, I spent years optimizing interfaces where 0.1% changes in conversion rate translated into millions of pounds.
+                            </p>
+                            <p class="text-neutral-400 effectFade fadeUp">
+                                As former Senior UX Architect at <strong>AO.com</strong> and Conversion Engineer at <strong>Zuto</strong>, I apply standard-validated Material Design 3 engineering systems to ensure speed, accessibility, and visual consistency for growing local operations. We eliminate creative guesswork in favor of conversion science.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-xxl-5 col-lg-6">
+                        <div class="col-right effectFade fadeUp">
+                            <div class="about-item mb-20 d-flex gap-20 align-items-center">
+                                <i class="icon icon-clipboard-check-solid text-brand fs-32"></i>
+                                <div>
+                                    <h5 class="fw-semibold mb-1 text-white">Loss Aversion Analysis</h5>
+                                    <p class="text-neutral-400 mb-0">We outline exactly what campaign delays, reshoots, or overhead costs you bleed on static pages.</p>
+                                </div>
+                            </div>
+                            <div class="about-item mb-20 d-flex gap-20 align-items-center">
+                                <i class="icon icon-bullseye-solid text-brand fs-32"></i>
+                                <div>
+                                    <h5 class="fw-semibold mb-1 text-white">Yes-Ladder State Flow</h5>
+                                    <p class="text-neutral-400 mb-0">Small onboarding commitments occur progressively to qualify and route leads before booking calendars.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /section-about-us -->
+
+        <div class="box-white">
+            <!-- section-services -->
+            <div id="services" class="section-services flat-spacing">
+                <div class="container">
+                    <div class="row justify-content-between">
+                        <div class="col-xxl-4 col-lg-6">
+                            <div class="d-flex flex-column justify-content-between h-100">
+                                <div class="col-left">
+                                    <div class="heading-section mb-48">
+                                        <div class="heading-sub fw-semibold effectFade fadeUp">Services</div>
+                                        <div class="heading-title text-gradient-3 effectFade fadeRotateX">Three Tiers of <br> Revenue Protection</div>
+                                    </div>
+                                    <p class="effectFade fadeUp">We turn bloated websites into high-performance conversion systems—combining strategy, speed tuning, and compliant interfaces.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xxl-6 col-lg-6">
+                            <div class="accordion-faq_list" id="accordion-services">
+                                <div class="accordion-faq_item effectFade fadeUp" role="presentation">
+                                    <div class="accordion-action services-image-btn active-img" data-img="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1200&auto=format&fit=crop" data-bs-target="#faq-1" role="button"
+                                        data-bs-toggle="collapse" aria-controls="faq-1" aria-expanded="true">
+                                        <div class="accordion-title">
+                                            Funnel Leak Audit
+                                            <div class="text-body-1 num">(01)</div>
+                                        </div>
+                                    </div>
+                                    <div id="faq-1" class="collapse show" data-bs-parent="#accordion-services">
+                                        <div class="accordion-content">
+                                            <div class="text-body-3 text-neutral-300 text">Trace mobile user journeys using advanced metric frameworks to isolate friction.</div>
+                                            <div class="list-tags">
+                                                <a href="#" class="tags-item fw-semibold">Drop-off point mapping</a>
+                                                <a href="#" class="tags-item fw-semibold">Lighthouse speed logging</a>
+                                                <a href="#" class="tags-item fw-semibold">Friction cost reports</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-faq_item effectFade fadeUp" role="presentation">
+                                    <div class="accordion-action services-image-btn collapsed" data-img="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1200&auto=format&fit=crop" data-bs-target="#faq-2" role="button"
+                                        data-bs-toggle="collapse" aria-controls="faq-2" aria-expanded="false">
+                                        <div class="accordion-title">
+                                            Conversion UX Design
+                                            <div class="text-body-1 num">(02)</div>
+                                        </div>
+                                    </div>
+                                    <div id="faq-2" class="collapse" data-bs-parent="#accordion-services">
+                                        <div class="accordion-content">
+                                            <div class="text-body-3 text-neutral-300 text">Purified, custom conversion layouts structured strictly on the 8px grid.</div>
+                                            <div class="list-tags">
+                                                <a href="#" class="tags-item fw-semibold">8px grid specifications</a>
+                                                <a href="#" class="tags-item fw-semibold">MD3 custom buttons</a>
+                                                <a href="#" class="tags-item fw-semibold">Shortest-path forms</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-faq_item effectFade fadeUp" role="presentation">
+                                    <div class="accordion-action services-image-btn collapsed" data-img="https://images.unsplash.com/photo-1542744094-3a31f103e35f?q=80&w=1200&auto=format&fit=crop" data-bs-target="#faq-3" role="button"
+                                        data-bs-toggle="collapse" aria-controls="faq-3" aria-expanded="false">
+                                        <div class="accordion-title">
+                                            Speed Optimization
+                                            <div class="text-body-1 num">(03)</div>
+                                        </div>
+                                    </div>
+                                    <div id="faq-3" class="collapse" data-bs-parent="#accordion-services">
+                                        <div class="accordion-content">
+                                            <div class="text-body-3 text-neutral-300 text">Compress assets, defer redundant JS packages, and optimize edge cache delivery.</div>
+                                            <div class="list-tags">
+                                                <a href="#" class="tags-item fw-semibold">Sub-2.5s mobile targets</a>
+                                                <a href="#" class="tags-item fw-semibold">CDN edge configuration</a>
+                                                <a href="#" class="tags-item fw-semibold">Script package purging</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="services-image effectFade fadeUp">
+                            <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1200&auto=format&fit=crop" alt="UX Audit visual">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /section-services -->
+
+            <!-- section-featured-works -->
+            <div id="works" class="section-featured-works flat-spacing pt-0">
+                <div class="container">
+                    <div class="heading-section mb-0">
+                        <div class="heading-sub fw-semibold mx-auto effectFade fadeUp">Featured Works</div>
+                    </div>
+                    <div class="featured-works-list position-relative">
+                        <div class="">
+                            <div class="featured-works-item effectFade fadeUp no-div">
+                                <div class="image main-mouse-hover">
+                                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1200&auto=format&fit=crop" alt="Cantos SaaS project">
+                                    <a href="#contact" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})" class="tf-mouse view-project h6">
+                                        Qualify Campaign
+                                        <i class="icon icon-arrow-top-right"></i>
+                                    </a>
+                                </div>
+                                <div class="content">
+                                    <div class="pagi-dot">
+                                        <span class="active"></span>
+                                        <span></span>
+                                        <span></span>
+                                        <span></span>
+                                    </div>
+                                    <div class="bot">
+                                        <h4 class="heading fw-semibold">Cantos SaaS <br> Booking Flow</h4>
+                                        <div class="grid-text">
+                                            <div class="item">
+                                                <div class="title text-secondary">DESCRIPTION</div>
+                                                <div class="text-body-3 fw-semibold">Re-engineered client onboarding path; reduced scheduling drop-off rate by 38%.</div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="title text-secondary">DELIVERABLES</div>
+                                                <div class="fw-semibold text-body-3">UX audit, form restructuring, calendar integration</div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="title text-secondary">METRICS</div>
+                                                <div class="fw-semibold text-body-3">-38% Friction bounce</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="">
+                            <div class="featured-works-item ">
+                                <div class="image main-mouse-hover">
+                                    <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1200&auto=format&fit=crop" alt="VectorPay project">
+                                    <a href="#contact" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})" class="tf-mouse view-project h6">
+                                        Qualify Campaign
+                                        <i class="icon icon-arrow-top-right"></i>
+                                    </a>
+                                </div>
+                                <div class="content">
+                                    <div class="pagi-dot">
+                                        <span></span>
+                                        <span class="active"></span>
+                                        <span></span>
+                                        <span></span>
+                                    </div>
+                                    <div class="bot">
+                                        <h4 class="heading fw-semibold">VectorPay <br> Checkout Tuning</h4>
+                                        <div class="grid-text">
+                                            <div class="item">
+                                                <div class="title text-secondary">DESCRIPTION</div>
+                                                <div class="text-body-3 fw-semibold">Speed tuning and edge delivery setup; compressed page loads to sub-2 seconds.</div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="title text-secondary">DELIVERABLES</div>
+                                                <div class="fw-semibold text-body-3">Asset purging, Cloudflare config, mobile optimization</div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="title text-secondary">METRICS</div>
+                                                <div class="fw-semibold text-body-3">+28% Mobile lead volume</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /section-featured-works -->
+
+            <!-- section-process -->
+            <div class="section-process flat-spacing pt-0">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-5">
+                            <div class="process-heading h-100">
+                                <div class="heading-section mb-80">
+                                    <div class="heading-sub fw-semibold effectFade fadeUp">Process</div>
+                                    <div class="heading-title text-gradient-3 effectFade fadeRotateX">From Audit <br> to Production</div>
+                                </div>
+                                <div class="group-btn-slider">
+                                    <div class="nav-prev-swiper">
+                                        <i class="icon icon-angle-left-solid"></i>
+                                    </div>
+                                    <div class="nav-next-swiper">
+                                        <i class="icon icon-angle-right-solid"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-7">
+                            <div class="process-slide">
+                                <div dir="ltr" class="swiper tf-swiper swiper-box-shadow" data-preview="1.78" data-tablet="2" data-mobile-sm="1" data-mobile="1"
+                                    data-loop="false" data-center="false" data-space-lg="24" data-space-md="24" data-space="30" >
+                                    <div class="swiper-wrapper">
+                                        <div class="swiper-slide">
+                                            <div class="process-card">
+                                                <i class="icon icon-search-solid"></i>
+                                                <div class="content">
+                                                    <h4 class="title fw-semibold">Discover & Audit</h4>
+                                                    <p class="text text-secondary">Trace client mobile sessions and establish current drop-off baselines.</p>
+                                                </div>
+                                                <div class="bot">
+                                                    <div class="time fw-semibold">3-5 DAYS</div>
+                                                    <div class="number">
+                                                        <span class="text-neutral-400">01</span>
+                                                        <span class="text-neutral-200">/03</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="swiper-slide">
+                                            <div class="process-card">
+                                                <i class="icon icon-bullseye-solid"></i>
+                                                <div class="content">
+                                                    <h4 class="title fw-semibold">Prototype & Test</h4>
+                                                    <p class="text text-secondary">Layout custom 8px wireframes and build responsive interactive prototypes.</p>
+                                                </div>
+                                                <div class="bot">
+                                                    <div class="time fw-semibold">5-10 DAYS</div>
+                                                    <div class="number">
+                                                        <span class="text-neutral-400">02</span>
+                                                        <span class="text-neutral-200">/03</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="swiper-slide">
+                                            <div class="process-card">
+                                                <i class="icon icon-rocket-solid"></i>
+                                                <div class="content">
+                                                    <h4 class="title fw-semibold">Deploy & Tune</h4>
+                                                    <p class="text text-secondary">Launch to CDN edge networks and configure active speed audits.</p>
+                                                </div>
+                                                <div class="bot">
+                                                    <div class="time fw-semibold">ONGOING</div>
+                                                    <div class="number">
+                                                        <span class="text-neutral-400">03</span>
+                                                        <span class="text-neutral-200">/03</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /section-process -->
+
+            <!-- section-benefits -->
+            <div class="section-benefits flat-spacing pt-0">
+                <div class="container">
+                    <div class="heading-section center mb-70">
+                        <div class="heading-sub fw-semibold effectFade fadeUp">Benefits</div>
+                        <div class="heading-title text-gradient-3 effectFade fadeRotateX">Conversion Standards</div>
+                    </div>
+                    <div class="row mb-24">
+                        <div class="col-lg-7">
+                            <div class="benefits-box benefits-progress">
+                                <div class="benefits-progress-inner">
+                                    <div class="benefits-progress-item">
+                                        <div class="progress-line" data-progress="98"></div>
+                                        <div class="progress-text fw-semibold">
+                                            <i class="icon icon-bullseye-solid"></i>
+                                            UX Accuracy
+                                        </div>
+                                    </div>
+                                    <div class="benefits-progress-item">
+                                        <div class="progress-line" data-progress="100"></div>
+                                        <div class="progress-text fw-semibold">
+                                            <i class="icon icon-tachometer-alt-solid"></i>
+                                            Mobile Latency
+                                        </div>
+                                    </div>
+                                    <div class="benefits-progress-item">
+                                        <div class="progress-line" data-progress="95"></div>
+                                        <div class="progress-text fw-semibold">
+                                            <i class="icon icon-shield-alt-solid"></i>
+                                            Compliance Safety
+                                        </div>
+                                    </div>
+                                    <div class="benefits-progress-item">
+                                        <div class="progress-line" data-progress="90"></div>
+                                        <div class="progress-text fw-semibold">
+                                            <i class="icon icon-coins-solid"></i>
+                                            Cost Offset
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="content">
+                                    <h6 class="fw-semibold title">Value over Output</h6>
+                                    <p class="text text-secondary">Every template block and input selector is mapped directly to a business conversion goal, bypassing hourly resource overheads.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-5">
+                            <div class="benefits-box benefits-design pt-0 flex-column d-flex justify-content-between">
+                                <div class="benefits-design-inner">
+                                    <img class="item-img-1" src="assets/images/item/benefits-2.svg" alt="8px structural block">
+                                    <img class="item-img-2 rightleft" src="assets/images/item/benefits-3.png" alt="UX prototype details">
+                                    <img class="item-img-3 updown" src="assets/images/item/benefits-4.png" alt="Speed stats visualization">
+                                </div>
+                                <div class="content">
+                                    <h6 class="fw-semibold title">Design-Led Conversion Flows</h6>
+                                    <p class="text text-secondary">We construct clean margins, touch target sizes $\ge 48\text{px}$, and visual grids to ensure immediate mobile adoption.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /section-benefits -->
+
+            <!-- section-features -->
+            <div class="section-features flat-spacing pt-0">
+                <div class="container">
+                    <div class="heading-section center mb-64">
+                        <div class="heading-sub fw-semibold effectFade fadeUp">Features</div>
+                        <div class="heading-title text-gradient-3 effectFade fadeRotateX">High-Performance Core Spec</div>
+                    </div>
+                </div>
+                <div class="position-relative">
+                    <div class="container z-5">
+                        <div class="features-wrap justify-content-between">
+                            <div class="features-col col-left lg-mb-24">
+                                <div class="features-item effectFade fadeUp">
+                                    <i class="icon icon-robot-solid"></i>
+                                    <h6 class="title fw-semibold">Sub-2.5s Mobile Loads</h6>
+                                    <p class="text-secondary">
+                                        We compress style systems and purge third-party packages to guarantee speed on mobile CDNs.
+                                    </p>
+                                </div>
+                                <div class="features-item effectFade fadeUp">
+                                    <i class="icon icon-clipboard-check-solid"></i>
+                                    <h6 class="title fw-semibold">Diary Sync Integrations</h6>
+                                    <p class="text-secondary">
+                                        Direct real-time API integrations with CRM and calendar apps to lock bookings instantly.
+                                    </p>
+                                </div>
+                                <div class="features-item effectFade fadeUp">
+                                    <i class="icon icon-book-solid"></i>
+                                    <h6 class="title fw-semibold">WCAG 2.1 Accessibility</h6>
+                                    <p class="text-secondary">
+                                        Strict semantic markup structures, screen-reader compliant input groups, and high text contrast.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="features-center flex-shrink">
+                                <img src="assets/images/logo/logo-1.svg" alt="Kasim Shah Icon Emblem">
+                            </div>
+                            <div class="features-col col-right">
+                                <div class="features-item effectFade fadeUp">
+                                    <i class="icon icon-shield-alt-solid"></i>
+                                    <h6 class="title fw-semibold">SSL & Security Layers</h6>
+                                    <p class="text-secondary">
+                                        Enforce complete HTTPS data protocols and cookie compliance declarations to protect user details.
+                                    </p>
+                                </div>
+                                <div class="features-item effectFade fadeUp">
+                                    <i class="icon icon-coins-solid"></i>
+                                    <h6 class="title fw-semibold">No-Template Policy</h6>
+                                    <p class="text-secondary">
+                                        Every screen layout is mapped to a specific bottleneck target. We do not use generic template defaults.
+                                    </p>
+                                </div>
+                                <div class="features-item effectFade fadeUp">
+                                    <i class="icon icon-headset-solid"></i>
+                                    <h6 class="title fw-semibold">Hourly Guardrails</h6>
+                                    <p class="text-secondary">
+                                        All tasks and optimizations are stacked directly into flat monthly retainer tiers. Zero billing surprise.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /section-features -->
+        </div>
+        
+        <!-- section-tools -->
+        <div class="section-tools flat-spacing">
+            <img class="img-1 img-grow-1" src="assets/images/item/item-4.svg" alt="Cloudflare logo">
+            <img class="img-2 img-grow-2" src="assets/images/item/item-5.svg" alt="Vercel logo">
+            <img class="img-3 img-grow-3" src="assets/images/item/item-6.svg" alt="HTML5 standard logo">
+            <img class="img-4 img-grow-4" src="assets/images/item/item-7.svg" alt="CSS3 standard logo">
+            <img class="img-5 img-grow-5" src="assets/images/item/item-8.svg" alt="JS standard logo">
+            <img class="img-6 img-grow-6" src="assets/images/item/item-9.svg" alt="Lighthouse speed logo">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-xl-5 col-md-8 text-center">
+                        <div class="heading-section center mb-48">
+                            <div class="heading-sub fw-semibold effectFade fadeUp">Tools</div>
+                            <div class="heading-title text-gradient-3 effectFade fadeRotateX">Built on Standard-Validated Platforms</div>
+                        </div>
+                        <div class="text effectFade fadeUp">
+                            We build, deploy, and evaluate using verified high-speed architectures—CDNs, Web Vitals metrics, and strict WCAG protocols—to protect your conversion pipeline.
+                        </div>
+                        <a href="#contact" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})" class="tf-btn effectFade fadeRotateX">
+                            Get Started
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /section-tools -->
+
+        <div class="box-black">
+            <div class="light-box"></div>
+            <img class="light-top" src="assets/images/item/light-top.png" alt="Glow top light">
+            <img class="light-bot" src="assets/images/item/light-bot.png" alt="Glow bottom light">
+            
+            <!-- section-team -->
+            <div class="section-team flat-spacing">
+                <div class="container">
+                    <div class="heading-section center mb-64">
+                        <div class="heading-sub fw-semibold style-1 effectFade fadeUp">Team Members</div>
+                        <div class="heading-title text-white effectFade fadeRotateX">The Squad Engineering <br> Your Conversion Systems</div>
+                    </div>
+                    <div class="row justify-content-center">
+                        <div class="col-lg-4 col-md-8 lg-mb-24">
+                            <div class="team-item h-100 effectFade fadeUp">
+                                <div class="image">
+                                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400&auto=format&fit=crop" alt="Kasim Shah Portrait">
+                                </div>
+                                <a href="#" class="name h6 fw-semibold">Kasim Shah</a>
+                                <div class="sub text-body-1">Lead UX Architect</div>
+                                <div class="tf-social justify-content-center">
+                                    <a href="https://linkedin.com" target="_blank" class="social-item" aria-label="LinkedIn profile">
+                                        <i class="icon icon-linkedin-in"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-8 lg-mb-24" data-delay="0.1">
+                            <div class="team-item h-100 effectFade fadeUp">
+                                <div class="image">
+                                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400&auto=format&fit=crop" alt="MLOps Engineer Portrait">
+                                </div>
+                                <a href="#" class="name h6 fw-semibold">Erin Park</a>
+                                <div class="sub text-body-1">Performance Engineer</div>
+                                <div class="tf-social justify-content-center">
+                                    <a href="https://linkedin.com" target="_blank" class="social-item" aria-label="LinkedIn profile">
+                                        <i class="icon icon-linkedin-in"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /section-team -->
+
+            <!-- section-statistic -->
+            <div class="section-statistic">
+                <div class="line"></div>
+                <div class="container">
+                    <div class="row justify-content-between">
+                        <div class="col-md-6">
+                            <div class="heading-section mb-48">
+                                <div class="heading-sub fw-semibold style-1 effectFade fadeUp">Statistic</div>
+                                <div class="heading-title text-white effectFade fadeRotateX">Shaped by Enterprise <br> User Testing <br> Frameworks</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="statistic-slider">
+                                <div class="text text-body-1 text-neutral-400 effectFade fadeUp">
+                                    We shipped our booking path in 7 weeks and cut scheduling bounces by 38%. Our diagnostics make every bottleneck obvious.
+                                </div>
+                                <div class="swiper swiper-progressbar">
+                                    <div class="group-slider effectFade fadeUp">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" id="progressBar"></div>
+                                        </div>
+                                        <div class="group-btn-slider">
+                                            <div class="btn-slider progressbar-prev" aria-label="Previous stat">
+                                                <i class="icon icon-angle-left-solid"></i>
+                                            </div>
+                                            <div class="btn-slider progressbar-next" aria-label="Next stat">
+                                                <i class="icon icon-angle-right-solid"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="swiper-wrapper effectFade fadeUp">
+                                        <div class="swiper-slide">
+                                            <div class="title fw-semibold text-body-1">BOUNCE REDUCTION</div>
+                                            <div class="statistic-number">
+                                                <span class="number text-white fw-semibold">38</span>
+                                                <span class="prefix text-brand">%</span>
+                                            </div>
+                                        </div>
+                                        <div class="swiper-slide">
+                                            <div class="title fw-semibold text-body-1">MOBILE LOAD SPEED</div>
+                                            <div class="statistic-number">
+                                                <span class="number text-white fw-semibold">2.5</span>
+                                                <span class="prefix text-brand">s</span>
+                                            </div>
+                                        </div>
+                                        <div class="swiper-slide">
+                                            <div class="title fw-semibold text-body-1">CODE PORTABILITY</div>
+                                            <div class="statistic-number">
+                                                <span class="number text-white fw-semibold">100</span>
+                                                <span class="prefix text-brand">%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /section-statistic -->
+
+            <!-- section-awards -->
+            <div class="section-awards flat-spacing">
+                <div class="container">
+                    <div class="heading-section center mb-48">
+                        <div class="heading-sub fw-semibold style-1 mb-0 effectFade fadeUp">Awards</div>
+                    </div>
+                    <div class="d-grid gap-16">
+                        <div class="awards-item effectFade fadeUp">
+                            <div class="image">
+                                <img src="assets/images/partner/partner-7.svg" alt="UX Excellence emblem">
+                            </div>
+                            <div class="title text-body-1 text-white">Innovation in AI</div>
+                            <div class="text text-body-1 text-white">Underwriting Risk Copilot (Fintech)</div>
+                            <div class="year text-body-1 text-neutral-400">/ 2025</div>
+                        </div>
+                        <div class="awards-item effectFade fadeUp" data-delay="0.1">
+                            <div class="image">
+                                <img src="assets/images/partner/partner-8.svg" alt="Product Design emblem">
+                            </div>
+                            <div class="title text-body-1 text-white">Best AI Product Design</div>
+                            <div class="text text-body-1 text-white">Support Copilot (SaaS)</div>
+                            <div class="year text-body-1 text-neutral-400">/ 2025</div>
+                        </div>
+                        <div class="awards-item effectFade fadeUp" data-delay="0.2">
+                            <div class="image">
+                                <img src="assets/images/partner/partner-9.svg" alt="Clinical Summarizer emblem">
+                            </div>
+                            <div class="title text-body-1 text-white">Data & AI Excellence</div>
+                            <div class="text text-body-1 text-white">Clinical Note Summarizer (Healthcare)</div>
+                            <div class="year text-body-1 text-neutral-400">/ 2025</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /section-awards -->
+
+            <!-- section-testimonials -->
+            <div class="section-testimonials flat-spacing pt-0">
+                <div class="container">
+                    <div class="row justify-content-between">
+                        <div class="col-lg-5">
+                            <div class="col-left">
+                                <div class="heading-section mb-48">
+                                    <div class="heading-sub fw-semibold style-1 effectFade fadeUp">Testimonials</div>
+                                    <div class="heading-title text-white effectFade fadeRotateX">What Our <br> Clients Say</div>
+                                </div>
+                                <div class="swiper-testimonial_wrap effectFade fadeUp">
+                                    <div dir="ltr" class="swiper tf-swiper swiper-testimonial">
+                                        <div class="swiper-wrapper">
+                                            <div class="swiper-slide">
+                                                <div>
+                                                    <div class="top-icon d-flex gap-4">
+                                                        <i class="icon icon-star-solid"></i>
+                                                        <i class="icon icon-star-solid"></i>
+                                                        <i class="icon icon-star-solid"></i>
+                                                        <i class="icon icon-star-solid"></i>
+                                                        <i class="icon icon-star-solid"></i>
+                                                    </div>
+                                                    <div class="text-body-1 text-white desc">
+                                                        "Kasim re-engineered our booking flow and cut scheduling bounce rates by 38%. The removal of booking diary friction has completely streamlined our onboarding pipeline."
+                                                    </div>
+                                                    <div class="cite">
+                                                        <img class="line-left" src="assets/images/item/line-1.png" alt="Quote visual line">
+                                                        <div class="name text-body-3 text-neutral-400 fw-semibold">Elena Ruiz</div>
+                                                        <div class="line"></div>
+                                                        <div class="sub text-body-3 text-neutral-400">Cantos SaaS’s VP Product</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="swiper-slide">
+                                                <div>
+                                                    <div class="top-icon d-flex gap-4">
+                                                        <i class="icon icon-star-solid"></i>
+                                                        <i class="icon icon-star-solid"></i>
+                                                        <i class="icon icon-star-solid"></i>
+                                                        <i class="icon icon-star-solid"></i>
+                                                        <i class="icon icon-star-solid"></i>
+                                                    </div>
+                                                    <div class="text-body-1 text-white desc">
+                                                        "Mobile speed is now sub-2 seconds. Since the rebuild, we've seen a 28% increase in organic leads. No design templates, just pure conversion math."
+                                                    </div>
+                                                    <div class="cite">
+                                                        <img class="line-left" src="assets/images/item/line-1.png" alt="Quote visual line">
+                                                        <div class="name text-body-3 text-neutral-400 fw-semibold">Marcus Tan</div>
+                                                        <div class="line"></div>
+                                                        <div class="sub text-body-3 text-neutral-400">VectorPay’s CTO</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="swiper-slide">
+                                                <div>
+                                                    <div class="top-icon d-flex gap-4">
+                                                        <i class="icon icon-star-solid"></i>
+                                                        <i class="icon icon-star-solid"></i>
+                                                        <i class="icon icon-star-solid"></i>
+                                                        <i class="icon icon-star-solid"></i>
+                                                        <i class="icon icon-star-solid"></i>
+                                                    </div>
+                                                    <div class="text-body-1 text-white desc">
+                                                        "Our conversion metrics are transparent now. Securing a slot takes less than 3 minutes, and clients are qualified automatically before booking our VIP calendars."
+                                                    </div>
+                                                    <div class="cite">
+                                                        <img class="line-left" src="assets/images/item/line-1.png" alt="Quote visual line">
+                                                        <div class="name text-body-3 text-neutral-400 fw-semibold">David Kim</div>
+                                                        <div class="line"></div>
+                                                        <div class="sub text-body-3 text-neutral-400">Northway's Ecommerce Director</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="group-slider">
+                                        <div class="group-btn-slider">
+                                            <div class="btn-slider nav-prev-swiper testimonials-prev" aria-label="Previous quote">
+                                                <i class="icon icon-angle-left-solid"></i>
+                                            </div>
+                                            <div class="btn-slider nav-next-swiper testimonials-next" aria-label="Next quote">
+                                                <i class="icon icon-angle-right-solid"></i>
+                                            </div>
+                                        </div>
+                                        <div class="testimonials-pagination"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="col-right effectFade fadeUp">
+                                <img src="assets/images/section/testimonial-image.jpg" alt="Client Testimonial Visual backdrop">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /section-testimonials -->
+        </div>
+
+        <!-- section-pricing -->
+        <div id="pricing" class="section-pricing flat-spacing">
+            <div class="container">
+                <div class="heading-section mb-80">
+                    <div class="heading-sub fw-semibold effectFade fadeUp">Pricing Plans</div>
+                    <div class="heading-title text-gradient-3 gap-8 effectFade fadeRotateX">
+                        Select the plan that aligns <br>
+                        <div class="h-8 d-none d-lg-block"></div>
+                        with your operational scale <br>
+                        <div class="h-8 d-none d-lg-block"></div>
+                        <input type="checkbox" id="pricingSwitch" class="tf-switch-check" checked>&nbsp;annually.
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-4 lg-mb-24">
+                        <div class="pricing-item h-100 effectFade fadeRotateX">
+                            <div class="top d-flex gap-12 align-items-center">
+                                <div class="d-flex gap-8 align-items-center">
+                                    <i class="icon icon-user-friends-solid fs-24"></i>
+                                    <div class="fw-semibold text">Silver Plan</div>
+                                </div>
+                                <div class="line"></div>
+                                <div class="fw-semibold text-secondary">The Care Package</div>
+                            </div>
+                            <div class="heading">
+                                <div class="d-flex gap-14 align-items-end">
+                                    <div class="price-number fw-bold" data-month="97" data-year="970">£97</div>
+                                    <h6 class="price-per">/ month</h6>
+                                </div>
+                                <a href="#contact" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})" class="tf-btn">
+                                    Get Started
+                                </a>
+                            </div>
+                            <div class="line"></div>
+                            <div class="content">
+                                <div>
+                                    <div class="title fw-semibold mb-4">What’s included</div>
+                                    <div class="text fw-semibold">
+                                        Digital insurance for local business foundations. Focused on security, speed maintenance, and updates.
+                                    </div>
+                                </div>
+                                <ul class="list-text type-check">
+                                    <li>
+                                        <i class="icon icon-check-solid"></i>
+                                        Secure HTTPS SSL Encryption
+                                    </li>
+                                    <li>
+                                        <i class="icon icon-check-solid"></i>
+                                        Uptime Monitoring & Backups
+                                    </li>
+                                    <li>
+                                        <i class="icon icon-check-solid"></i>
+                                        Cloudflare Edge Cache setup
+                                    </li>
+                                    <li>
+                                        <i class="icon icon-check-solid"></i>
+                                        Monthly compliance statement updates
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 lg-mb-24">
+                        <div class="pricing-item h-100 effectFade fadeRotateX" data-delay="0.1">
+                            <div class="top d-flex gap-12 align-items-center">
+                                <div class="d-flex gap-8 align-items-center">
+                                    <i class="icon icon-user-friends-solid fs-24"></i>
+                                    <div class="fw-semibold text">Gold Plan</div>
+                                </div>
+                                <div class="line"></div>
+                                <div class="fw-semibold text-secondary">The Growth Package</div>
+                            </div>
+                            <div class="heading">
+                                <div class="d-flex gap-14 align-items-end">
+                                    <div class="price-number fw-bold" data-month="297" data-year="2970">£297</div>
+                                    <h6 class="price-per">/ month</h6>
+                                </div>
+                                <a href="#contact" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})" class="tf-btn">
+                                    Get Started
+                                </a>
+                            </div>
+                            <div class="line"></div>
+                            <div class="content">
+                                <div>
+                                    <div class="title fw-semibold mb-4">What’s included</div>
+                                    <div class="text fw-semibold">
+                                        Operational efficiency. Perfect for active local businesses requiring regular content updates.
+                                    </div>
+                                </div>
+                                <ul class="list-text type-check">
+                                    <li>
+                                        <i class="icon icon-check-solid"></i>
+                                        Everything in Silver Plan
+                                    </li>
+                                    <li>
+                                        <i class="icon icon-check-solid"></i>
+                                        Unlimited Content & Text Edits
+                                    </li>
+                                    <li>
+                                        <i class="icon icon-check-solid"></i>
+                                        Active UX & Button A/B Tweaks
+                                    </li>
+                                    <li>
+                                        <i class="icon icon-check-solid"></i>
+                                        Monthly Analytical Audit report
+                                    </li>
+                                    <li>
+                                        <i class="icon icon-check-solid"></i>
+                                        2-hour turnaround guarantees
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="pricing-item h-100 effectFade fadeRotateX" data-delay="0.2">
+                            <div class="top d-flex gap-12 align-items-center">
+                                <div class="d-flex gap-8 align-items-center">
+                                    <i class="icon icon-user-friends-solid fs-24"></i>
+                                    <div class="fw-semibold text">Platinum Plan</div>
+                                </div>
+                                <div class="line"></div>
+                                <div class="fw-semibold text-secondary">Domination Package</div>
+                            </div>
+                            <div class="heading">
+                                <div class="d-flex gap-14 align-items-end">
+                                    <div class="price-number fw-bold" data-month="497" data-year="4970">£497</div>
+                                    <h6 class="price-per">/ month</h6>
+                                </div>
+                                <a href="#contact" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})" class="tf-btn">
+                                    Get Started
+                                </a>
+                            </div>
+                            <div class="line"></div>
+                            <div class="content">
+                                <div>
+                                    <div class="title fw-semibold mb-4">What’s included</div>
+                                    <div class="text fw-semibold">
+                                        The complete local market domination suite. Marries local search with physical automation vectors.
+                                    </div>
+                                </div>
+                                <ul class="list-text type-check">
+                                    <li>
+                                        <i class="icon icon-check-solid"></i>
+                                        Everything in Gold Plan
+                                    </li>
+                                    <li>
+                                        <i class="icon icon-check-solid"></i>
+                                        1,000 Cards/Flyers every 3 months
+                                    </li>
+                                    <li>
+                                        <i class="icon icon-check-solid"></i>
+                                        Monthly Local Search (AIO) Audits
+                                    </li>
+                                    <li>
+                                        <i class="icon icon-check-solid"></i>
+                                        Automated Email Newsletters
+                                    </li>
+                                    <li>
+                                        <i class="icon icon-check-solid"></i>
+                                        Competitor Analysis tracking
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /section-pricing -->
+
+        <!-- section-faqs -->
+        <div id="faq" class="section-faqs flat-spacing pt-0">
+            <div class="container">
+                <div class="heading-section center mb-64">
+                    <div class="heading-sub fw-semibold effectFade fadeUp">FAQs</div>
+                    <div class="heading-title text-gradient-3 effectFade fadeRotateX">
+                        Frequently Asked <br>Questions
+                    </div>
+                </div>
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="accordion-asked" id="accordion-asked">
+                            <div class="accordion-asked-item effectFade fadeRotateX">
+                                <div class="accordion-asked-title" id="asked1">
+                                    <button class="accordion-button text-body-1 fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1" aria-expanded="true" aria-controls="collapse1">
+                                        Why do you use flat-rate monthly value stacks?
+                                        <span class="right-icon"></span>
+                                    </button>
+                                </div>
+                                <div id="collapse1" role="region" class="accordion-collapse collapse show" aria-labelledby="asked1" data-bs-parent="#accordion-asked">
+                                    <div class="accordion-body">
+                                        Hourly rates penalize efficiency. When you pay an agency hourly, they have a financial incentive to take as long as possible or let minor errors compile. Our retainers cover the complete setup of security, monitoring, and cache tuning as a flat stack, aligning our incentives with your uptime and speed.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-asked-item effectFade fadeRotateX" data-delay="0.1">
+                                <div class="accordion-asked-title" id="asked2">
+                                    <button class="accordion-button text-body-1 fw-semibold collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2" aria-expanded="false" aria-controls="collapse2">
+                                        What is your typical turnaround time for retainer changes?
+                                        <span class="right-icon"></span>
+                                    </button>
+                                </div>
+                                <div id="collapse2" role="region" class="accordion-collapse collapse" aria-labelledby="asked2" data-bs-parent="#accordion-asked">
+                                    <div class="accordion-body">
+                                        Gold and Platinum retainer packages feature a 2-hour turnaround guarantee for content updates and minor structural tweaks. Silver retainer requests are handled within 12 hours.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-asked-item effectFade fadeRotateX" data-delay="0.2">
+                                <div class="accordion-asked-title" id="asked3">
+                                    <button class="accordion-button text-body-1 fw-semibold collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3" aria-expanded="false" aria-controls="collapse3">
+                                        Can we upgrade or downgrade our retainer plan?
+                                        <span class="right-icon"></span>
+                                    </button>
+                                </div>
+                                <div id="collapse3" role="region" class="accordion-collapse collapse" aria-labelledby="asked3" data-bs-parent="#accordion-asked">
+                                    <div class="accordion-body">
+                                        Yes. You can scale your support tier up or down at any time to match your operational seasons. Downgrades take effect at the start of your next billing cycle.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-asked-item effectFade fadeRotateX" data-delay="0.3">
+                                <div class="accordion-asked-title" id="asked4">
+                                    <button class="accordion-button text-body-1 fw-semibold collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
+                                        Do you build custom software or calendar integrations?
+                                        <span class="right-icon"></span>
+                                    </button>
+                                </div>
+                                <div id="collapse4" role="region" class="accordion-collapse collapse" aria-labelledby="asked4" data-bs-parent="#accordion-asked">
+                                    <div class="accordion-body">
+                                        Yes. Custom third-party integrations (like ERP linkages, dedicated custom booking calendars, or CRM pipelines) are qualified via custom briefs. You get flat scoping sheets before any development begins.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /section-faqs -->
+
+        <!-- section-contact -->
+        <div id="contact" class="flat-spacing pt-0">
+            <div class="section-contact">
+                <div class="contact-image">
+                    <img src="assets/images/section/contact-image-bg.jpg" alt="UX Wireframe backdrop">
+                </div>
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="col-left">
+                                <div class="heading-section mb-48">
+                                    <div class="heading-sub fw-semibold effectFade fadeUp">Contact</div>
+                                    <div class="heading-title text-gradient-3 effectFade fadeRotateX">
+                                        Let’s Build <br> High-Conversion Interfaces
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="contact-item mb-20 effectFade fadeRotateX">
+                                        <i class="icon icon-envelope-solid"></i>
+                                        <div class="content">
+                                            <div class="title fw-semibold mb-2">E-mail address</div>
+                                            <div class="text">hello@kasimshah.com</div>
+                                        </div>
+                                    </div>
+                                    <div class="contact-item effectFade fadeRotateX" data-delay="0.1">
+                                        <i class="icon icon-headset-solid"></i>
+                                        <div class="content">
+                                            <div class="title fw-semibold mb-2">Phone number</div>
+                                            <div class="text">+44 (0) 161 555 0192</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <form class="form-contact effectFade fadeUp" onsubmit="event.preventDefault(); alert('Retainer profile registered. Kasim Shah will review your metrics and email your retainer schedule within 2 hours.');">
+                                <h4 class="heading fw-semibold">Secure Retainer Campaign Intake</h4>
+                                <fieldset class="mb-21">
+                                    <label class="fw-semibold text-body-3 mb-20" for="contact-name">Your Name</label>
+                                    <input class="" type="text" id="contact-name" placeholder="Enter your full name" required>
+                                </fieldset>
+                                <fieldset class="mb-21">
+                                    <label class="fw-semibold text-body-3 mb-20" for="contact-email">Your Email</label>
+                                    <input class="" type="email" id="contact-email" placeholder="Enter your email" required>
+                                </fieldset>
+                                <fieldset class="mb-18">
+                                    <label class="fw-semibold text-body-3 mb-0" for="contact-project">More About Your Brand Objectives</label>
+                                    <textarea name="text" id="contact-project" class="" placeholder="Describe your website load speed issues or conversion friction..."></textarea>
+                                </fieldset>
+                                <button type="submit" class="tf-btn w-100">Submit Message</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /section-contact -->
+
+        <!-- footer -->
+        <footer>
+            <div class="footer-image">
+                <img class="effectFade fadeUp" src="assets/images/logo/logo-footer.png" alt="Kasim Shah bottom design line">
+            </div>
+            <div class="container">
+                <div class="footer-content">
+                    <a href="index.html" class="footer-logo">
+                        <img src="assets/images/logo/logo-2.svg" alt="Kasim Shah footer logo">
+                    </a>
+                    <div class="title h6 fw-semibold">Connect with <br> Kasim Shah UX agency</div>
+                    <div class="text">Manchester-based. Supporting local campaigns with global speed metrics.</div>
+                    <div class="tf-social-1 justify-content-center">
+                        <a href="https://linkedin.com/" target="_blank" class="text-body-1 fw-semibold">
+                            Linkedin
+                            <div class="social-item">
+                                <i class="icon icon-linkedin-in"></i>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <ul class="footer-links d-flex gap-24 align-items-center">
+                        <li>
+                            <a href="#home" onclick="document.getElementById('home').scrollIntoView({behavior:'smooth'})" class="fw-semibold link-underline link1">Home</a>
+                        </li>
+                        <li>
+                            <a href="#about" onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})" class="fw-semibold link-underline link1">About</a>
+                        </li>
+                        <li>
+                            <a href="#services" onclick="document.getElementById('services').scrollIntoView({behavior:'smooth'})" class="fw-semibold link-underline link1">Services</a>
+                        </li>
+                        <li>
+                            <a href="#contact" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})" class="fw-semibold link-underline link1">Contact</a>
+                        </li>
+                    </ul>
+                    <p class="text-secondary coppy-rights text-center">© 2026 Kasim Shah. All Rights Reserved. Strict MD3 & 8px grid compliant.</p>
+                    <a href="#" class="action-go-top d-flex gap-8 align-items-center justify-content-end link1">
+                        <span class="fw-semibold">Back to top</span>
+                        <i class="icon icon-long-arrow-alt-up-solid fs-20"></i>
+                    </a>    
+                </div>
+            </div>
+        </footer>
+        <!-- /footer -->
+    </main>
+    <!-- /wrapper -->
+
+    <!-- Mobile Menu -->
+    <div class="offcanvas-menu">
+        <div class="offcanvas-content">
+            <div class="container h-100">
+                <div class="offcanvas-content_wrapin">
+                    <div class="canvas_head">
+                        <a href="index.html" class="logo-site">
+                            <img src="assets/images/logo/logo-2.svg" alt="Kasim Shah logo" style="max-height:30px;">
+                        </a>
+                        <div class="btn-mobile-menu close-mb-menu text-caption link">
+                            <i class="icon icon-close"></i>
+                            CLOSE
+                        </div>
+                    </div>
+                    <div class="canvas_center">
+                        <ul class="nav-ul-mb" id="mobile-menu">
+                            <li>
+                                <div class="item">
+                                    <a href="#home" class="mb-menu-link text-display-1 close-mb-menu" onclick="document.getElementById('home').scrollIntoView({behavior: 'smooth'})">
+                                        <span class="text">Home</span>
+                                    </a>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="item">
+                                    <a href="#about" class="mb-menu-link text-display-1 close-mb-menu" onclick="document.getElementById('about').scrollIntoView({behavior: 'smooth'})">
+                                        <span class="text">About</span>
+                                    </a>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="item">
+                                    <a href="#services" class="mb-menu-link text-display-1 close-mb-menu" onclick="document.getElementById('services').scrollIntoView({behavior: 'smooth'})">
+                                        <span class="text">Services</span>
+                                    </a>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="item">
+                                    <a href="#works" class="mb-menu-link text-display-1 close-mb-menu" onclick="document.getElementById('works').scrollIntoView({behavior: 'smooth'})">
+                                        <span class="text">Works</span>
+                                    </a>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="item">
+                                    <a href="#pricing" class="mb-menu-link text-display-1 close-mb-menu" onclick="document.getElementById('pricing').scrollIntoView({behavior: 'smooth'})">
+                                        <span class="text">Retainers</span>
+                                    </a>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="item">
+                                    <a href="#contact" class="mb-menu-link text-display-1 close-mb-menu" onclick="document.getElementById('contact').scrollIntoView({behavior: 'smooth'})">
+                                        <span class="text">Contact</span>
+                                    </a>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="canvas_foot">
+                        <div class="left">
+                            <a href="mailto:hello@kasimshah.com" class="text-caption text-neutral-200">hello@kasimshah.com</a>
+                        </div>
+                        <div class="right">
+                            <a href="https://linkedin.com" target="_blank" class="tf-link-icon text-caption text-neutral-200">
+                                <i class="icon icon-arrow-top-right"></i>
+                                LINKEDIN
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /Mobile Menu -->
+
+    <!-- Left Bar -->
+    <div class="tf-left-bar">
+        <a class="btn-setting-color" data-bs-toggle="offcanvas" href="#settingColorMenu">
+            <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12.0015 7.50004C11.1115 7.50004 10.2415 7.76396 9.50144 8.25843C8.76142 8.7529 8.18464 9.4557 7.84405 10.278C7.50346 11.1002 7.41434 12.005 7.58797 12.8779C7.76161 13.7509 8.19019 14.5527 8.81953 15.182C9.44886 15.8114 10.2507 16.2399 11.1236 16.4136C11.9965 16.5872 12.9013 16.4981 13.7236 16.1575C14.5458 15.8169 15.2487 15.2401 15.7431 14.5001C16.2376 13.7601 16.5015 12.8901 16.5015 12C16.5003 10.8069 16.0258 9.66308 15.1821 8.81943C14.3385 7.97579 13.1946 7.50128 12.0015 7.50004ZM12.0015 15C11.4082 15 10.8281 14.8241 10.3348 14.4945C9.84145 14.1648 9.45693 13.6963 9.22987 13.1481C9.00281 12.5999 8.9434 11.9967 9.05915 11.4148C9.17491 10.8328 9.46063 10.2983 9.88019 9.87872C10.2997 9.45916 10.8343 9.17344 11.4162 9.05769C11.9965 8.94193 12.6014 9.00134 13.1496 9.2284C13.6977 9.45547 14.1663 9.83998 14.4959 10.3333C14.8256 10.8267 15.0015 11.4067 15.0015 12C15.0015 12.7957 14.6854 13.5588 14.1228 14.1214C13.5602 14.684 12.7972 15 12.0015 15ZM20.2515 12.2025C20.2553 12.0675 20.2553 11.9325 20.2515 11.7975L21.6503 10.05C21.7236 9.95829 21.7744 9.85059 21.7985 9.73563C21.8226 9.62067 21.8193 9.50165 21.789 9.38817C21.5597 8.52623 21.2167 7.69865 20.769 6.92723C20.7104 6.82628 20.629 6.7404 20.5314 6.67644C20.4337 6.61248 20.3225 6.57219 20.2065 6.55879L17.9828 6.31129C17.8903 6.21379 17.7965 6.12004 17.7015 6.03004L17.439 3.80067C17.4255 3.68462 17.3851 3.57332 17.3209 3.47566C17.2568 3.37801 17.1708 3.29668 17.0696 3.23817C16.2979 2.79131 15.4704 2.44864 14.6087 2.21911C14.4951 2.18891 14.3761 2.18583 14.2611 2.21009C14.1461 2.23435 14.0385 2.28529 13.9468 2.35879L12.204 3.75004C12.069 3.75004 11.934 3.75004 11.799 3.75004L10.0515 2.35411C9.95975 2.28076 9.85206 2.23 9.7371 2.2059C9.62213 2.1818 9.50311 2.18504 9.38963 2.21536C8.52783 2.44507 7.70031 2.78806 6.92869 3.23536C6.82774 3.29397 6.74187 3.37535 6.6779 3.473C6.61394 3.57065 6.57366 3.68189 6.56026 3.79785L6.31276 6.02535C6.21526 6.11848 6.12151 6.21223 6.03151 6.3066L3.80213 6.56254C3.68608 6.57604 3.57479 6.61647 3.47713 6.6806C3.37947 6.74473 3.29814 6.83079 3.23963 6.93192C2.79277 7.70363 2.4501 8.53114 2.22057 9.39286C2.19038 9.50641 2.18729 9.62547 2.21156 9.74044C2.23582 9.8554 2.28675 9.96306 2.36026 10.0547L3.75151 11.7975C3.75151 11.9325 3.75151 12.0675 3.75151 12.2025L2.35557 13.95C2.28223 14.0418 2.23146 14.1495 2.20736 14.2645C2.18326 14.3794 2.1865 14.4984 2.21682 14.6119C2.44612 15.4739 2.78913 16.3014 3.23682 17.0729C3.29544 17.1738 3.37681 17.2597 3.47447 17.3236C3.57212 17.3876 3.68335 17.4279 3.79932 17.4413L6.02307 17.6888C6.1162 17.7863 6.20995 17.88 6.30432 17.97L6.56401 20.1994C6.57751 20.3155 6.61794 20.4268 6.68207 20.5244C6.7462 20.6221 6.83226 20.7034 6.93338 20.7619C7.7051 21.2088 8.53261 21.5514 9.39432 21.781C9.50787 21.8112 9.62693 21.8143 9.7419 21.79C9.85687 21.7657 9.96452 21.7148 10.0562 21.6413L11.799 20.25C11.934 20.2538 12.069 20.2538 12.204 20.25L13.9515 21.6488C14.0433 21.7221 14.151 21.7729 14.2659 21.797C14.3809 21.8211 14.4999 21.8179 14.6134 21.7875C15.4753 21.5582 16.3029 21.2152 17.0743 20.7675C17.1753 20.7089 17.2611 20.6275 17.3251 20.5299C17.3891 20.4322 17.4294 20.321 17.4428 20.205L17.6903 17.9813C17.7878 17.8888 17.8815 17.795 17.9715 17.7L20.2009 17.4375C20.3169 17.424 20.4282 17.3836 20.5259 17.3195C20.6235 17.2554 20.7049 17.1693 20.7634 17.0682C21.2102 16.2965 21.5529 15.4689 21.7824 14.6072C21.8126 14.4937 21.8157 14.3746 21.7915 14.2596C21.7672 14.1447 21.7163 14.037 21.6428 13.9454L20.2515 12.2025ZM18.7421 11.5932C18.7581 11.8642 18.7581 12.1359 18.7421 12.4069C18.731 12.5925 18.7891 12.7755 18.9053 12.9207L20.2356 14.5829C20.0829 15.068 19.8875 15.5386 19.6515 15.9891L17.5328 16.2291C17.3482 16.2496 17.1779 16.3378 17.0546 16.4766C16.8742 16.6796 16.682 16.8718 16.479 17.0522C16.3402 17.1755 16.252 17.3458 16.2315 17.5304L15.9962 19.6472C15.5457 19.8833 15.0751 20.0788 14.5899 20.2313L12.9268 18.901C12.7937 18.7946 12.6284 18.7368 12.4581 18.7369H12.4131C12.1421 18.7529 11.8703 18.7529 11.5993 18.7369C11.4138 18.7257 11.2307 18.7839 11.0856 18.9L9.41869 20.2313C8.93357 20.0786 8.46297 19.8832 8.01244 19.6472L7.77244 17.5313C7.75196 17.3468 7.66378 17.1764 7.52494 17.0532C7.32198 16.8727 7.12978 16.6805 6.94932 16.4775C6.82607 16.3387 6.65571 16.2505 6.4712 16.23L4.35432 15.9938C4.11825 15.5433 3.92279 15.0727 3.77026 14.5875L5.10057 12.9244C5.21673 12.7793 5.27486 12.5962 5.2637 12.4107C5.24776 12.1397 5.24776 11.8679 5.2637 11.5969C5.27486 11.4114 5.21673 11.2283 5.10057 11.0832L3.77026 9.41723C3.92291 8.9321 4.11836 8.4615 4.35432 8.01098L6.47026 7.77098C6.65477 7.7505 6.82513 7.66231 6.94838 7.52348C7.12884 7.32052 7.32105 7.12831 7.52401 6.94785C7.66339 6.82452 7.75194 6.65377 7.77244 6.46879L8.00776 4.35286C8.45823 4.11679 8.92884 3.92132 9.41401 3.76879L11.0771 5.0991C11.2222 5.21527 11.4053 5.2734 11.5909 5.26223C11.8619 5.24629 12.1336 5.24629 12.4046 5.26223C12.5902 5.2734 12.7733 5.21527 12.9184 5.0991L14.5843 3.76879C15.0694 3.92144 15.54 4.1169 15.9906 4.35286L16.2306 6.46879C16.2511 6.65331 16.3392 6.82367 16.4781 6.94692C16.681 7.12738 16.8732 7.31958 17.0537 7.52254C17.1769 7.66137 17.3473 7.74956 17.5318 7.77004L19.6487 8.00535C19.8848 8.45583 20.0802 8.92644 20.2328 9.4116L18.9024 11.0747C18.7852 11.2211 18.727 11.406 18.7393 11.5932H18.7421Z" fill="#fff"/>
+            </svg>
+        </a>
+    </div>
+    <!-- Left Bar -->
+
+    <!-- Setting Color -->
+    <div class="offcanvas offcanvas-end offcanvas-color" id="settingColorMenu">
+        <div class="offcanvas-content">
+            <span class="icon-close-popup" data-bs-dismiss="offcanvas">
+                <i class="icon-close"></i>
+            </span>
+            <div class="canvas-header">
+                <h3 class="fw-semibold text-white">Configuration</h3>
+            </div>
+            <div class="canvas-body">
+                <h6 class="title fw-semibold text-white">COLORS</h6>
+                <div class="settings-color list-choose mb-24">
+                    <button type="button" class="choose-item link-no-action active"></button>
+                    <button type="button" class="choose-item link-no-action"></button>
+                    <button type="button" class="choose-item link-no-action"></button>
+                    <button type="button" class="choose-item link-no-action"></button>
+                    <button type="button" class="choose-item link-no-action"></button>
+                    <button type="button" class="choose-item link-no-action"></button>
+                    <button type="button" class="choose-item link-no-action"></button>
+                    <button type="button" class="choose-item link-no-action"></button>
+                </div>
+                <h6 class="title fw-semibold text-white">CUSTOM CURSOR</h6>
+                <div>
+                    <input type="checkbox" id="cursor" class="tf-switch-check style-small">
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /Setting Color -->
+
+    <!-- Javascript -->
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/bootstrap.min.js"></script>
+    <script src="assets/js/jquery.nice-select.min.js"></script>
+    <script src="assets/js/swiper-bundle.min.js"></script>
+    <script src="assets/js/slick.min.js"></script>
+    <script src="assets/js/countto.js"></script>
+    <script src="assets/js/carousel.js"></script>
+    <script src="assets/js/infinityslide.js"></script>
+    <script src="assets/js/ScrollSmooth.js"></script>
+    <script src="assets/js/gsap.min.js"></script>
+    
+    <script src="assets/js/ScrollTrigger.min.js"></script>
+    <script src="assets/js/ScrollToPlugin.min.js"></script>
+    <script src="assets/js/gsapAnimation.js"></script>
+
+    <script src="assets/js/main.js"></script>
 </body>
 </html>

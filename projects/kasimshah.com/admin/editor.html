@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visual Editor | Kasim Shah Digital Architecture</title>
+  <meta name="description" content="Visual page builder, content inspector, and theme customizer for high-performance websites.">
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="admin.css">
+  
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body style="overflow: hidden;">
+
+  <div class="editor-shell" id="gui-editor-shell">
+    
+    <!-- LEFT PANEL: CONTROLS & SIDEBAR -->
+    <aside class="editor-sidebar" id="editor-left-sidebar">
+      
+      <!-- Sidebar Header -->
+      <div class="editor-sidebar-header">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <a href="index.html" style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--color-muted);" id="link-back-dashboard">
+            <span class="material-icons" style="font-size: 1rem;">arrow_back</span> Back
+          </a>
+          <span class="badge" id="editor-project-badge">Editing</span>
+        </div>
+        <h2 id="projectNameHeading" style="font-size: 1.5rem; margin-bottom: 4px;">Loading Site...</h2>
+        <div style="font-size: 0.8rem; color: var(--color-muted);" id="editingPageLabel">Page: index.html</div>
+      </div>
+
+      <!-- Tab Navigation -->
+      <div class="editor-sidebar-tabs" id="editor-tabs-bar">
+        <button class="tab-btn active" onclick="switchTab('content')" id="tab-btn-content">
+          <span class="material-icons" style="font-size: 1rem; vertical-align: middle; margin-right: 4px;">edit</span> Copy
+        </button>
+        <button class="tab-btn" onclick="switchTab('theme')" id="tab-btn-theme">
+          <span class="material-icons" style="font-size: 1rem; vertical-align: middle; margin-right: 4px;">palette</span> Theme
+        </button>
+        <button class="tab-btn" onclick="switchTab('pages')" id="tab-btn-pages">
+          <span class="material-icons" style="font-size: 1rem; vertical-align: middle; margin-right: 4px;">folder</span> Pages
+        </button>
+        <button class="tab-btn" onclick="switchTab('history')" id="tab-btn-history">
+          <span class="material-icons" style="font-size: 1rem; vertical-align: middle; margin-right: 4px;">history</span> History
+        </button>
+      </div>
+
+      <!-- Tab Content Area -->
+      <div class="editor-sidebar-content" id="editorSidebarContent">
+        
+        <!-- CONTENT & COPY EDITING TAB -->
+        <div class="tab-panel-section" id="panel-content">
+          <div style="color: var(--color-muted); font-size: 0.85rem; margin-bottom: 16px; font-family: var(--font-serif); font-style: italic;">
+            Click on any heading, text paragraph, image, logo, or icon in the visual preview to inspect and modify it instantly.
+          </div>
+          <div id="inspectorFormContainer">
+            <!-- Populated dynamically by editor.js scanning the iframe DOM -->
+            <div style="color: var(--color-muted); font-family: var(--font-serif); font-style: italic;">Loading page elements...</div>
+          </div>
+        </div>
+
+        <!-- THEME CUSTOMIZATION TAB -->
+        <div class="tab-panel-section" id="panel-theme" style="display: none;">
+          <h3 style="font-size: 1.2rem; margin-bottom: 20px; border-bottom: 1px solid var(--color-dark-border); padding-bottom: 8px;">Branding Tokens</h3>
+          
+          <div class="form-group">
+            <label for="themeVibe">Visual Brand Vibe</label>
+            <select id="themeVibe" class="form-control select-control" onchange="handleThemeVibeChange()">
+              <option value="Luxury/Editorial">Luxury / Editorial (Flat, serif-accented)</option>
+              <option value="Tech Sleek">Tech Sleek (Rounded corners, subtle shadow)</option>
+              <option value="Boutique Warm">Boutique Warm (Playful corners, colored inputs)</option>
+            </select>
+          </div>
+
+          <!-- Color Pickers (Bound to CSS variables) -->
+          <div style="margin-top: 24px;">
+            <label style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--color-muted); margin-bottom: 12px; font-weight: 600;">Colors Palette</label>
+            
+            <!-- Primary Accent Color -->
+            <div class="color-picker-row">
+              <div>
+                <div style="font-weight: 500; font-size: 0.9rem;">Primary Brand Accent</div>
+                <div style="font-size: 0.75rem; color: var(--color-muted);">CTAs, active highlights (10%)</div>
+              </div>
+              <div class="color-input-container">
+                <span class="color-hex-text" id="hex-accent">#D4AF37</span>
+                <input type="color" id="themeAccentColor" class="color-picker-input" oninput="updateThemeColor('--md-sys-color-primary', this.value)">
+              </div>
+            </div>
+
+            <!-- Canvas Background -->
+            <div class="color-picker-row">
+              <div>
+                <div style="font-weight: 500; font-size: 0.9rem;">Canvas Background</div>
+                <div style="font-size: 0.75rem; color: var(--color-muted);">Base site background (60%)</div>
+              </div>
+              <div class="color-input-container">
+                <span class="color-hex-text" id="hex-bg">#0F0F10</span>
+                <input type="color" id="themeBgColor" class="color-picker-input" oninput="updateThemeColor('--md-sys-color-background', this.value)">
+              </div>
+            </div>
+
+            <!-- Surface / Cards -->
+            <div class="color-picker-row">
+              <div>
+                <div style="font-weight: 500; font-size: 0.9rem;">Card Surface</div>
+                <div style="font-size: 0.75rem; color: var(--color-muted);">Slightly lighter containers (30%)</div>
+              </div>
+              <div class="color-input-container">
+                <span class="color-hex-text" id="hex-surface">#19191C</span>
+                <input type="color" id="themeSurfaceColor" class="color-picker-input" oninput="updateThemeColor('--md-sys-color-surface', this.value)">
+              </div>
+            </div>
+
+            <!-- Text Content -->
+            <div class="color-picker-row">
+              <div>
+                <div style="font-weight: 500; font-size: 0.9rem;">Secondary Text</div>
+                <div style="font-size: 0.75rem; color: var(--color-muted);">Labels, main content text</div>
+              </div>
+              <div class="color-input-container">
+                <span class="color-hex-text" id="hex-text">#F5F5F7</span>
+                <input type="color" id="themeTxtColor" class="color-picker-input" oninput="updateThemeColor('--md-sys-color-on-surface', this.value)">
+              </div>
+            </div>
+          </div>
+
+          <!-- Shape Border Radius Slider -->
+          <div style="margin-top: 32px; border-top: 1px solid var(--color-dark-border); padding-top: 24px;">
+            <label style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--color-muted); margin-bottom: 8px; font-weight: 600;">Corner Shape Aesthetics</label>
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 12px;">
+              <span>Corner Radius:</span>
+              <span id="radiusLabel" style="font-weight: 600; color: var(--color-accent);">0px (Flat Square)</span>
+            </div>
+            <input type="range" id="themeRadiusRange" min="0" max="24" step="4" value="0" style="width: 100%; accent-color: var(--color-accent);" oninput="handleRadiusChange(this.value)">
+          </div>
+
+        </div>
+
+        <!-- PAGES LIST & ADD/DELETE PAGE TAB -->
+        <div class="tab-panel-section" id="panel-pages" style="display: none;">
+          <h3 style="font-size: 1.2rem; margin-bottom: 16px; border-bottom: 1px solid var(--color-dark-border); padding-bottom: 8px;">Sitemap Manager</h3>
+          <div class="page-tree" id="pagesTreeList">
+            <!-- Populated dynamically by sitemap.json -->
+          </div>
+
+          <div style="margin-top: 32px; border-top: 1px solid var(--color-dark-border); padding-top: 24px;">
+            <button class="btn btn-secondary" style="width: 100%; gap: 6px;" onclick="triggerAddPageModal()" id="btn-add-page">
+              <span class="material-icons" style="font-size: 1.1rem;">add_to_photos</span> Add New Page
+            </button>
+          </div>
+        </div>
+
+        <!-- VERSION HISTORY & RESTORE TAB -->
+        <div class="tab-panel-section" id="panel-history" style="display: none;">
+          <h3 style="font-size: 1.2rem; margin-bottom: 16px; border-bottom: 1px solid var(--color-dark-border); padding-bottom: 8px;">Version History</h3>
+          <div style="font-size: 0.8rem; color: var(--color-muted); margin-bottom: 20px; font-style: italic;">
+            Restore previous visual editor save-points or inspect Git commits for this page.
+          </div>
+          
+          <!-- Backups List -->
+          <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--color-accent); margin-bottom: 10px; font-weight: 600; border-bottom: 1px solid rgba(212,175,55,0.2); padding-bottom: 4px;">Local Save Points</div>
+          <div id="localBackupsList" style="margin-bottom: 32px; display: flex; flex-direction: column; gap: 8px;">
+            <div style="color: var(--color-muted); font-size: 0.8rem; font-style: italic;">No backups found for this page.</div>
+          </div>
+
+          <!-- Git Commits List -->
+          <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--color-accent); margin-bottom: 10px; font-weight: 600; border-bottom: 1px solid rgba(212,175,55,0.2); padding-bottom: 4px;">Git Commit Log</div>
+          <div id="gitCommitsList" style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="color: var(--color-muted); font-size: 0.8rem; font-style: italic;">No git commits indexed for this page.</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Sidebar Footer -->
+      <div class="editor-sidebar-footer" style="padding: 16px 24px;">
+        <div style="text-align: center; font-size: 0.75rem; color: var(--color-muted); font-weight: 500;" id="statusIndicator">
+          All modifications synced locally.
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- RIGHT PANEL: VISUAL CANVAS -->
+    <main class="editor-canvas-container" id="editor-canvas-container">
+      
+      <!-- CANVAS TOP BAR -->
+      <header class="editor-top-bar" id="editor-canvas-header" style="height: 72px;">
+        
+        <!-- Active Page Title -->
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="material-icons" style="color: var(--color-accent);">visibility</span>
+          <span style="font-weight: 500;" id="canvasActivePageLabel">index.html (Home)</span>
+        </div>
+
+        <!-- Viewport Controls -->
+        <div class="canvas-viewport-controls" id="canvas-viewport-bar">
+          <button class="viewport-btn active" id="viewport-desktop-btn" onclick="setViewport('desktop')" title="Desktop View">
+            <span class="material-icons">desktop_windows</span>
+          </button>
+          <button class="viewport-btn" id="viewport-mobile-btn" onclick="setViewport('mobile')" title="Mobile View">
+            <span class="material-icons">smartphone</span>
+          </button>
+        </div>
+
+        <!-- Buttons Action Group (Sticky Save & Git Push) -->
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <a id="externalPreviewLink" href="#" target="_blank" class="btn btn-secondary" style="min-height: 40px; padding: 0 16px; font-size: 0.8rem; letter-spacing: 0.5px;">
+            Preview Site ↗
+          </a>
+          <button class="btn btn-secondary" style="min-height: 40px; padding: 0 16px; font-size: 0.8rem; letter-spacing: 0.5px; gap: 4px;" id="btn-git-push" onclick="pushToGit()">
+            <span class="material-icons" style="font-size: 1.05rem;">cloud_upload</span> Push Git
+          </button>
+          <button class="btn btn-primary" style="min-height: 40px; padding: 0 20px; font-size: 0.8rem; letter-spacing: 0.5px; gap: 4px;" id="btn-save-page" onclick="saveAllChanges()">
+            <span class="material-icons" style="font-size: 1.05rem;">save</span> Save Page
+          </button>
+        </div>
+
+      </header>
+
+      <!-- CANVAS BODY (Iframe preview) -->
+      <section class="editor-canvas" id="editor-canvas-body">
+        <div class="preview-iframe-wrapper desktop" id="previewIframeWrapper">
+          <iframe id="previewIframe" class="preview-iframe" src="about:blank"></iframe>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- TOAST CONTAINER FOR ALERTS -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- MODAL: ADD NEW PAGE -->
+  <div class="modal-overlay" id="addPageModal">
+    <div class="modal-card" style="max-width: 480px;" id="add-page-modal-card">
+      <button class="modal-close" onclick="closeAddPageModal()" aria-label="Close modal">&times;</button>
+      
+      <div class="modal-header">
+        <h2 style="font-size: 1.5rem; margin-bottom: 8px;">Add New Website Page</h2>
+        <p style="color: var(--color-muted); font-size: 0.85rem; font-family: var(--font-serif); font-style: italic;">
+          Spins up a new structural view inheriting the project's styling schema.
+        </p>
+      </div>
+
+      <form id="addPageForm" onsubmit="handleAddPage(event)">
+        <div class="form-group">
+          <label for="newPageTitle">Page Title</label>
+          <input type="text" id="newPageTitle" class="form-control" placeholder="e.g. Services" required>
+        </div>
+        <div class="form-group">
+          <label for="newPageFile">HTML File Name</label>
+          <input type="text" id="newPageFile" class="form-control" placeholder="e.g. services.html" required>
+        </div>
+        <div style="display: flex; gap: 16px; margin-top: 24px;">
+          <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="closeAddPageModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="flex: 1;" id="submitNewPageBtn">Add Page</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="editor.js"></script>
+</body>
+</html>

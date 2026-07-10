@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control Panel | Kasim Shah Digital Architecture</title>
+  <meta name="description" content="Central agency control panel to monitor, generate, and visually edit premium conversion engines.">
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="admin.css">
+  
+  <!-- Material Icons for dashboard layout -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header" id="control-panel-header">
+    <div class="container nav-container">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <a href="index.html" class="logo" id="header-logo-link">
+          KASIM <span>SHAH</span>
+        </a>
+        <span class="badge" id="header-engine-badge">Web Engine CP</span>
+      </div>
+      <div style="display: flex; gap: 16px;">
+        <button class="btn btn-secondary" onclick="window.location.reload();" id="btn-refresh-dashboard">
+          <span class="material-icons" style="font-size: 1.15rem;">refresh</span> Sync Catalog
+        </button>
+        <button class="btn btn-primary" id="openCreateModalBtn">
+          <span class="material-icons" style="font-size: 1.15rem;">add_circle</span> Spin Up Website
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN DASHBOARD CONTENT -->
+  <main class="container" style="flex-grow: 1; padding-bottom: 64px;" id="main-content-container">
+    
+    <!-- STATS SUMMARY CARD ROW -->
+    <div class="stats-row" id="dashboard-stats-row">
+      
+      <!-- Active Sites -->
+      <div class="stat-card" id="card-stat-active">
+        <span class="material-icons" style="color: var(--color-accent); font-size: 2rem;">web</span>
+        <div class="stat-val" id="statActiveCount">0</div>
+        <div class="stat-lbl">Active Client Sites</div>
+      </div>
+
+      <!-- Core Web Vitals -->
+      <div class="stat-card" id="card-stat-vitals">
+        <span class="material-icons" style="color: var(--color-success); font-size: 2rem;">speed</span>
+        <div class="stat-val">98%</div>
+        <div class="stat-lbl">Avg Core Web Vitals</div>
+      </div>
+
+      <!-- Connection status -->
+      <div class="stat-card" id="card-stat-engine">
+        <span class="material-icons" style="color: var(--color-accent); font-size: 2rem;">dns</span>
+        <div class="stat-val" style="font-size: 1.8rem; padding-top: 10px; color: var(--color-secondary);">LOCAL API</div>
+        <div class="stat-lbl" style="margin-top: 10px;">Connection Status</div>
+      </div>
+
+    </div>
+
+    <!-- CLIENT SITES LIST -->
+    <section id="websites-index-section">
+      <div class="projects-section-header">
+        <h1 style="font-size: var(--font-size-h2);">Active Conversion Engines</h1>
+        <p style="color: var(--color-muted); font-size: 0.9rem; font-family: var(--font-serif); font-style: italic;">
+          "High-performance website structures mapped to specific customer bottlenecks."
+        </p>
+      </div>
+
+      <!-- Projects Grid -->
+      <div class="projects-grid" id="projectsGrid">
+        <!-- Rendered dynamically by admin.js -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL: GENERATE NEW WEBSITE INSTANCE -->
+  <div class="modal-overlay" id="createModal">
+    <div class="modal-card" id="create-modal-card">
+      <button class="modal-close" id="closeCreateModalBtn" aria-label="Close modal">&times;</button>
+      
+      <div class="modal-header">
+        <h2 style="font-size: 1.8rem; margin-bottom: 8px;">Create Website Instance</h2>
+        <p style="color: var(--color-muted); font-size: 0.9rem; font-family: var(--font-serif); font-style: italic;">
+          Configuring a performance-tuned architecture targeting immediate user friction.
+        </p>
+      </div>
+
+      <form id="createWebsiteForm">
+        
+        <!-- Business Name -->
+        <div class="form-group">
+          <label for="newProjName">Business Name / Project slug</label>
+          <input type="text" id="newProjName" class="form-control" placeholder="e.g. London Dental Clinic" required>
+        </div>
+
+        <!-- Industry Vertical Selector -->
+        <div class="form-group">
+          <label for="newProjIndustry">Primary Industry Vertical</label>
+          <select id="newProjIndustry" class="form-control select-control" required>
+            <option value="Professional Services">Professional & B2B Services</option>
+            <option value="Aesthetics Clinics">Aesthetics & Medical Clinics</option>
+            <option value="High-Ticket Trades">High-Ticket Trades & Construction</option>
+            <option value="Hair & Beauty">Hair & Beauty Salons</option>
+            <option value="Canine & Pet">Canine & Pet Services</option>
+            <option value="B2B SaaS">B2B SaaS & Tech Startups</option>
+            <option value="Elite Tutoring">Elite Education & Tutoring</option>
+            <option value="Premium Leisure">Premium Leisure & Entertainment</option>
+          </select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <!-- Primary Revenue Bottleneck -->
+          <div class="form-group">
+            <label for="newProjBottleneck">Primary Bottleneck</label>
+            <select id="newProjBottleneck" class="form-control select-control" required>
+              <option value="conversion">Conversion Leak (High bounces)</option>
+              <option value="outdated">Outdated Stack (Slow speed)</option>
+              <option value="traffic">Traffic Quality (Low intent)</option>
+            </select>
+          </div>
+
+          <!-- Sales / Lead Ingestion Flow -->
+          <div class="form-group">
+            <label for="newProjSalesProcess">Lead Ingestion Flow</label>
+            <select id="newProjSalesProcess" class="form-control select-control" required>
+              <option value="sales_call">Strategic Discovery Call</option>
+              <option value="diary_booking">Direct Booking Calendar</option>
+              <option value="rfp_form">Structured RFP Form</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Primary Brand Accent Color Picker -->
+        <div class="form-group color-picker-row">
+          <div>
+            <label style="margin-bottom: 4px;">Primary Brand Accent Color</label>
+            <span style="font-size: 0.75rem; color: var(--color-muted);">Used for major Call-To-Action (CTA) triggers</span>
+          </div>
+          <div class="color-input-container">
+            <input type="color" id="newProjColor" class="color-picker-input" value="#D4AF37">
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 16px; margin-top: 32px;">
+          <button type="button" class="btn btn-secondary" style="flex: 1;" id="cancelCreateModalBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="flex: 2;" id="submitNewProjBtn">Generate Website</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER FOR ALERTS -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- SCRIPTS -->
+  <script src="admin.js"></script>
+</body>
+</html>
