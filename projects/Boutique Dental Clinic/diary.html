@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking Diary - KS Studio | Real-time Calendar Integration</title>
+  <meta name="description" content="Select available dates and lock in your studio slot. Automated booking verification, zero scheduling overhead. London creative studios.">
+  <meta property="og:title" content="Booking Diary - KS Studio">
+  <meta property="og:description" content="Real-time studio booking calendar and slot checkout.">
+  <meta property="og:type" content="website">
+  
+  <!-- Material Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="https://esm.run/@material/web/all.js"></script>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="container nav-container">
+      <a href="index.html" class="logo" id="header-logo">
+        DENTAL <span>STUDIO</span>
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" id="nav-toggle-btn">
+        ☰
+      </button>
+      <nav class="nav-menu" id="navigation-menu">
+        <md-text-button href="index.html" onclick="window.location.href='index.html'">Home</md-text-button>
+        <md-text-button href="space.html" onclick="window.location.href='space.html'">The Space</md-text-button>
+        <md-text-button href="rates.html" onclick="window.location.href='rates.html'">Rates</md-text-button>
+        <md-text-button href="https://calendly.com/boutique-dental" onclick="window.location.href='https://calendly.com/boutique-dental'">Qualify</md-text-button>
+        <md-text-button href="diary.html" onclick="window.location.href='diary.html'">Diary</md-text-button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="section">
+    <div class="container">
+      
+      <div style="text-align: center; margin-bottom: var(--space-4);">
+        <h1 class="font-display">Real-Time Booking Diary</h1>
+        <p style="max-width: 600px; margin: 0 auto;">Select your target dates directly. Unqualified bookings are subject to automatic cancellation within 12 hours.</p>
+      </div>
+
+      <!-- Loss Aversion / Qualification Warning Banner -->
+      <div id="diary-warning" class="loss-aversion-banner" style="margin-bottom: var(--space-6);">
+        <!-- Content injected dynamically based on state -->
+      </div>
+
+      <!-- ASYMMETRICAL SPLIT CONTAINER -->
+      <div class="creative-shell-split">
+        
+        <!-- Left Side: Calendar Widget -->
+        <div>
+          <div class="calendar-widget">
+            <div class="calendar-header">
+              <h3 class="font-display" id="calendar-month-year">June 2026</h3>
+              <div style="display: flex; gap: var(--space-1);">
+                <md-outlined-button style="min-width: 48px; height: 48px;" id="btn-prev-month">&lt;</md-outlined-button>
+                <md-outlined-button style="min-width: 48px; height: 48px;" id="btn-next-month">&gt;</md-outlined-button>
+              </div>
+            </div>
+
+            <div class="calendar-days" id="calendar-days-grid">
+              <div class="day-name">Mon</div>
+              <div class="day-name">Tue</div>
+              <div class="day-name">Wed</div>
+              <div class="day-name">Thu</div>
+              <div class="day-name">Fri</div>
+              <div class="day-name">Sat</div>
+              <div class="day-name">Sun</div>
+              
+              <!-- Days will be generated dynamically by calendar.js -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side: Times & Summary Card -->
+        <div class="split-side-panel">
+          <h3 class="font-display">Select Studio Session</h3>
+          <p style="font-size: var(--font-size-sm); color: var(--color-muted); margin-bottom: var(--space-3);">Choose an available time slot for your selected date:</p>
+
+          <div class="time-slots" style="margin-bottom: var(--space-4);">
+            <md-outlined-button id="slot-am" style="width: 100%;" data-time="09:00 - 13:00">09:00 AM Half-Day</md-outlined-button>
+            <md-outlined-button id="slot-pm" style="width: 100%;" data-time="13:00 - 17:00">01:00 PM Half-Day</md-outlined-button>
+            <md-outlined-button id="slot-full" style="width: 100%;" data-time="09:00 - 18:00">09:00 AM Full-Day</md-outlined-button>
+          </div>
+
+          <div style="margin-top: var(--space-4); border-top: 1px solid var(--color-dark-border); padding-top: var(--space-3);" id="booking-details-box">
+            <p style="font-size: var(--font-size-sm); color: #FFF;">Date Selected: <strong id="selected-date-str" style="color: var(--color-accent);">None</strong></p>
+            <p style="font-size: var(--font-size-sm); margin-bottom: var(--space-4); color: #FFF;">Slot Selected: <strong id="selected-time-str" style="color: var(--color-accent);">None</strong></p>
+            <md-filled-button id="btn-secure-booking" disabled style="width: 100%;">Secure Studio Booking</md-filled-button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <span class="logo">DENTAL <span>STUDIO</span></span>
+      <nav style="display: flex; gap: var(--space-1); flex-wrap: wrap;">
+        <md-text-button href="case-studies.html" onclick="window.location.href='case-studies.html'">Case Studies</md-text-button>
+        <md-text-button href="equipment.html" onclick="window.location.href='equipment.html'">Equipment</md-text-button>
+        <md-text-button href="services.html" onclick="window.location.href='services.html'">Services</md-text-button>
+        <md-text-button href="faq.html" onclick="window.location.href='faq.html'">FAQ</md-text-button>
+        <md-text-button href="rfp.html" onclick="window.location.href='rfp.html'">Custom RFP</md-text-button>
+      </nav>
+      <div class="footer-text">
+        &copy; 2026 KS Studio. All rights reserved. Strict 8px Grid & Material 3 integration.
+      </div>
+    </div>
+  </footer>
+
+  <!-- SCRIPTS -->
+  <script src="js/state.js"></script>
+  <script src="js/calendar.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const warningEl = document.getElementById('diary-warning');
+      const isQualified = YesLadder.state.ladderNodes.qualifiedChecked;
+
+      if (isQualified) {
+        warningEl.innerHTML = `
+          <div class="loss-aversion-title" style="color: var(--color-success);">✓ Brief Pre-Qualified</div>
+          <p class="loss-aversion-desc">Your briefing profile is stored. Selected dates will be permanently locked into our diary immediately upon checkout.</p>
+        `;
+        warningEl.style.borderLeftColor = 'var(--color-success)';
+      } else {
+        warningEl.innerHTML = `
+          <div class="loss-aversion-title">⚠️ Campaign Brief Missing</div>
+          <p class="loss-aversion-desc">You haven't completed our automated Lead Qualification wizard. Bookings without qualified profiles are automatically removed from our calendars within 12 hours. <md-text-button href="https://calendly.com/boutique-dental" onclick="window.location.href='https://calendly.com/boutique-dental'" style="--md-text-button-label-text-color: #FFF;">Qualify Your Campaign Now</md-text-button> to prevent session cancellation.</p>
+        `;
+      }
+
+      // Initialize the dynamic calendar class
+      const calendar = new StudioCalendar('calendar-days-grid', 'booking-details-box', YesLadder);
+
+      // Handle the Submit Action
+      const btn = document.getElementById('btn-secure-booking');
+      btn.addEventListener('click', () => {
+        const dateVal = calendar.getSelectedDateString();
+        const timeVal = calendar.selectedTime;
+        
+        YesLadder.updateClientInfo({
+          selectedDate: dateVal,
+          selectedTime: timeVal
+        });
+        YesLadder.setNode('bookingChecked', true);
+        
+        // Show M3 dialogue overlay on submission instead of alerts
+        YesLadder.showM3Alert(
+          "Studio Session Secured ✓",
+          `Production slot registered for ${dateVal} during the ${timeVal} window. An executive producer will email your campaign contract in under 60 minutes.`,
+          "Back to Homepage",
+          () => {
+            window.location.href = 'index.html';
+          }
+        );
+      });
+    });
+  </script>
+</body>
+</html>
