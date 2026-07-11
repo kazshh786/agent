@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qualify Your Production - KS Studio | Lead Qualification Wizard</title>
+  <meta name="description" content="Submit your commercial production or photoshoot brief. Get automated studio space pre-qualification and diary access in seconds.">
+  <meta property="og:title" content="Qualify Your Project - KS Studio">
+  <meta property="og:description" content="Automated lead qualification wizard for boutique production bookings.">
+  <meta property="og:type" content="website">
+  
+  <!-- Material Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="https://esm.run/@material/web/all.js"></script>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="container nav-container">
+      <a href="index.html" class="logo" id="header-logo">
+        DENTAL <span>STUDIO</span>
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" id="nav-toggle-btn" data-editable="true">
+        ☰
+      </button>
+      <nav class="nav-menu" id="navigation-menu">
+        <md-text-button href="index.html" onclick="window.location.href='index.html'">Home</md-text-button>
+        <md-text-button href="space.html" onclick="window.location.href='space.html'">The Space</md-text-button>
+        <md-text-button href="rates.html" onclick="window.location.href='rates.html'">Rates</md-text-button>
+        <md-text-button href="https://calendly.com/boutique-dental" onclick="window.location.href='https://calendly.com/boutique-dental'">Qualify</md-text-button>
+        <md-text-button href="diary.html" onclick="window.location.href='diary.html'">Diary</md-text-button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="section">
+    <div class="container">
+      
+      <div style="text-align: center; margin-bottom: var(--space-4);">
+        <h1 class="font-display" data-editable="true">Qualify Your Production</h1>
+        <p style="max-width: 600px; margin: 0 auto;" data-editable="true">Submit your creative brief details to unlock real-time diary booking. It ensures our equipment arrays are tailored to your needs.</p>
+      </div>
+
+      <!-- EDITORIAL ARCH SHELL FOR FORM -->
+      <div class="creative-shell-arch">
+        
+        <!-- Step Indicators -->
+        <div class="wizard-progress" style="margin-bottom: var(--space-5);">
+          <div class="wizard-progress-bar">
+            <div class="wizard-progress-fill"></div>
+          </div>
+          <div class="wizard-step-node active">1</div>
+          <div class="wizard-step-node">2</div>
+          <div class="wizard-step-node">3</div>
+        </div>
+
+        <form id="qualification-form" onsubmit="event.preventDefault();" class="arch-form-container">
+          
+          <!-- STEP 1: Project Scope -->
+          <div class="wizard-step active" id="step-1">
+            <h3 class="font-display" style="text-align: center; margin-bottom: var(--space-4);" data-editable="true">1. Tell Us About Your Campaign</h3>
+            
+            <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+              <div class="md3-form-group">
+                <md-outlined-select id="projectType" label="Project Format" required style="width: 100%;">
+                  <md-select-option value="commercial_video">Commercial Video & film shoot</md-select-option>
+                  <md-select-option value="editorial_photo">High-End Editorial Photography</md-select-option>
+                  <md-select-option value="brand_launch">Brand Launch / VIP Event</md-select-option>
+                  <md-select-option value="other">Other Complex Production</md-select-option>
+                </md-outlined-select>
+              </div>
+
+              <div class="md3-form-group">
+                <md-outlined-select id="studioPreference" label="Preferred Studio Space" required style="width: 100%;">
+                  <md-select-option value="alpha">Studio Alpha (1,200 sq. ft. Commercial Grid)</md-select-option>
+                  <md-select-option value="beta">Studio Beta (800 sq. ft. Natural Light)</md-select-option>
+                </md-outlined-select>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 2: Scale & Budget -->
+          <div class="wizard-step" id="step-2">
+            <h3 class="font-display" style="text-align: center; margin-bottom: var(--space-4);" data-editable="true">2. Scope & Budget Scale</h3>
+            
+            <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+              <div class="md3-form-group">
+                <md-outlined-select id="budget" label="Production Budget Range" required style="width: 100%;">
+                  <md-select-option value="under_3k">Under £3,000 (Consultation required)</md-select-option>
+                  <md-select-option value="3k_5k">£3,000 - £5,000 (Standard Commercial Stack)</md-select-option>
+                  <md-select-option value="5k_10k">£5,000 - £10,000 (Residency Stack)</md-select-option>
+                  <md-select-option value="10k_plus">£10,000+ (Custom RFP/Enterprise)</md-select-option>
+                </md-outlined-select>
+              </div>
+
+              <div class="md3-form-group">
+                <md-outlined-select id="timeline" label="Target Production Date" required style="width: 100%;">
+                  <md-select-option value="this_week">Within next 7 days</md-select-option>
+                  <md-select-option value="this_month">Within next 30 days</md-select-option>
+                  <md-select-option value="next_quarter">Within Q3/Q4</md-select-option>
+                </md-outlined-select>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 3: Brand & Crew Details -->
+          <div class="wizard-step" id="step-3">
+            <h3 class="font-display" style="text-align: center; margin-bottom: var(--space-4);" data-editable="true">3. Contact & Brand Profile</h3>
+            
+            <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+              <div class="md3-form-group">
+                <md-outlined-text-field id="name" label="Producer Name" placeholder="E.g. Sarah Jenkins" required></md-outlined-text-field>
+              </div>
+
+              <div class="md3-form-group">
+                <md-outlined-text-field id="email" type="email" label="Production Email" placeholder="sarah@agency.com" required></md-outlined-text-field>
+              </div>
+
+              <div class="md3-form-group">
+                <md-outlined-text-field id="company" label="Company / Agency Name" placeholder="E.g. Nexus Media Group" required></md-outlined-text-field>
+              </div>
+
+              <div class="md3-form-group">
+                <md-outlined-text-field id="productionBrief" type="textarea" rows="3" label="Campaign Description (Optional)" placeholder="Briefly describe the set-build or lighting requirements..."></md-outlined-text-field>
+              </div>
+            </div>
+          </div>
+
+          <!-- Navigation (Strict MD3 Buttons) -->
+          <div class="wizard-nav" style="display: flex; justify-content: space-between; margin-top: var(--space-4);">
+            <md-outlined-button type="button" id="btn-prev" style="visibility: hidden;">Previous</md-outlined-button>
+            <md-filled-button type="button" id="btn-next">Continue</md-filled-button>
+          </div>
+
+        </form>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <span class="logo" data-editable="true">DENTAL <span>STUDIO</span></span>
+      <nav style="display: flex; gap: var(--space-1); flex-wrap: wrap;">
+        <md-text-button href="case-studies.html" onclick="window.location.href='case-studies.html'">Case Studies</md-text-button>
+        <md-text-button href="equipment.html" onclick="window.location.href='equipment.html'">Equipment</md-text-button>
+        <md-text-button href="services.html" onclick="window.location.href='services.html'">Services</md-text-button>
+        <md-text-button href="faq.html" onclick="window.location.href='faq.html'">FAQ</md-text-button>
+        <md-text-button href="rfp.html" onclick="window.location.href='rfp.html'">Custom RFP</md-text-button>
+      </nav>
+      <div class="footer-text">
+        &copy; 2026 KS Studio. All rights reserved. Strict 8px Grid & Material 3 integration.
+      </div>
+    </div>
+  </footer>
+
+  <!-- SCRIPTS -->
+  <script src="js/state.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/wizard.js"></script>
+  <script>
+    // Extract search query options to pre-select
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const studio = urlParams.get('studio');
+        const pack = urlParams.get('package');
+
+        if (studio) {
+          const select = document.getElementById('studioPreference');
+          if (select) select.value = studio;
+        }
+
+        if (pack) {
+          const select = document.getElementById('budget');
+          if (select) {
+            if (pack === 'editorial') select.value = '3k_5k';
+            else if (pack === 'commercial') select.value = '3k_5k';
+            else if (pack === 'residency') select.value = '5k_10k';
+          }
+        }
+      }, 500); // Small timeout to ensure MD3 registration is complete before setting values
+    });
+  </script>
+</body>
+</html>
