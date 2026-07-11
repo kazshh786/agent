@@ -22,9 +22,9 @@
   <header class="header">
     <div class="container nav-container">
       <a href="index.html" class="logo" id="header-logo">
-        KS <span>STUDIO</span>
+        KS <span data-editable="true">STUDIO</span>
       </a>
-      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" id="nav-toggle-btn">
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" id="nav-toggle-btn" data-editable="true">
         ☰
       </button>
       <nav class="nav-menu" id="navigation-menu">
@@ -42,13 +42,13 @@
     <div class="container">
       
       <div style="text-align: center; margin-bottom: var(--space-6);">
-        <h1 class="font-display">Enterprise Request For Proposal (RFP)</h1>
-        <p style="max-width: 600px; margin: 0 auto;">For multi-week shoots, custom set constructions, or complex agency campaign residencies. We'll return an initial quote within 2 hours.</p>
+        <h1 class="font-display" data-editable="true">Enterprise Request For Proposal (RFP)</h1>
+        <p style="max-width: 600px; margin: 0 auto;" data-editable="true">For multi-week shoots, custom set constructions, or complex agency campaign residencies. We'll return an initial quote within 2 hours.</p>
       </div>
 
       <!-- EDITORIAL ARCH CONTAINER -->
       <div class="creative-shell-arch">
-        <h3 class="font-display" style="margin-bottom: var(--space-3); border-bottom: 1px solid var(--color-dark-border); padding-bottom: var(--space-2); text-align: center;">Submit Campaign Specifications</h3>
+        <h3 class="font-display" style="margin-bottom: var(--space-3); border-bottom: 1px solid var(--color-dark-border); padding-bottom: var(--space-2); text-align: center;" data-editable="true">Submit Campaign Specifications</h3>
         
         <form id="rfp-form" onsubmit="event.preventDefault(); submitRFP();" class="arch-form-container" style="margin-top: var(--space-3);">
           
@@ -79,7 +79,7 @@
           <!-- Loss Aversion Note -->
           <div class="loss-aversion-banner" style="margin-top: var(--space-2); margin-bottom: var(--space-2);">
             <div class="loss-aversion-title">⚠️ Enterprise Production Lead Times</div>
-            <p class="loss-aversion-desc">Set materials sourcing and custom grid rigging require a minimum 7-day preparation lead time. Delayed submissions risk scheduling conflicts with ongoing campaigns.</p>
+            <p class="loss-aversion-desc" data-editable="true">Set materials sourcing and custom grid rigging require a minimum 7-day preparation lead time. Delayed submissions risk scheduling conflicts with ongoing campaigns.</p>
           </div>
 
           <md-filled-button type="submit" style="width: 100%;" id="btn-submit-rfp">Submit RFP Proposal</md-filled-button>
@@ -93,7 +93,7 @@
   <!-- FOOTER -->
   <footer class="footer">
     <div class="container footer-content">
-      <span class="logo">KS <span>STUDIO</span></span>
+      <span class="logo" data-editable="true">KS <span data-editable="true">STUDIO</span></span>
       <nav style="display: flex; gap: var(--space-1); flex-wrap: wrap;">
         <md-text-button href="case-studies.html" onclick="window.location.href='case-studies.html'">Case Studies</md-text-button>
         <md-text-button href="equipment.html" onclick="window.location.href='equipment.html'">Equipment</md-text-button>

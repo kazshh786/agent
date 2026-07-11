@@ -63,3 +63,13 @@ Based on the insights of top copywriting experts and modern design principles op
 - **Answer Engine Optimization (AEO) Formatting:** To rank well today, experts recommend the "3-Sentence Rule." Begin major sections with a direct, clear 1-to-3 sentence answer to the user's implied question so AI models can easily parse and extract your content.
 - **Generous White Space (Negative Space):** White space isn't empty space; it’s breathing room. Clean margins and padding help visitors focus on your high-value copy and buttons without feeling visually overwhelmed.
 - **Mobile-First Responsive Design:** In 2026, Core Web Vitals (speed and layout stability) are design constraints from day one. Design the layout for the smallest screen first to force prioritization of essential content, then scale it up for desktop.
+
+
+# AUTOMATED TEMPLATE SANITIZATION RULE (The KS Auto-Integrator Forever Guard)
+
+Every template file that enters the templates/ directory—whether newly uploaded or existing—must be rendered "GUI-Ready."
+
+- **Execution**: You must ensure every structural text element (H1-H6, P, LI, Span, Small, Label, and specific td/th elements) is injected with the attribute `data-editable="true"`.
+- **Validation**: No template is allowed to be marked "Ready for Production" unless it has passed the `data-editable` verification.
+- **Standardization**: If you find complex SVG icons or UI decorators in the Hero/Header, do NOT tag them. Tag only the semantic content that the client will need to change (Headlines, Body Copy, CTA labels).
+- **Prime Directive**: Minimize human friction. The client (Kasim Shah) must be able to open any site in the Visual GUI Editor and immediately see gold-bordered, editable content fields.

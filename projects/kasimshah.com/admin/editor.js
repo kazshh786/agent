@@ -329,6 +329,16 @@ function wrapRawTextNodesInSpans(root) {
 
 // Walk DOM tree recursively to find all text-containing nodes and images
 function discoverEditableElements(root) {
+  // First, check if the document contains any explicitly tagged data-editable elements
+  const doc = root.ownerDocument || document;
+  const hasTaggedElements = doc.querySelectorAll('[data-editable="true"]').length > 0;
+
+  if (hasTaggedElements) {
+    // If tagged, return only tagged elements, images, and material icons inside this root
+    return Array.from(root.querySelectorAll('[data-editable="true"], img, .material-icons'));
+  }
+
+  // Fallback to recursive tree traversal for legacy or untagged pages
   const nodes = [];
   
   function walk(node) {

@@ -573,8 +573,8 @@ app.post('/api/projects', async (req, res) => {
           // Customize logos and booking links
           if (relativeFilePath.endsWith('.html')) {
             if (logoText) {
-              content = content.replace(/KS <span>STUDIO<\/span>/g, logoText);
-              content = content.replace(/KS <span>STUDIO<\/span>/gi, logoText);
+              content = content.replace(/KS <span(?:\s+[^>]*?)?>STUDIO<\/span>/g, logoText);
+              content = content.replace(/KS <span(?:\s+[^>]*?)?>STUDIO<\/span>/gi, logoText);
               content = content.replace(/KS STUDIO/g, logoText.replace(/<\/?span>/g, ''));
               content = content.replace(/\[Logo Text\]/g, logoText);
             }
@@ -855,8 +855,8 @@ app.post('/api/projects', async (req, res) => {
         let htmlContent = fs.readFileSync(filePath, 'utf8');
         
         if (logoText) {
-          htmlContent = htmlContent.replace(/KS <span>STUDIO<\/span>/g, logoText);
-          htmlContent = htmlContent.replace(/KS <span>STUDIO<\/span>/gi, logoText);
+          htmlContent = htmlContent.replace(/KS <span(?:\s+[^>]*?)?>STUDIO<\/span>/g, logoText);
+          htmlContent = htmlContent.replace(/KS <span(?:\s+[^>]*?)?>STUDIO<\/span>/gi, logoText);
           htmlContent = htmlContent.replace(/KS STUDIO/g, logoText.replace(/<\/?span>/g, ''));
           htmlContent = htmlContent.replace(/\[Logo Text\]/g, logoText);
         }

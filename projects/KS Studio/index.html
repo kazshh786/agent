@@ -25,9 +25,9 @@
   <header class="header">
     <div class="container nav-container">
       <a href="index.html" class="logo" id="header-logo">
-        KS <span>STUDIO</span>
+        KS <span data-editable="true">STUDIO</span>
       </a>
-      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" id="nav-toggle-btn">
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" id="nav-toggle-btn" data-editable="true">
         ☰
       </button>
       
@@ -51,14 +51,14 @@
         
         <!-- Left Side: Large typography & copy -->
         <div class="split-hero-content">
-          <h1 class="hero-title">Elevate Your Production to <strong>Boutique Authority</strong></h1>
-          <p class="hero-subtitle">Stop bleeding production hours on scheduling friction and unequipped studio bookings.</p>
-          <p>KS Studio provides elite, ready-to-shoot creative spaces featuring standard-integrated high-end lighting, audio, and dedicated concierge crew. We eliminate the administration bottlenecks so your creative vision runs flawless.</p>
+          <h1 class="hero-title" data-editable="true">Elevate Your Production to <strong>Boutique Authority</strong></h1>
+          <p class="hero-subtitle" data-editable="true">Stop bleeding production hours on scheduling friction and unequipped studio bookings.</p>
+          <p data-editable="true">KS Studio provides elite, ready-to-shoot creative spaces featuring standard-integrated high-end lighting, audio, and dedicated concierge crew. We eliminate the administration bottlenecks so your creative vision runs flawless.</p>
           
           <!-- Loss Aversion Warning -->
           <div class="loss-aversion-banner">
             <div class="loss-aversion-title">⚠️ Q3 Peak Calendar Scarcity</div>
-            <p class="loss-aversion-desc">Our booking diary is at 88% capacity. Every day of delay risks your campaign timeline. Securing a slot takes less than 3 minutes.</p>
+            <p class="loss-aversion-desc" data-editable="true">Our booking diary is at 88% capacity. Every day of delay risks your campaign timeline. Securing a slot takes less than 3 minutes.</p>
           </div>
 
           <!-- Strict Container Rule wrapping for buttons -->
@@ -70,24 +70,24 @@
 
         <!-- Right Side: Interaction card with shadow -->
         <div class="split-side-panel">
-          <h3 class="font-display" style="margin-bottom: var(--space-2);">Establish Your Needs</h3>
-          <p style="font-size: var(--font-size-sm); margin-bottom: var(--space-3); color: var(--color-muted);">Confirm the bottlenecks you want KS Studio to solve:</p>
+          <h3 class="font-display" style="margin-bottom: var(--space-2);" data-editable="true">Establish Your Needs</h3>
+          <p style="font-size: var(--font-size-sm); margin-bottom: var(--space-3); color: var(--color-muted);" data-editable="true">Confirm the bottlenecks you want KS Studio to solve:</p>
           
           <!-- Checkbox containers aligning elements without styling md-* directly -->
           <div style="display: flex; flex-direction: column; gap: var(--space-3); margin-bottom: var(--space-4);">
             <div class="m3-checkbox-wrapper" onclick="document.getElementById('chk-friction').click();">
               <md-checkbox id="chk-friction" aria-label="Instantly book slots"></md-checkbox>
-              <span style="font-size: var(--font-size-sm); color: #FFF;">"I want to eliminate email tennis and book slots instantly."</span>
+              <span style="font-size: var(--font-size-sm); color: #FFF;" data-editable="true">"I want to eliminate email tennis and book slots instantly."</span>
             </div>
             
             <div class="m3-checkbox-wrapper" onclick="document.getElementById('chk-gear').click();">
               <md-checkbox id="chk-gear" aria-label="Include high-end gear"></md-checkbox>
-              <span style="font-size: var(--font-size-sm); color: #FFF;">"I need high-end lighting and grip included to save gear rental costs."</span>
+              <span style="font-size: var(--font-size-sm); color: #FFF;" data-editable="true">"I need high-end lighting and grip included to save gear rental costs."</span>
             </div>
 
             <div class="m3-checkbox-wrapper" onclick="document.getElementById('chk-crew').click();">
               <md-checkbox id="chk-crew" aria-label="On-site assistant crew"></md-checkbox>
-              <span style="font-size: var(--font-size-sm); color: #FFF;">"I want dedicated assistant crew on-site to handle load-in."</span>
+              <span style="font-size: var(--font-size-sm); color: #FFF;" data-editable="true">"I want dedicated assistant crew on-site to handle load-in."</span>
             </div>
           </div>
           
@@ -105,7 +105,7 @@
   <!-- FOOTER -->
   <footer class="footer">
     <div class="container footer-content">
-      <span class="logo">KS <span>STUDIO</span></span>
+      <span class="logo" data-editable="true">KS <span data-editable="true">STUDIO</span></span>
       <nav style="display: flex; gap: var(--space-1); flex-wrap: wrap;">
         <md-text-button href="case-studies.html" onclick="window.location.href='case-studies.html'">Case Studies</md-text-button>
         <md-text-button href="equipment.html" onclick="window.location.href='equipment.html'">Equipment</md-text-button>

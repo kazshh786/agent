@@ -22,9 +22,9 @@
   <header class="header">
     <div class="container nav-container">
       <a href="index.html" class="logo" id="header-logo">
-        KS <span>STUDIO</span>
+        KS <span data-editable="true">STUDIO</span>
       </a>
-      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" id="nav-toggle-btn">
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" id="nav-toggle-btn" data-editable="true">
         ☰
       </button>
       <nav class="nav-menu" id="navigation-menu">
@@ -42,8 +42,8 @@
     <div class="container">
       
       <div style="text-align: center; margin-bottom: var(--space-4);">
-        <h1 class="font-display">Real-Time Booking Diary</h1>
-        <p style="max-width: 600px; margin: 0 auto;">Select your target dates directly. Unqualified bookings are subject to automatic cancellation within 12 hours.</p>
+        <h1 class="font-display" data-editable="true">Real-Time Booking Diary</h1>
+        <p style="max-width: 600px; margin: 0 auto;" data-editable="true">Select your target dates directly. Unqualified bookings are subject to automatic cancellation within 12 hours.</p>
       </div>
 
       <!-- Loss Aversion / Qualification Warning Banner -->
@@ -58,7 +58,7 @@
         <div>
           <div class="calendar-widget">
             <div class="calendar-header">
-              <h3 class="font-display" id="calendar-month-year">June 2026</h3>
+              <h3 class="font-display" id="calendar-month-year" data-editable="true">June 2026</h3>
               <div style="display: flex; gap: var(--space-1);">
                 <md-outlined-button style="min-width: 48px; height: 48px;" id="btn-prev-month">&lt;</md-outlined-button>
                 <md-outlined-button style="min-width: 48px; height: 48px;" id="btn-next-month">&gt;</md-outlined-button>
@@ -81,8 +81,8 @@
 
         <!-- Right Side: Times & Summary Card -->
         <div class="split-side-panel">
-          <h3 class="font-display">Select Studio Session</h3>
-          <p style="font-size: var(--font-size-sm); color: var(--color-muted); margin-bottom: var(--space-3);">Choose an available time slot for your selected date:</p>
+          <h3 class="font-display" data-editable="true">Select Studio Session</h3>
+          <p style="font-size: var(--font-size-sm); color: var(--color-muted); margin-bottom: var(--space-3);" data-editable="true">Choose an available time slot for your selected date:</p>
 
           <div class="time-slots" style="margin-bottom: var(--space-4);">
             <md-outlined-button id="slot-am" style="width: 100%;" data-time="09:00 - 13:00">09:00 AM Half-Day</md-outlined-button>
@@ -91,8 +91,8 @@
           </div>
 
           <div style="margin-top: var(--space-4); border-top: 1px solid var(--color-dark-border); padding-top: var(--space-3);" id="booking-details-box">
-            <p style="font-size: var(--font-size-sm); color: #FFF;">Date Selected: <strong id="selected-date-str" style="color: var(--color-accent);">None</strong></p>
-            <p style="font-size: var(--font-size-sm); margin-bottom: var(--space-4); color: #FFF;">Slot Selected: <strong id="selected-time-str" style="color: var(--color-accent);">None</strong></p>
+            <p style="font-size: var(--font-size-sm); color: #FFF;" data-editable="true">Date Selected: <strong id="selected-date-str" style="color: var(--color-accent);">None</strong></p>
+            <p style="font-size: var(--font-size-sm); margin-bottom: var(--space-4); color: #FFF;" data-editable="true">Slot Selected: <strong id="selected-time-str" style="color: var(--color-accent);">None</strong></p>
             <md-filled-button id="btn-secure-booking" disabled style="width: 100%;">Secure Studio Booking</md-filled-button>
           </div>
         </div>
@@ -105,7 +105,7 @@
   <!-- FOOTER -->
   <footer class="footer">
     <div class="container footer-content">
-      <span class="logo">KS <span>STUDIO</span></span>
+      <span class="logo" data-editable="true">KS <span data-editable="true">STUDIO</span></span>
       <nav style="display: flex; gap: var(--space-1); flex-wrap: wrap;">
         <md-text-button href="case-studies.html" onclick="window.location.href='case-studies.html'">Case Studies</md-text-button>
         <md-text-button href="equipment.html" onclick="window.location.href='equipment.html'">Equipment</md-text-button>
@@ -131,13 +131,13 @@
       if (isQualified) {
         warningEl.innerHTML = `
           <div class="loss-aversion-title" style="color: var(--color-success);">✓ Brief Pre-Qualified</div>
-          <p class="loss-aversion-desc">Your briefing profile is stored. Selected dates will be permanently locked into our diary immediately upon checkout.</p>
+          <p class="loss-aversion-desc" data-editable="true">Your briefing profile is stored. Selected dates will be permanently locked into our diary immediately upon checkout.</p>
         `;
         warningEl.style.borderLeftColor = 'var(--color-success)';
       } else {
         warningEl.innerHTML = `
           <div class="loss-aversion-title">⚠️ Campaign Brief Missing</div>
-          <p class="loss-aversion-desc">You haven't completed our automated Lead Qualification wizard. Bookings without qualified profiles are automatically removed from our calendars within 12 hours. <md-text-button href="qualification.html" onclick="window.location.href='qualification.html'" style="--md-text-button-label-text-color: #FFF;">Qualify Your Campaign Now</md-text-button> to prevent session cancellation.</p>
+          <p class="loss-aversion-desc" data-editable="true">You haven't completed our automated Lead Qualification wizard. Bookings without qualified profiles are automatically removed from our calendars within 12 hours. <md-text-button href="qualification.html" onclick="window.location.href='qualification.html'" style="--md-text-button-label-text-color: #FFF;">Qualify Your Campaign Now</md-text-button> to prevent session cancellation.</p>
         `;
       }
 
