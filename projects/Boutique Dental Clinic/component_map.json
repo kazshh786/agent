@@ -1,0 +1,27 @@
+{
+  "index.html": {
+    "macro_layout": ".creative-shell-split",
+    "sections": [
+      {
+        "name": "hero_content",
+        "shell": "asymmetrical_left",
+        "elements": [
+          { "tag": "h1", "role": "semantic_title" },
+          { "tag": "p", "role": "tribal_copy" },
+          { "tag": "md-filled-button", "role": "cta_qualification", "wrapper": "hero-actions-container" },
+          { "tag": "md-outlined-button", "role": "cta_exploration", "wrapper": "hero-actions-container" }
+        ]
+      },
+      {
+        "name": "yes_ladder_block",
+        "shell": "asymmetrical_right_card",
+        "elements": [
+          { "tag": "md-checkbox", "id": "chk-friction", "role": "micro_commitment_1", "wrapper": "checkbox-wrapper" },
+          { "tag": "md-checkbox", "id": "chk-gear", "role": "micro_commitment_2", "wrapper": "checkbox-wrapper" },
+          { "tag": "md-checkbox", "id": "chk-crew", "role": "micro_commitment_3", "wrapper": "checkbox-wrapper" },
+          { "tag": "md-filled-button", "id": "btn-submit-ladder", "role": "ladder_confirmation", "wrapper": "button-wrapper" }
+        ]
+      }
+    ]
+  }
+}
