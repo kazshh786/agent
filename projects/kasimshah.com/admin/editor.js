@@ -395,6 +395,31 @@ function discoverEditableElements(root) {
   return nodes;
 }
 
+// Discovers top-level layout sections inside the iframe document
+function getVisualSections(iframeDoc) {
+  let sections = [];
+  
+  // Find main wrapper element or body
+  const wrapper = iframeDoc.getElementById('wrapper') || iframeDoc.getElementById('app') || iframeDoc.querySelector('main') || iframeDoc.body;
+  
+  if (wrapper) {
+    const children = Array.from(wrapper.children);
+    children.forEach(child => {
+      const tag = child.tagName.toLowerCase();
+      // Skip non-layout script, style, meta tags
+      if (['script', 'style', 'noscript', 'iframe', 'meta', 'link', 'textarea', 'input', 'select'].includes(tag)) return;
+      sections.push(child);
+    });
+  }
+
+  // Fallback to querySelectorAll if no children are found
+  if (sections.length === 0) {
+    sections = Array.from(iframeDoc.querySelectorAll('section, header, footer'));
+  }
+  
+  return sections;
+}
+
 // Set up event listeners and hover styles inside preview iframe
 function setupIframeVisualEditing() {
   const iframe = document.getElementById('previewIframe');
@@ -435,7 +460,7 @@ function setupIframeVisualEditing() {
   inspectorForm.innerHTML = '';
 
   // Look for sections to structure our sidebar inspector accordion
-  const sections = Array.from(iframeDoc.querySelectorAll('section, header, footer'));
+  const sections = getVisualSections(iframeDoc);
   
   if (sections.length === 0) {
     // Fallback if there are no section tags (just container divs)
@@ -1522,7 +1547,7 @@ async function triggerAiRewrite(inputId, commandName) {
 function addRepeatingItem(secIdx) {
   const iframe = document.getElementById('previewIframe');
   const iframeDoc = iframe.contentWindow.document;
-  const sections = Array.from(iframeDoc.querySelectorAll('section, header, footer'));
+  const sections = getVisualSections(iframeDoc);
   const section = sections[secIdx];
   if (!section) return;
 
@@ -1551,7 +1576,7 @@ function addRepeatingItem(secIdx) {
 function removeRepeatingItem(secIdx, cardIdx) {
   const iframe = document.getElementById('previewIframe');
   const iframeDoc = iframe.contentWindow.document;
-  const sections = Array.from(iframeDoc.querySelectorAll('section, header, footer'));
+  const sections = getVisualSections(iframeDoc);
   const section = sections[secIdx];
   if (!section) return;
 
