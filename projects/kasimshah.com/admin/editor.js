@@ -278,6 +278,55 @@ function loadPageInPreview(file) {
   iframe.src = `/projects/${currentProject}/${file}?t=${Date.now()}`;
 }
 
+// Pre-process DOM: Wrap loose text node segments in generic span blocks
+function wrapRawTextNodesInSpans(root) {
+  const doc = root.ownerDocument;
+  if (!doc) return;
+
+  function walk(node) {
+    if (!node || node.nodeType !== 1) return;
+
+    const tag = node.tagName.toLowerCase();
+    // Skip scripts, styles, metadata
+    if (['script', 'style', 'iframe', 'select', 'head', 'noscript', 'option', 'textarea', 'input', 'meta', 'link'].includes(tag)) {
+      return;
+    }
+
+    // Convert childNodes to array to prevent mutation issues
+    const childNodes = Array.from(node.childNodes);
+    let hasChildElements = false;
+    for (let i = 0; i < childNodes.length; i++) {
+      if (childNodes[i].nodeType === 1) {
+        hasChildElements = true;
+        break;
+      }
+    }
+
+    if (hasChildElements) {
+      childNodes.forEach(child => {
+        if (child.nodeType === 3) { // TEXT_NODE
+          const val = child.nodeValue;
+          if (val && val.trim().length > 0) {
+            const span = doc.createElement('span');
+            span.className = 'editor-wrapped-text';
+            span.textContent = val;
+            node.replaceChild(span, child);
+          }
+        }
+      });
+    }
+
+    // Process remaining children
+    if (node.children) {
+      for (let i = 0; i < node.children.length; i++) {
+        walk(node.children[i]);
+      }
+    }
+  }
+
+  walk(root);
+}
+
 // Walk DOM tree recursively to find all text-containing nodes and images
 function discoverEditableElements(root) {
   const nodes = [];
@@ -288,7 +337,7 @@ function discoverEditableElements(root) {
     const tag = node.tagName.toLowerCase();
     
     // Skip scripts, metadata, controls, templates, and injected editors
-    if (['script', 'style', 'iframe', 'select', 'head', 'noscript', 'option', 'meta', 'link'].includes(tag) || node.id === 'editor-helper-styles') {
+    if (['script', 'style', 'iframe', 'select', 'head', 'noscript', 'option', 'meta', 'link', 'textarea', 'input'].includes(tag) || node.id === 'editor-helper-styles') {
       return;
     }
 
@@ -319,10 +368,10 @@ function discoverEditableElements(root) {
       }
     }
 
-    // Avoid pushing structural wrappers that contain sub-layout children
+    const isStandardEditableTag = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'a', 'button', 'md-filled-button', 'md-outlined-button', 'md-text-button', 'li', 'span', 'small', 'label', 'td', 'th'].includes(tag);
     const isWrapper = ['body', 'section', 'main', 'header', 'footer', 'article', 'aside', 'div', 'ul', 'ol', 'table', 'tbody', 'thead', 'tr'].includes(tag);
 
-    if (hasDirectText) {
+    if (hasDirectText || (isStandardEditableTag && node.innerText && node.innerText.trim().length > 0)) {
       if (isWrapper) {
         // If it's a div/section wrapper, only edit it if it has no child headings, paragraphs, lists, etc.
         const hasSubLayout = node.querySelector('div, p, section, article, h1, h2, h3, h4, h5, h6, table, ul, ol, li, span, a, md-filled-button, md-outlined-button, md-text-button');
@@ -352,6 +401,13 @@ function setupIframeVisualEditing() {
   const iframeDoc = iframe.contentWindow.document;
 
   if (!iframeDoc) return;
+
+  // Pre-process DOM: Wrap loose text node segments in spans to ensure 100% click-to-edit canvas parity
+  try {
+    wrapRawTextNodesInSpans(iframeDoc.body);
+  } catch (err) {
+    console.error('Failed to pre-process iframe DOM text node wrappers', err);
+  }
 
   // 1. Inject visual helper CSS rules
   const helperStyle = iframeDoc.createElement('style');
@@ -993,8 +1049,14 @@ async function handleAddPage(e) {
     const docClone = iframeDoc.documentElement.cloneNode(true);
     const helperStyles = docClone.querySelector('#editor-helper-styles');
     if (helperStyles) helperStyles.remove();
-    docClone.querySelectorAll('.editor-hover-outline').forEach(el => el.classList.remove('editor-hover-outline'));
-    docClone.querySelectorAll('.editor-active-outline').forEach(el => el.classList.remove('editor-active-outline'));
+    docClone.querySelectorAll('.editor-hover-outline, .editor-active-outline, [contenteditable]').forEach(el => {
+      el.classList.remove('editor-hover-outline', 'editor-active-outline');
+      el.removeAttribute('contenteditable');
+    });
+    docClone.querySelectorAll('.editor-wrapped-text').forEach(span => {
+      const textNode = docClone.createTextNode(span.textContent);
+      span.parentNode.replaceChild(textNode, span);
+    });
 
     // Strip internal body content to make it a blank page wrapper, keeping header and footer
     const mainEl = docClone.querySelector('main');
@@ -1065,13 +1127,21 @@ async function saveAllChanges() {
     // 1. Serialize HTML Page (Strips visual builder injected classes)
     const docClone = iframeDoc.documentElement.cloneNode(true);
     
-    // Remove outlines
-    docClone.querySelectorAll('.editor-hover-outline').forEach(el => el.classList.remove('editor-hover-outline'));
-    docClone.querySelectorAll('.editor-active-outline').forEach(el => el.classList.remove('editor-active-outline'));
+    // Remove outlines & contenteditables
+    docClone.querySelectorAll('.editor-hover-outline, .editor-active-outline, [contenteditable]').forEach(el => {
+      el.classList.remove('editor-hover-outline', 'editor-active-outline');
+      el.removeAttribute('contenteditable');
+    });
     
     // Remove editor script/style tags
     const helperStyle = docClone.querySelector('#editor-helper-styles');
     if (helperStyle) helperStyle.remove();
+
+    // Unwrap visual text node wrapper spans
+    docClone.querySelectorAll('.editor-wrapped-text').forEach(span => {
+      const textNode = docClone.createTextNode(span.textContent);
+      span.parentNode.replaceChild(textNode, span);
+    });
 
     const cleanHtml = '<!DOCTYPE html>\n' + docClone.outerHTML;
 
