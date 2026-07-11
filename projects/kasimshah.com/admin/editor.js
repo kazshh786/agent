@@ -462,6 +462,91 @@ function setupIframeVisualEditing() {
           const inpId = `${cardId}-text-${tIdx}`;
           
           editableElementsMap[inpId] = tNode;
+
+          // Bind hover triggers to repeat card nodes
+          tNode.addEventListener('mouseover', (e) => {
+            e.stopPropagation();
+            if (!tNode.classList.contains('editor-active-outline')) {
+              tNode.classList.add('editor-hover-outline');
+            }
+          });
+          
+          tNode.addEventListener('mouseout', (e) => {
+            e.stopPropagation();
+            tNode.classList.remove('editor-hover-outline');
+          });
+
+          // Bind visual selection click triggers
+          tNode.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Clear other outlines
+            iframeDoc.querySelectorAll('.editor-active-outline').forEach(el => {
+              el.classList.remove('editor-active-outline');
+              el.contentEditable = "false";
+            });
+
+            tNode.classList.add('editor-active-outline');
+
+            const isIcon = tNode.classList.contains('material-icons');
+            if (!isIcon) {
+              tNode.contentEditable = "true";
+              tNode.focus();
+
+              // Programmatically place blinking caret cursor at the end of the text
+              try {
+                const iframeWindow = iframe.contentWindow;
+                const sel = iframeWindow.getSelection();
+                const range = iframeDoc.createRange();
+                range.selectNodeContents(tNode);
+                range.collapse(false);
+                sel.removeAllRanges();
+                sel.addRange(range);
+              } catch (err) {
+                console.error('Failed to set caret cursor on repeater', err);
+              }
+
+              // Sync text back to sidebar input in real-time
+              tNode.addEventListener('input', () => {
+                const sidebarInput = document.getElementById(inpId);
+                if (sidebarInput) {
+                  sidebarInput.value = tNode.innerText || tNode.textContent;
+                }
+                const statusEl = document.getElementById('editorStatusText');
+                if (statusEl) {
+                  statusEl.innerText = 'Page modified inline. Save pending...';
+                  statusEl.style.color = 'var(--color-accent)';
+                }
+              });
+
+              tNode.addEventListener('blur', () => {
+                tNode.contentEditable = "false";
+              }, { once: true });
+            }
+
+            // Sync with sidebar panel focus and scrolling
+            const sidebarInput = document.getElementById(inpId);
+            if (sidebarInput) {
+              switchTab('content');
+              // Make sure its parent accordion section is expanded
+              accContent.style.display = 'block';
+              accContent.classList.add('active');
+              accHeader.querySelector('.material-icons').innerText = 'expand_more';
+
+              setTimeout(() => {
+                const container = document.getElementById('editorSidebarContent');
+                const topPos = sidebarInput.offsetTop - container.offsetTop - (container.clientHeight / 2) + (sidebarInput.clientHeight / 2);
+                container.scrollTo({ top: Math.max(0, topPos), behavior: 'smooth' });
+                
+                if (isIcon) {
+                  sidebarInput.focus({ preventScroll: true });
+                }
+              }, 100);
+            }
+
+            showFloatingToolbar(tNode, inpId);
+          });
           
           if (tNode.classList.contains('material-icons')) {
             cardHtml += `
@@ -554,6 +639,19 @@ function setupIframeVisualEditing() {
         if (!isIcon && !isImg) {
           node.contentEditable = "true";
           node.focus();
+
+          // Programmatically place caret cursor at the end of the text
+          try {
+            const iframeWindow = iframe.contentWindow;
+            const sel = iframeWindow.getSelection();
+            const range = iframeDoc.createRange();
+            range.selectNodeContents(node);
+            range.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(range);
+          } catch (err) {
+            console.error('Failed to set caret cursor', err);
+          }
           
           // Sync text back to sidebar input in real-time
           node.addEventListener('input', () => {
