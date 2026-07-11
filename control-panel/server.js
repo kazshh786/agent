@@ -929,6 +929,48 @@ app.post('/api/projects', async (req, res) => {
   }
 });
 
+// API: Delete a Website Project (Start Again)
+app.delete('/api/project/:name', async (req, res) => {
+  const projectName = req.params.name;
+
+  if (!projectName) {
+    return res.status(400).json({ success: false, error: 'Project name parameter is required.' });
+  }
+
+  // Protection Guard: Never delete the core agency website
+  if (projectName.toLowerCase() === 'kasimshah.com') {
+    return res.status(403).json({ success: false, error: 'Accidental deletion protection: The primary agency website cannot be deleted.' });
+  }
+
+  const projectPath = path.join(PROJECTS_DIR, projectName);
+
+  if (!fs.existsSync(projectPath)) {
+    return res.status(404).json({ success: false, error: `Project '${projectName}' does not exist on disk.` });
+  }
+
+  try {
+    // 1. Delete local folder recursively
+    fs.rmSync(projectPath, { recursive: true, force: true });
+    console.log(`[Delete] Deleted folder on disk: ${projectPath}`);
+
+    // 2. Commit deletion changes to Git to update Vercel/Cloudflare Pages pipeline
+    if (fs.existsSync(path.join(WORKSPACE_DIR, '.git'))) {
+      try {
+        await runGitCommand(`git add -A`, WORKSPACE_DIR);
+        await runGitCommand(`git commit -m "Visual Editor: delete website instance '${projectName}'"`, WORKSPACE_DIR);
+        console.log(`[Delete] Git commit successfully registered for '${projectName}' deletion.`);
+      } catch (gitErr) {
+        console.error('[Delete] Git commit during delete failed (non-blocking):', gitErr);
+      }
+    }
+
+    res.json({ success: true, message: `Website '${projectName}' deleted successfully.` });
+  } catch (err) {
+    console.error(`[Delete] Failed to delete website project '${projectName}':`, err);
+    res.status(500).json({ success: false, error: `Failed to delete website folder: ${err.message}` });
+  }
+});
+
 // API: Get Specific Page (HTML) or Asset Config
 app.get('/api/project/:name/file', async (req, res) => {
   const { name } = req.params;

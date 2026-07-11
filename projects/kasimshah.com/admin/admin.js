@@ -96,13 +96,18 @@ async function loadProjects() {
           </div>
         </div>
 
-        <div class="project-actions">
-          <a href="editor.html?project=${encodeURIComponent(proj.name)}" class="btn btn-primary" style="flex: 1; text-align: center; text-transform: uppercase;">
+        <div class="project-actions" style="display: flex; gap: 8px;">
+          <a href="editor.html?project=${encodeURIComponent(proj.name)}" class="btn btn-primary" style="flex: 1; text-align: center; text-transform: uppercase; font-size: 0.8rem; padding: 10px 16px;">
             Visual Editor
           </a>
-          <a href="/projects/${encodeURIComponent(proj.name)}/index.html" target="_blank" class="btn btn-secondary" title="View live draft site">
+          <a href="/projects/${encodeURIComponent(proj.name)}/index.html" target="_blank" class="btn btn-secondary" title="View live draft site" style="font-size: 0.8rem; padding: 10px 16px;">
             Launch ↗
           </a>
+          ${proj.name.toLowerCase() !== 'kasimshah.com' ? `
+            <button class="btn btn-secondary btn-delete" data-project="${proj.name}" title="Delete site and start again" style="color: #cf6679; border-color: rgba(207, 102, 121, 0.3); font-size: 0.8rem; padding: 10px 16px;">
+              Delete
+            </button>
+          ` : ''}
         </div>
       `;
       grid.appendChild(card);
@@ -273,9 +278,43 @@ async function handleCreateWebsite(e) {
   }
 }
 
-// Initial binding
 document.addEventListener('DOMContentLoaded', () => {
   loadProjects();
+
+  const grid = document.getElementById('projectsGrid');
+  if (grid) {
+    grid.addEventListener('click', async (e) => {
+      const deleteBtn = e.target.closest('.btn-delete');
+      if (!deleteBtn) return;
+
+      const projectName = deleteBtn.getAttribute('data-project');
+      if (!projectName) return;
+
+      const confirmed = confirm(`Are you sure you want to permanently delete the website project "${projectName}"? This will delete all its HTML files, styles, and configurations so you can start again. This action cannot be undone.`);
+      if (!confirmed) return;
+
+      deleteBtn.disabled = true;
+      deleteBtn.innerText = 'Deleting...';
+
+      try {
+        const res = await fetch(`${API_BASE}/api/project/${encodeURIComponent(projectName)}`, {
+          method: 'DELETE'
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          showToast(`Website "${projectName}" deleted successfully.`, 'success');
+          await loadProjects();
+        } else {
+          throw new Error(data.error || 'Failed to delete project');
+        }
+      } catch (err) {
+        showToast(err.message, 'error');
+        deleteBtn.disabled = false;
+        deleteBtn.innerText = 'Delete';
+      }
+    });
+  }
 
   const openBtn = document.getElementById('openCreateModalBtn');
   const closeBtn = document.getElementById('closeCreateModalBtn');
