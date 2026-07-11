@@ -1,5 +1,5 @@
 /* --- ADMIN DESIGN SYSTEM (Editorial Luxe Parity) --- */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 
 :root {
   --color-primary: #0A0A0A;       /* Deep Obsidian background */
@@ -12,10 +12,18 @@
   --color-success: #30D158;
   --color-error: #FF453A;
 
-  --font-sans: 'Inter', sans-serif;
+  --font-sans: 'Outfit', sans-serif;
   --font-serif: 'Playfair Display', serif;
 
   --transition-smooth: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  
+  /* Material 3 Radius Tokens */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 100px;
 }
 
 *, *::before, *::after {
@@ -112,7 +120,7 @@ a:hover {
   border: 1.5px solid var(--color-accent);
   padding: 4px 12px;
   font-weight: 600;
-  border-radius: 0px;
+  border-radius: var(--radius-full);
 }
 
 /* --- BUTTONS --- */
@@ -131,7 +139,7 @@ a:hover {
   border: none;
   cursor: pointer;
   transition: var(--transition-smooth);
-  border-radius: 0px; /* Editorial square edges */
+  border-radius: var(--radius-full); /* Material 3 Pill Button */
 }
 
 .btn-primary {
@@ -181,6 +189,7 @@ a:hover {
   padding: 24px;
   position: relative;
   transition: var(--transition-smooth);
+  border-radius: var(--radius-lg);
 }
 
 .stat-card:hover {
@@ -225,6 +234,7 @@ a:hover {
   flex-direction: column;
   justify-content: space-between;
   transition: var(--transition-smooth);
+  border-radius: var(--radius-lg);
 }
 
 .project-card:hover {
@@ -293,11 +303,13 @@ a:hover {
   font-family: var(--font-sans);
   font-size: 0.95rem;
   transition: var(--transition-smooth);
+  border-radius: var(--radius-md);
 }
 
 .form-control:focus {
   outline: none;
   border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.25);
 }
 
 .select-control {
@@ -331,6 +343,8 @@ a:hover {
   padding: 40px;
   position: relative;
   animation: modalFadeIn 450ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  border-radius: var(--radius-xl);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
 }
 
 @keyframes modalFadeIn {
@@ -430,8 +444,11 @@ a:hover {
 
 /* --- SECTION LIST & PANEL COLLAPSE --- */
 .accordion-item {
-  border-bottom: 1px solid var(--color-dark-border);
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--color-dark-border);
+  border-radius: var(--radius-md);
   margin-bottom: 16px;
+  padding: 4px 16px;
 }
 
 .accordion-header {

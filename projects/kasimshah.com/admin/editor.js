@@ -278,6 +278,74 @@ function loadPageInPreview(file) {
   iframe.src = `/projects/${currentProject}/${file}?t=${Date.now()}`;
 }
 
+// Walk DOM tree recursively to find all text-containing nodes and images
+function discoverEditableElements(root) {
+  const nodes = [];
+  
+  function walk(node) {
+    if (!node || node.nodeType !== 1) return;
+
+    const tag = node.tagName.toLowerCase();
+    
+    // Skip scripts, metadata, controls, templates, and injected editors
+    if (['script', 'style', 'iframe', 'select', 'head', 'noscript', 'option', 'meta', 'link'].includes(tag) || node.id === 'editor-helper-styles') {
+      return;
+    }
+
+    // Explicitly allow images
+    if (tag === 'img') {
+      nodes.push(node);
+      return;
+    }
+
+    // Explicitly allow icons
+    if (node.classList && node.classList.contains('material-icons')) {
+      nodes.push(node);
+      return;
+    }
+
+    // Check direct children for text node components
+    let hasDirectText = false;
+    if (node.childNodes && node.childNodes.length > 0) {
+      for (let i = 0; i < node.childNodes.length; i++) {
+        const child = node.childNodes[i];
+        if (child.nodeType === 3) { // TEXT_NODE
+          const val = child.nodeValue.trim();
+          if (val.length > 0) {
+            hasDirectText = true;
+            break;
+          }
+        }
+      }
+    }
+
+    // Avoid pushing structural wrappers that contain sub-layout children
+    const isWrapper = ['body', 'section', 'main', 'header', 'footer', 'article', 'aside', 'div', 'ul', 'ol', 'table', 'tbody', 'thead', 'tr'].includes(tag);
+
+    if (hasDirectText) {
+      if (isWrapper) {
+        // If it's a div/section wrapper, only edit it if it has no child headings, paragraphs, lists, etc.
+        const hasSubLayout = node.querySelector('div, p, section, article, h1, h2, h3, h4, h5, h6, table, ul, ol, li, span, a, md-filled-button, md-outlined-button, md-text-button');
+        if (!hasSubLayout) {
+          nodes.push(node);
+        }
+      } else {
+        nodes.push(node);
+      }
+    }
+
+    // Process children
+    if (node.children) {
+      for (let i = 0; i < node.children.length; i++) {
+        walk(node.children[i]);
+      }
+    }
+  }
+
+  walk(root);
+  return nodes;
+}
+
 // Set up event listeners and hover styles inside preview iframe
 function setupIframeVisualEditing() {
   const iframe = document.getElementById('previewIframe');
@@ -320,7 +388,7 @@ function setupIframeVisualEditing() {
 
   sections.forEach((section, secIdx) => {
     // Find all potential editable nodes inside this section
-    const textNodes = Array.from(section.querySelectorAll('h1, h2, h3, h4, h5, h6, p, md-filled-button, md-outlined-button, md-text-button, a, img, .material-icons, span, li, small, label, td, th'));
+    const textNodes = discoverEditableElements(section);
     
     if (textNodes.length === 0) return;
 
