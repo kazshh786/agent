@@ -105,6 +105,9 @@ async function runLiveAudit(notify = true) {
   // Render diagnostic checklist detail rows
   renderChecklistDetails(auditReport.checks);
 
+  // Update Core Integrations status and actions
+  updateIntegrationsStatus(auditReport);
+
   if (notify) {
     showToast('Codebase scan and audit telemetry compiled successfully!', 'success');
     document.getElementById('btn-re-audit').disabled = false;
@@ -127,6 +130,8 @@ function scanCodebase(html, proj) {
   let scriptTagsCount = 0;
   let deferredScriptCount = 0;
   let domComplexityNodes = 0;
+  let hasGscVerification = false;
+  let gscCode = '';
 
   // Defaults if html is empty (e.g. project files not reachable, fallback)
   if (!html) {
@@ -143,6 +148,8 @@ function scanCodebase(html, proj) {
     scriptTagsCount = 2;
     deferredScriptCount = 2;
     domComplexityNodes = 320;
+    hasGscVerification = false;
+    gscCode = '';
   } else {
     // Simple regex parsing to simulate real parser without heavy parser library
     isGoogleAnalyticsPresent = html.includes('googletagmanager') || html.includes('google-analytics') || html.includes('gtag(');
@@ -151,6 +158,13 @@ function scanCodebase(html, proj) {
     hasTitle = /<title[^>]*>/i.test(html);
     hasDescription = /<meta[^>]+name=["']description["']/i.test(html) || /<meta[^>]+content=[^>]+name=["']description["']/i.test(html);
     hasSchema = /<script[^>]+type=["']application\/ld\+json["']/i.test(html);
+    hasGscVerification = /meta[^>]+name=["']google-site-verification["']/i.test(html) || 
+                         /meta[^>]+content=[^>]+name=["']google-site-verification["']/i.test(html);
+    if (hasGscVerification) {
+      const gscMatch = html.match(/name=["']google-site-verification["'][^>]+content=["']([^"']+)["']/i) || 
+                       html.match(/content=["']([^"']+)["'][^>]+name=["']google-site-verification["']/i);
+      gscCode = gscMatch ? gscMatch[1] : 'Present';
+    }
     
     const h1Matches = html.match(/<h1[^>]*>/gi);
     h1Count = h1Matches ? h1Matches.length : 0;
@@ -183,6 +197,16 @@ function scanCodebase(html, proj) {
     details: isGoogleAnalyticsPresent 
       ? 'Detected global gtag.js snippet successfully initialized in index.html head.' 
       : 'Google Analytics snippet (gtag.js / GTM) missing in index.html head. Real visitor tracking is inactive.'
+  });
+
+  // Google Search Console Check
+  checks.push({
+    id: 'GSC_VERIFICATION',
+    name: 'Google Search Console Verification',
+    status: hasGscVerification ? 'PASS' : 'WARNING',
+    details: hasGscVerification 
+      ? `Detected active site verification code (${gscCode}). Site can link to search reports.`
+      : 'Verification meta tag is missing. Google Search Console cannot read index telemetry or performance reports.'
   });
 
   // 2. Check: Robots Crawler index protection
@@ -290,7 +314,10 @@ function scanCodebase(html, proj) {
 
   return {
     checks,
-    scores
+    scores,
+    isGoogleAnalyticsPresent,
+    hasGscVerification,
+    gscCode
   };
 }
 
@@ -869,6 +896,195 @@ function showToast(message, type = 'success') {
     setTimeout(() => toast.remove(), 500);
   }, 4000);
 }
+
+// Update UI connection status indicators for GSC and Google Analytics
+function updateIntegrationsStatus(report) {
+  const statusGA = document.getElementById('statusGA');
+  const detailsGA = document.getElementById('detailsGA');
+  const btnSetupGA = document.getElementById('btnSetupGA');
+
+  const statusGSC = document.getElementById('statusGSC');
+  const detailsGSC = document.getElementById('detailsGSC');
+  const btnSetupGSC = document.getElementById('btnSetupGSC');
+
+  if (!statusGA || !statusGSC) return;
+
+  if (report.isGoogleAnalyticsPresent) {
+    statusGA.innerText = 'Connected';
+    statusGA.className = 'audit-status-badge pass';
+    let gaId = 'Active';
+    const gaMatch = homepageHtml.match(/gtag\('config',\s*'([^']+)'\)/i) || homepageHtml.match(/id=(G-[A-Za-z0-9]+)/i);
+    if (gaMatch) gaId = gaMatch[1];
+    detailsGA.innerHTML = `gtag.js initialized successfully.<br><strong>Measurement ID: ${gaId}</strong>`;
+    btnSetupGA.innerHTML = '<span class="material-icons" style="font-size: 0.9rem; vertical-align:middle;">settings</span> Update GA';
+  } else {
+    statusGA.innerText = 'Not Found';
+    statusGA.className = 'audit-status-badge fail';
+    detailsGA.innerText = 'gtag.js snippet is missing in index.html head.';
+    btnSetupGA.innerHTML = '<span class="material-icons" style="font-size: 0.9rem; vertical-align:middle;">settings</span> Setup GA';
+  }
+
+  if (report.hasGscVerification) {
+    statusGSC.innerText = 'Verified';
+    statusGSC.className = 'audit-status-badge pass';
+    let displayCode = report.gscCode;
+    if (displayCode.length > 20) displayCode = displayCode.substring(0, 17) + '...';
+    detailsGSC.innerHTML = `Search verification tag active.<br><strong>Key: ${displayCode}</strong>`;
+    btnSetupGSC.innerHTML = '<span class="material-icons" style="font-size: 0.9rem; vertical-align:middle;">vpn_key</span> Update Tag';
+  } else {
+    statusGSC.innerText = 'Not Verified';
+    statusGSC.className = 'audit-status-badge fail';
+    detailsGSC.innerText = 'Verification meta tag not detected in document head.';
+    btnSetupGSC.innerHTML = '<span class="material-icons" style="font-size: 0.9rem; vertical-align:middle;">vpn_key</span> Verify GSC';
+  }
+}
+
+// Google Analytics Modal controls
+function openGASetupModal() {
+  const modal = document.getElementById('gaSetupModal');
+  if (modal) {
+    let gaId = '';
+    const gaMatch = homepageHtml.match(/gtag\('config',\s*'([^']+)'\)/i) || homepageHtml.match(/id=(G-[A-Za-z0-9]+)/i);
+    if (gaMatch) gaId = gaMatch[1];
+    document.getElementById('gaMeasurementId').value = gaId;
+    modal.style.display = 'flex';
+  }
+}
+
+// Global functions exposed to window
+window.openGASetupModal = openGASetupModal;
+
+function closeGASetupModal() {
+  const modal = document.getElementById('gaSetupModal');
+  if (modal) modal.style.display = 'none';
+}
+window.closeGASetupModal = closeGASetupModal;
+
+async function saveGASetup(e) {
+  e.preventDefault();
+  const id = document.getElementById('gaMeasurementId').value.trim();
+  if (!id) return;
+
+  const btn = document.getElementById('submitGASetupBtn');
+  const origText = btn.innerText;
+  btn.innerText = 'INJECTING...';
+  btn.disabled = true;
+
+  try {
+    let html = homepageHtml;
+    if (!html) {
+      throw new Error('Index.html not loaded from client directory.');
+    }
+
+    // Clean old scripts
+    html = html.replace(/<!-- Google Analytics -->[\s\S]*?<\/script>/gi, '');
+    html = html.replace(/<script[^>]+src=["'][^"']*googletagmanager\.com[^"']*["'][^>]*><\/script>\s*<script>[\s\S]*?<\/script>/gi, '');
+
+    const snippet = `<!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=${id}"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '${id}');
+  </script>`;
+
+    // Insert right after head starts
+    html = html.replace(/<head>/i, `<head>\n  ${snippet}`);
+
+    const res = await fetch(`${API_BASE}/api/project/${encodeURIComponent(currentProjectName)}/file?path=index.html`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: html })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to edit index.html');
+    }
+
+    showToast(`Google Analytics configured for ${currentProjectName}!`, 'success');
+    closeGASetupModal();
+    await runLiveAudit(false);
+
+  } catch (err) {
+    showToast(err.message, 'error');
+  } finally {
+    btn.innerText = origText;
+    btn.disabled = false;
+  }
+}
+window.saveGASetup = saveGASetup;
+
+// Google Search Console Modal controls
+function openGSCSetupModal() {
+  const modal = document.getElementById('gscSetupModal');
+  if (modal) {
+    let verificationCode = '';
+    const gscMatch = homepageHtml.match(/content=["']([^"']+)["'][^>]+name=["']google-site-verification["']/i) ||
+                     homepageHtml.match(/name=["']google-site-verification["'][^>]+content=["']([^"']+)["']/i);
+    if (gscMatch) verificationCode = gscMatch[1];
+    document.getElementById('gscVerificationCode').value = verificationCode;
+    modal.style.display = 'flex';
+  }
+}
+window.openGSCSetupModal = openGSCSetupModal;
+
+function closeGSCSetupModal() {
+  const modal = document.getElementById('gscSetupModal');
+  if (modal) modal.style.display = 'none';
+}
+window.closeGSCSetupModal = closeGSCSetupModal;
+
+async function saveGSCSetup(e) {
+  e.preventDefault();
+  const input = document.getElementById('gscVerificationCode').value.trim();
+  if (!input) return;
+
+  const btn = document.getElementById('submitGSCSetupBtn');
+  const origText = btn.innerText;
+  btn.innerText = 'INJECTING...';
+  btn.disabled = true;
+
+  try {
+    let html = homepageHtml;
+    if (!html) {
+      throw new Error('Index.html not loaded from client directory.');
+    }
+
+    let token = input;
+    const tagMatch = input.match(/content=["']([^"']+)["']/i);
+    if (tagMatch) token = tagMatch[1];
+
+    // Clean old meta tag
+    html = html.replace(/<meta[^>]+name=["']google-site-verification["'][^>]*>/gi, '');
+
+    const snippet = `<meta name="google-site-verification" content="${token}">`;
+    html = html.replace(/<head>/i, `<head>\n  ${snippet}`);
+
+    const res = await fetch(`${API_BASE}/api/project/${encodeURIComponent(currentProjectName)}/file?path=index.html`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: html })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to edit index.html');
+    }
+
+    showToast('Search Console verification tag injected successfully!', 'success');
+    closeGSCSetupModal();
+    await runLiveAudit(false);
+
+  } catch (err) {
+    showToast(err.message, 'error');
+  } finally {
+    btn.innerText = origText;
+    btn.disabled = false;
+  }
+}
+window.saveGSCSetup = saveGSCSetup;
 
 // Initialize on DOM load
 document.addEventListener('DOMContentLoaded', initAnalytics);

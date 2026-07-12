@@ -211,7 +211,8 @@
 
           <!-- Right side: conversion optimization prioritize checklist -->
           <div>
-            <div class="visual-panel-card" style="height: 100%;">
+            <!-- Conversion Strategy Card -->
+            <div class="visual-panel-card" style="margin-bottom: 24px;">
               <h3 class="panel-title" style="border-bottom-color: rgba(212,175,55,0.2);"><span class="material-icons" style="color: var(--color-accent);">tips_and_updates</span> Conversion Strategy</h3>
               
               <div style="margin-bottom: 24px;">
@@ -226,6 +227,81 @@
                 <ol class="recommendations-list" id="priorityActionsList">
                   <!-- Dynamic steps -->
                 </ol>
+              </div>
+            </div>
+
+            <!-- Core Integrations Setup Card -->
+            <div class="visual-panel-card">
+              <h3 class="panel-title" style="border-bottom-color: rgba(212,175,55,0.2);"><span class="material-icons" style="color: var(--color-accent);">link</span> Core Integrations</h3>
+              
+              <div style="display: flex; flex-direction: column; gap: 16px;">
+                
+                <!-- Google Analytics Integration -->
+                <div style="border: 1px solid var(--color-dark-border); padding: 16px; border-radius: var(--radius-md); background: rgba(255,255,255,0.01);">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span class="material-icons" style="color: #4285F4; font-size: 1.2rem;">analytics</span>
+                      <strong style="font-size: 0.9rem;">Google Analytics</strong>
+                    </div>
+                    <span class="audit-status-badge fail" id="statusGA">Not Found</span>
+                  </div>
+                  <div style="font-size: 0.8rem; color: var(--color-muted); margin-bottom: 12px; line-height: 1.4;" id="detailsGA">
+                    gtag.js snippet is missing in index.html head.
+                  </div>
+                  <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-secondary" onclick="openGASetupModal()" style="flex: 1; min-height: 36px; font-size: 0.75rem; padding: 0 12px;" id="btnSetupGA">
+                      <span class="material-icons" style="font-size: 0.9rem;">settings</span> Setup GA
+                    </button>
+                    <a href="https://analytics.google.com/analytics/web/" target="_blank" class="btn btn-secondary" style="min-height: 36px; font-size: 0.75rem; padding: 0 12px;" title="Go directly to Google Analytics Login">
+                      Login <span class="material-icons" style="font-size: 0.9rem; margin-left: 2px;">open_in_new</span>
+                    </a>
+                  </div>
+                </div>
+
+                <!-- Google Search Console Integration -->
+                <div style="border: 1px solid var(--color-dark-border); padding: 16px; border-radius: var(--radius-md); background: rgba(255,255,255,0.01);">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span class="material-icons" style="color: #DB4437; font-size: 1.2rem;">search</span>
+                      <strong style="font-size: 0.9rem;">Search Console</strong>
+                    </div>
+                    <span class="audit-status-badge fail" id="statusGSC">Not Verified</span>
+                  </div>
+                  <div style="font-size: 0.8rem; color: var(--color-muted); margin-bottom: 12px; line-height: 1.4;" id="detailsGSC">
+                    Verification meta tag not detected in document head.
+                  </div>
+                  <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-secondary" onclick="openGSCSetupModal()" style="flex: 1; min-height: 36px; font-size: 0.75rem; padding: 0 12px;" id="btnSetupGSC">
+                      <span class="material-icons" style="font-size: 0.9rem;">vpn_key</span> Verify GSC
+                    </button>
+                    <a href="https://search.google.com/search-console" target="_blank" class="btn btn-secondary" style="min-height: 36px; font-size: 0.75rem; padding: 0 12px;" title="Go directly to Google Search Console Login">
+                      Login <span class="material-icons" style="font-size: 0.9rem; margin-left: 2px;">open_in_new</span>
+                    </a>
+                  </div>
+                </div>
+
+                <!-- Lighthouse Performance Integration -->
+                <div style="border: 1px solid var(--color-dark-border); padding: 16px; border-radius: var(--radius-md); background: rgba(255,255,255,0.01);">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span class="material-icons" style="color: #F4B400; font-size: 1.2rem;">speed</span>
+                      <strong style="font-size: 0.9rem;">Google Lighthouse</strong>
+                    </div>
+                    <span class="audit-status-badge pass" id="statusLH">Ready</span>
+                  </div>
+                  <div style="font-size: 0.8rem; color: var(--color-muted); margin-bottom: 12px; line-height: 1.4;">
+                    Lighthouse audit engine is configured to check speed and accessibility benchmarks.
+                  </div>
+                  <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-secondary" onclick="runLiveAudit(true)" style="flex: 1; min-height: 36px; font-size: 0.75rem; padding: 0 12px;">
+                      <span class="material-icons" style="font-size: 0.9rem;">refresh</span> Scan Local
+                    </button>
+                    <a href="https://pagespeed.web.dev/" target="_blank" class="btn btn-secondary" style="min-height: 36px; font-size: 0.75rem; padding: 0 12px;" title="Go directly to Google Lighthouse / PageSpeed Insights Login">
+                      Test Live <span class="material-icons" style="font-size: 0.9rem; margin-left: 2px;">open_in_new</span>
+                    </a>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
@@ -313,6 +389,58 @@
     </div>
 
   </main>
+
+  <!-- MODAL: GOOGLE ANALYTICS SETUP -->
+  <div class="modal-overlay" id="gaSetupModal">
+    <div class="modal-card" style="max-width: 500px; padding: 32px;" id="ga-modal-card">
+      <button class="modal-close" onclick="closeGASetupModal()" aria-label="Close GA modal">&times;</button>
+      <div class="modal-header">
+        <h2 style="font-size: 1.4rem; margin-bottom: 4px;">Setup Google Analytics</h2>
+        <p style="color: var(--color-muted); font-size: 0.85rem; font-family: var(--font-serif); font-style: italic;">
+          Inject GA tracking tag (gtag.js) automatically into index.html head.
+        </p>
+      </div>
+      <form id="gaSetupForm" onsubmit="saveGASetup(event)">
+        <div class="form-group">
+          <label for="gaMeasurementId">Google Analytics Measurement ID</label>
+          <input type="text" id="gaMeasurementId" class="form-control" placeholder="e.g. G-XXXXXXXXXX" required pattern="G-[A-Za-z0-9]+">
+          <span style="font-size: 0.75rem; color: var(--color-muted); display: block; margin-top: 6px;">
+            Don't have an ID? <a href="https://analytics.google.com/" target="_blank" style="color: var(--color-accent);">Create a stream in Google Analytics ↗</a>
+          </span>
+        </div>
+        <div style="display: flex; gap: 16px; margin-top: 24px;">
+          <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="closeGASetupModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="flex: 1.5;" id="submitGASetupBtn">Inject Tracking Tag</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: GOOGLE SEARCH CONSOLE SETUP -->
+  <div class="modal-overlay" id="gscSetupModal">
+    <div class="modal-card" style="max-width: 500px; padding: 32px;" id="gsc-modal-card">
+      <button class="modal-close" onclick="closeGSCSetupModal()" aria-label="Close Search Console modal">&times;</button>
+      <div class="modal-header">
+        <h2 style="font-size: 1.4rem; margin-bottom: 4px;">Verify Google Search Console</h2>
+        <p style="color: var(--color-muted); font-size: 0.85rem; font-family: var(--font-serif); font-style: italic;">
+          Inject search site verification tag into index.html head.
+        </p>
+      </div>
+      <form id="gscSetupForm" onsubmit="saveGSCSetup(event)">
+        <div class="form-group">
+          <label for="gscVerificationCode">HTML Tag Content or Verification Key</label>
+          <input type="text" id="gscVerificationCode" class="form-control" placeholder="google-site-verification=XXXXXXXXXXXXXXXX" required>
+          <span style="font-size: 0.75rem; color: var(--color-muted); display: block; margin-top: 6px;">
+            Paste the code key or the full HTML tag: <code>&lt;meta name="google-site-verification" content="..." /&gt;</code>.
+          </span>
+        </div>
+        <div style="display: flex; gap: 16px; margin-top: 24px;">
+          <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="closeGSCSetupModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="flex: 1.5;" id="submitGSCSetupBtn">Inject Verification Tag</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- TOAST CONTAINER FOR ALERTS -->
   <div class="toast-container" id="toastContainer"></div>
