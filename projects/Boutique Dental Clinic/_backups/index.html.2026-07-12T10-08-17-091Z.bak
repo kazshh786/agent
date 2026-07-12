@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KS Studio - Boutique Luxury Production & Event Space</title>
+  <meta name="description" content="Secure your next premium campaign at KS Studio, London's leading high-value boutique production environment. Direct diary synchronization.">
+  <meta property="og:title" content="KS Studio - Boutique Luxury Production Space">
+  <meta property="og:description" content="Secure London's leading high-value boutique production space. Direct booking calendar.">
+  <meta property="og:type" content="website">
+  
+  <!-- Material Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- Load Material Design 3 Web Components -->
+  <script type="module" src="https://esm.run/@material/web/all.js"></script>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="container nav-container">
+      <a href="index.html" class="logo" id="header-logo">
+        DENTAL <span>STUDIO</span>
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" id="nav-toggle-btn" data-editable="true">
+        ☰
+      </button>
+      
+      <!-- Strict compliance with The Container Rule (m3-nav-wrapper handles spacing) -->
+      <nav class="m3-nav-wrapper" id="navigation-menu">
+        <md-text-button href="index.html" onclick="window.location.href='index.html'">Home</md-text-button>
+        <md-text-button href="space.html" onclick="window.location.href='space.html'">The Space</md-text-button>
+        <md-text-button href="rates.html" onclick="window.location.href='rates.html'">Rates</md-text-button>
+        <md-text-button href="https://calendly.com/boutique-dental" onclick="window.location.href='https://calendly.com/boutique-dental'">Qualify</md-text-button>
+        <md-text-button href="diary.html" onclick="window.location.href='diary.html'">Diary</md-text-button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main>
+    
+    <!-- HERO SECTION (Asymmetrical Split Shell) -->
+    <section class="section hero">
+      <div class="container creative-shell-split">
+        
+        <!-- Left Side: Large typography & copy -->
+        <div class="split-hero-content">
+          <h1 class="hero-title" data-editable="true">Elevate Your Production to <strong>Boutique Authority</strong></h1>
+          <p class="hero-subtitle" data-editable="true">Stop bleeding production hours on scheduling friction and unequipped studio bookings.</p>
+          <p data-editable="true">KS Studio provides elite, ready-to-shoot creative spaces featuring standard-integrated high-end lighting, audio, and dedicated concierge crew. We eliminate the administration bottlenecks so your creative vision runs flawless.</p>
+          
+          <!-- Loss Aversion Warning -->
+          <div class="loss-aversion-banner">
+            <div class="loss-aversion-title">⚠️ Q3 Peak Calendar Scarcity</div>
+            <p class="loss-aversion-desc" data-editable="true">Our booking diary is at 88% capacity. Every day of delay risks your campaign timeline. Securing a slot takes less than 3 minutes.</p>
+          </div>
+
+          <!-- Strict Container Rule wrapping for buttons -->
+          <div class="m3-hero-actions-wrapper">
+            <md-filled-button href="https://calendly.com/boutique-dental" onclick="window.location.href='https://calendly.com/boutique-dental'" id="hero-cta-qualify">Qualify Your Project</md-filled-button>
+            <md-outlined-button href="space.html" onclick="window.location.href='space.html'" id="hero-cta-space">Explore Spaces</md-outlined-button>
+          </div>
+        </div>
+
+        <!-- Right Side: Interaction card with shadow -->
+        <div class="split-side-panel">
+          <h3 class="font-display" style="margin-bottom: var(--space-2);" data-editable="true">Establish Your Needs</h3>
+          <p style="font-size: var(--font-size-sm); margin-bottom: var(--space-3); color: var(--color-muted);" data-editable="true">Confirm the bottlenecks you want KS Studio to solve:</p>
+          
+          <!-- Checkbox containers aligning elements without styling md-* directly -->
+          <div style="display: flex; flex-direction: column; gap: var(--space-3); margin-bottom: var(--space-4);">
+            <div class="m3-checkbox-wrapper" onclick="document.getElementById('chk-friction').click();">
+              <md-checkbox id="chk-friction" aria-label="Instantly book slots"></md-checkbox>
+              <span style="font-size: var(--font-size-sm); color: #FFF;" data-editable="true">"I want to eliminate email tennis and book slots instantly."</span>
+            </div>
+            
+            <div class="m3-checkbox-wrapper" onclick="document.getElementById('chk-gear').click();">
+              <md-checkbox id="chk-gear" aria-label="Include high-end gear"></md-checkbox>
+              <span style="font-size: var(--font-size-sm); color: #FFF;" data-editable="true">"I need high-end lighting and grip included to save gear rental costs."</span>
+            </div>
+
+            <div class="m3-checkbox-wrapper" onclick="document.getElementById('chk-crew').click();">
+              <md-checkbox id="chk-crew" aria-label="On-site assistant crew"></md-checkbox>
+              <span style="font-size: var(--font-size-sm); color: #FFF;" data-editable="true">"I want dedicated assistant crew on-site to handle load-in."</span>
+            </div>
+          </div>
+          
+          <!-- Parent wrapper forces button full width dynamically, obeying the Container Rule -->
+          <div class="m3-button-full-wrapper">
+            <md-filled-button id="btn-submit-ladder" disabled>Confirm Bottlenecks</md-filled-button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <span class="logo" data-editable="true">DENTAL <span>STUDIO</span></span>
+      <nav style="display: flex; gap: var(--space-1); flex-wrap: wrap;">
+        <md-text-button href="case-studies.html" onclick="window.location.href='case-studies.html'">Case Studies</md-text-button>
+        <md-text-button href="equipment.html" onclick="window.location.href='equipment.html'">Equipment</md-text-button>
+        <md-text-button href="services.html" onclick="window.location.href='services.html'">Services</md-text-button>
+        <md-text-button href="faq.html" onclick="window.location.href='faq.html'">FAQ</md-text-button>
+        <md-text-button href="rfp.html" onclick="window.location.href='rfp.html'">Custom RFP</md-text-button>
+      </nav>
+      <div class="footer-text">
+        &copy; 2026 KS Studio. All rights reserved. Strict 8px Grid & Material 3 integration.
+      </div>
+    </div>
+  </footer>
+
+  <!-- SCRIPTS -->
+  <script src="js/state.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const chks = [
+        document.getElementById('chk-friction'),
+        document.getElementById('chk-gear'),
+        document.getElementById('chk-crew')
+      ];
+      const btn = document.getElementById('btn-submit-ladder');
+
+      function checkBoxes() {
+        const anyChecked = chks.some(c => c.checked);
+        if (anyChecked) {
+          btn.removeAttribute('disabled');
+        } else {
+          btn.setAttribute('disabled', 'true');
+        }
+      }
+
+      chks.forEach(c => c.addEventListener('change', checkBoxes));
+
+      btn.addEventListener('click', () => {
+        YesLadder.setNode('frictionChecked', true);
+        
+        YesLadder.showM3Alert(
+          "Needs Registered ✓",
+          "You have successfully initiated the Yes-Ladder. Next: Explore our premium pricing value stacks.",
+          "View Value Stacks",
+          () => {
+            window.location.href = 'rates.html';
+          }
+        );
+      });
+
+      // If already checked, check the boxes
+      if (YesLadder.state.ladderNodes.frictionChecked) {
+        chks.forEach(c => c.checked = true);
+        btn.removeAttribute('disabled');
+        btn.innerHTML = 'Bottlenecks Confirmed ✓';
+      }
+    });
+  </script>
+</body>
+</html>
