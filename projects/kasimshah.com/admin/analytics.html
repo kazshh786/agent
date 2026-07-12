@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics Dashboard | Kasim Shah Digital Architecture</title>
+  <meta name="description" content="Detailed performance audits and conversion telemetry for client site instances.">
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="admin.css">
+  
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header" id="analytics-header-nav">
+    <div class="container nav-container">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <a href="index.html" class="logo" id="header-logo-link">
+          KASIM <span>SHAH</span>
+        </a>
+        <span class="badge" id="header-engine-badge">Engine Analytics</span>
+      </div>
+      <div>
+        <a href="index.html" class="btn btn-secondary" style="min-height: 40px; padding: 0 16px; font-size: 0.8rem;" id="btn-back-dashboard">
+          <span class="material-icons" style="font-size: 1.1rem;">arrow_back</span> Back to Catalog
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN ASSEMBLY -->
+  <main class="container" style="flex-grow: 1; padding: 48px 32px 64px;" id="main-analytics-container">
+    
+    <!-- LOADING STATE -->
+    <div id="analytics-loading" style="padding: 64px 0; text-align: center; color: var(--color-muted); font-family: var(--font-serif); font-style: italic;">
+      <span class="material-icons" style="font-size: 3rem; color: var(--color-accent); animation: spin 2s linear infinite; display: inline-block; margin-bottom: 16px;">sync</span>
+      <p style="font-size: 1.2rem;">Retrieving conversion telemetry and scanning project codebase...</p>
+    </div>
+
+    <!-- MAIN DASHBOARD (HIDDEN UNTIL LOADED) -->
+    <div id="analytics-content" style="display: none;">
+      
+      <!-- CLIENT DETAILS CARD -->
+      <div class="analytics-header-card">
+        <div class="analytics-header-title">
+          <h2 id="clientSiteName">Client Site</h2>
+          <p id="clientSiteDesc" style="color: var(--color-muted); font-size: 0.95rem; font-family: var(--font-serif); font-style: italic;">
+            "High-conversion architectural node optimization audit"
+          </p>
+        </div>
+        <div class="analytics-header-meta">
+          <span id="metaIndustry"><span class="material-icons" style="font-size: 1.1rem;">category</span> Industry: Aesthetics</span>
+          <span id="metaBottleneck"><span class="material-icons" style="font-size: 1.1rem;">error</span> Bottleneck: Speed</span>
+          <span id="metaVibe"><span class="material-icons" style="font-size: 1.1rem;">palette</span> Vibe: Tech Sleek</span>
+        </div>
+      </div>
+
+      <!-- TAB SELECTION -->
+      <div class="analytics-tab-row">
+        <button class="analytics-tab-btn active" onclick="switchTab('overview')" id="tab-btn-overview">
+          <span class="material-icons" style="vertical-align: middle; font-size: 1.1rem; margin-right: 4px;">dashboard</span> Overview
+        </button>
+        <button class="analytics-tab-btn" onclick="switchTab('google-analytics')" id="tab-btn-google-analytics">
+          <span class="material-icons" style="vertical-align: middle; font-size: 1.1rem; margin-right: 4px;">trending_up</span> Google Analytics
+        </button>
+        <button class="analytics-tab-btn" onclick="switchTab('technical-audit')" id="tab-btn-technical-audit">
+          <span class="material-icons" style="vertical-align: middle; font-size: 1.1rem; margin-right: 4px;">fact_check</span> Technical Audits
+        </button>
+      </div>
+
+      <!-- KPI METRICS SUMMARY ROW -->
+      <div class="kpi-grid">
+        <!-- Sessions -->
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Monthly Sessions</span>
+            <span class="material-icons kpi-icon">people</span>
+          </div>
+          <div class="kpi-value" id="kpiSessions">0</div>
+          <div class="kpi-subtext" id="kpiSessionsTrend">
+            <span class="material-icons kpi-trend-up" style="font-size: 1rem;">trending_up</span>
+            <span class="kpi-trend-up">+14.2%</span> vs last month
+          </div>
+        </div>
+
+        <!-- Bounce Rate -->
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Bounce Rate</span>
+            <span class="material-icons kpi-icon">logout</span>
+          </div>
+          <div class="kpi-value" id="kpiBounce">0%</div>
+          <div class="kpi-subtext" id="kpiBounceTrend">
+            <span class="material-icons kpi-trend-down" style="font-size: 1rem;">trending_down</span>
+            <span class="kpi-trend-up">-4.8%</span> bounce improvement
+          </div>
+        </div>
+
+        <!-- Goal Conversion Rate -->
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Goal Conversion</span>
+            <span class="material-icons kpi-icon">contact_mail</span>
+          </div>
+          <div class="kpi-value" id="kpiConversion">0%</div>
+          <div class="kpi-subtext" id="kpiConversionTrend">
+            <span class="material-icons kpi-trend-up" style="font-size: 1rem;">trending_up</span>
+            <span class="kpi-trend-up">+0.8%</span> vs industry median
+          </div>
+        </div>
+
+        <!-- Lighthouse Avg -->
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Lighthouse Avg</span>
+            <span class="material-icons kpi-icon">speed</span>
+          </div>
+          <div class="kpi-value" id="kpiLighthouse">0/100</div>
+          <div class="kpi-subtext" id="kpiLighthouseTrend">
+            <span style="color: var(--color-success); font-weight: 600;">● Excellent</span> Core Web Vitals
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB SECTION 1: OVERVIEW -->
+      <div id="section-overview" class="tab-section">
+        <div class="dashboard-split-layout">
+          
+          <!-- Left side: Core breakdown and Lighthouse progress dials -->
+          <div>
+            <div class="visual-panel-card">
+              <h3 class="panel-title"><span class="material-icons">query_stats</span> Lighthouse Audit Metrics</h3>
+              
+              <div class="lighthouse-dials-row">
+                <!-- Performance -->
+                <div class="lighthouse-dial-container">
+                  <div class="dial-svg-wrapper">
+                    <svg viewBox="0 0 100 100">
+                      <circle class="dial-circle-bg" cx="50" cy="50" r="42"></circle>
+                      <circle class="dial-circle-fill" id="dialPerformance" cx="50" cy="50" r="42" stroke="#30D158" stroke-dasharray="263.89" stroke-dashoffset="263.89"></circle>
+                    </svg>
+                    <div class="dial-score-text" id="scorePerformance">0</div>
+                  </div>
+                  <span class="dial-label">Performance</span>
+                </div>
+
+                <!-- Accessibility -->
+                <div class="lighthouse-dial-container">
+                  <div class="dial-svg-wrapper">
+                    <svg viewBox="0 0 100 100">
+                      <circle class="dial-circle-bg" cx="50" cy="50" r="42"></circle>
+                      <circle class="dial-circle-fill" id="dialAccessibility" cx="50" cy="50" r="42" stroke="#30D158" stroke-dasharray="263.89" stroke-dashoffset="263.89"></circle>
+                    </svg>
+                    <div class="dial-score-text" id="scoreAccessibility">0</div>
+                  </div>
+                  <span class="dial-label">Accessibility</span>
+                </div>
+
+                <!-- Best Practices -->
+                <div class="lighthouse-dial-container">
+                  <div class="dial-svg-wrapper">
+                    <svg viewBox="0 0 100 100">
+                      <circle class="dial-circle-bg" cx="50" cy="50" r="42"></circle>
+                      <circle class="dial-circle-fill" id="dialBestPractices" cx="50" cy="50" r="42" stroke="#30D158" stroke-dasharray="263.89" stroke-dashoffset="263.89"></circle>
+                    </svg>
+                    <div class="dial-score-text" id="scoreBestPractices">0</div>
+                  </div>
+                  <span class="dial-label">Best Practices</span>
+                </div>
+
+                <!-- SEO -->
+                <div class="lighthouse-dial-container">
+                  <div class="dial-svg-wrapper">
+                    <svg viewBox="0 0 100 100">
+                      <circle class="dial-circle-bg" cx="50" cy="50" r="42"></circle>
+                      <circle class="dial-circle-fill" id="dialSEO" cx="50" cy="50" r="42" stroke="#30D158" stroke-dasharray="263.89" stroke-dashoffset="263.89"></circle>
+                    </svg>
+                    <div class="dial-score-text" id="scoreSEO">0</div>
+                  </div>
+                  <span class="dial-label">SEO Audit</span>
+                </div>
+              </div>
+
+              <div style="font-size: 0.85rem; color: var(--color-muted); line-height: 1.6; border-top: 1px solid var(--color-dark-border); padding-top: 16px;">
+                <strong>Aesthetic Architecture Note:</strong> Speed, access, and optimization parameters are extracted straight from client page elements. Green scores indicate zero friction paths for conversion funnels.
+              </div>
+            </div>
+
+            <!-- WHAT WORKS & WHAT DOESN'T -->
+            <div class="split-evaluation-cards">
+              <!-- What Works -->
+              <div class="eval-card works">
+                <h3 class="eval-title"><span class="material-icons" style="color: var(--color-success);">check_circle</span> What's Working</h3>
+                <ul class="eval-list" id="evalWorksList">
+                  <!-- Dynamic items -->
+                </ul>
+              </div>
+
+              <!-- What Doesn't Work -->
+              <div class="eval-card fails">
+                <h3 class="eval-title"><span class="material-icons" style="color: var(--color-error);">warning</span> Attention Required</h3>
+                <ul class="eval-list" id="evalFailsList">
+                  <!-- Dynamic items -->
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right side: conversion optimization prioritize checklist -->
+          <div>
+            <div class="visual-panel-card" style="height: 100%;">
+              <h3 class="panel-title" style="border-bottom-color: rgba(212,175,55,0.2);"><span class="material-icons" style="color: var(--color-accent);">tips_and_updates</span> Conversion Strategy</h3>
+              
+              <div style="margin-bottom: 24px;">
+                <h4 style="font-family: var(--font-sans); font-size: 0.95rem; margin-bottom: 6px; color: var(--color-secondary);">Revenue Bottleneck Profile</h4>
+                <p id="bottleneckImpactAnalysis" style="font-size: 0.85rem; color: var(--color-muted); line-height: 1.6;">
+                  Analyzing local bottleneck patterns...
+                </p>
+              </div>
+
+              <div class="recommendations-box">
+                <h4><span class="material-icons" style="font-size: 1.2rem;">priority_high</span> Priority Actions</h4>
+                <ol class="recommendations-list" id="priorityActionsList">
+                  <!-- Dynamic steps -->
+                </ol>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- TAB SECTION 2: GOOGLE ANALYTICS -->
+      <div id="section-google-analytics" class="tab-section" style="display: none;">
+        <div class="dashboard-split-layout">
+          
+          <!-- Left side: SVG Daily pageview trend graph -->
+          <div class="visual-panel-card">
+            <h3 class="panel-title"><span class="material-icons">insights</span> Monthly Traffic Trend</h3>
+            <p style="color: var(--color-muted); font-size: 0.8rem; margin-bottom: 16px;">Daily session index metrics indicating customer flow stability over the last 30 days.</p>
+            
+            <div class="chart-svg-container" id="trafficChartContainer">
+              <!-- SVG chart injected dynamically by analytics.js -->
+              <div class="chart-tooltip" id="chartTooltip">Tooltip</div>
+            </div>
+          </div>
+
+          <!-- Right side: Traffic Source list & Page index tables -->
+          <div>
+            <div class="visual-panel-card" style="margin-bottom: 24px;">
+              <h3 class="panel-title"><span class="material-icons">share</span> Traffic Acquisition Sources</h3>
+              <div class="traffic-sources-list" id="trafficSourcesList">
+                <!-- Dynamic progress bars -->
+              </div>
+            </div>
+
+            <div class="visual-panel-card">
+              <h3 class="panel-title"><span class="material-icons">find_in_page</span> Top Landing Pages</h3>
+              <div style="overflow-x: auto;">
+                <table class="audit-list-table" id="landingPagesTable" style="min-width: 100%;">
+                  <thead>
+                    <tr>
+                      <th style="padding: 8px 12px; font-size: 0.7rem;">Page Path</th>
+                      <th style="padding: 8px 12px; font-size: 0.7rem; text-align: right;">Sessions</th>
+                      <th style="padding: 8px 12px; font-size: 0.7rem; text-align: right;">Conversion</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Injected dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- TAB SECTION 3: TECHNICAL AUDIT -->
+      <div id="section-technical-audit" class="tab-section" style="display: none;">
+        <div class="visual-panel-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--color-dark-border); padding-bottom: 12px;">
+            <h3 class="panel-title" style="margin-bottom: 0; border: none; padding: 0;"><span class="material-icons">bug_report</span> Codebase Audit Diagnostics</h3>
+            <button class="btn btn-secondary" onclick="runLiveAudit()" style="min-height: 36px; padding: 0 16px; font-size: 0.75rem;" id="btn-re-audit">
+              <span class="material-icons" style="font-size: 0.95rem;">refresh</span> Scan Files Live
+            </button>
+          </div>
+          <p style="color: var(--color-muted); font-size: 0.85rem; margin-bottom: 24px; font-family: var(--font-serif); font-style: italic;">
+            "Analyzing index.html element definitions to parse core SEO landmarks, performance inhibitors, and viewport structures."
+          </p>
+
+          <div style="overflow-x: auto;">
+            <table class="audit-list-table">
+              <thead>
+                <tr>
+                  <th style="width: 250px;">Check ID</th>
+                  <th>Audit Parameter</th>
+                  <th style="width: 130px; text-align: center;">Status</th>
+                  <th>Details & Findings</th>
+                </tr>
+              </thead>
+              <tbody id="auditDiagnosticsBody">
+                <!-- Dynamic rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- TOAST CONTAINER FOR ALERTS -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- KEYFRAME ANIMS -->
+  <style>
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+  </style>
+
+  <!-- SCRIPTS -->
+  <script src="analytics.js"></script>
+</body>
+</html>
