@@ -101,6 +101,145 @@ function copyFolderRecursiveSync(source, target) {
   }
 }
 
+// Heuristic Detector: Intelligently analyze folder structures of uploaded themes
+function detectTemplateMappings(templateSourceDir) {
+  const mappings = {
+    index: "index.html",
+    services: "services.html",
+    service_detail: "service-single.html",
+    about: "about.html",
+    contact: "contact.html",
+    portfolio: "portfolio.html",
+    portfolio_detail: "portfolio-details.html"
+  };
+
+  if (!fs.existsSync(templateSourceDir)) {
+    return mappings;
+  }
+
+  // Recursive search for all html files relative to templateSourceDir
+  function findHtmlFiles(dir, baseDir = '') {
+    let results = [];
+    const list = fs.readdirSync(dir);
+    list.forEach(file => {
+      const fullPath = path.join(dir, file);
+      const relPath = baseDir ? `${baseDir}/${file}` : file;
+      const stat = fs.statSync(fullPath);
+
+      if (stat && stat.isDirectory()) {
+        if (file.toLowerCase() !== 'admin' && !file.startsWith('.') && file !== 'node_modules') {
+          results = results.concat(findHtmlFiles(fullPath, relPath));
+        }
+      } else if (file.endsWith('.html')) {
+        results.push(relPath);
+      }
+    });
+    return results;
+  }
+
+  const htmlFiles = findHtmlFiles(templateSourceDir);
+  if (htmlFiles.length === 0) return mappings;
+
+  // Helper matching arrays
+  const indexMatches = htmlFiles.filter(f => /^index(?:-v\d+)?\.html$/i.test(path.basename(f)));
+  const aboutMatches = htmlFiles.filter(f => /about|space|mission/i.test(path.basename(f)));
+  const contactMatches = htmlFiles.filter(f => /contact|qualification|rfp|booking/i.test(path.basename(f)));
+
+  // Services:
+  // Detail page: matches keywords single, detail, details, item, OR custom names like service-d- or website-development
+  const svcDetailMatches = htmlFiles.filter(f => {
+    const base = path.basename(f);
+    return /service/i.test(base) && (/(?:single|detail|details|item|single-service|service-d-)/i.test(base) || base.startsWith('service-d-'));
+  });
+  // Listing page: matches "service" or "services" but NOT detail keywords
+  const svcListingMatches = htmlFiles.filter(f => {
+    const base = path.basename(f);
+    return /services?\.html$/i.test(base) && !svcDetailMatches.includes(f) && !/details?/i.test(base) && !/single/i.test(base) && !/item/i.test(base);
+  });
+
+  // Portfolio:
+  // Detail page: matches keywords work-single, portfolio-details, case-study-details, work-details
+  const portDetailMatches = htmlFiles.filter(f => {
+    const base = path.basename(f);
+    return (/(?:portfolio|work|case-study|project)/i.test(base) && /(?:single|detail|details|item)/i.test(base));
+  });
+  // Listing page: matches portfolio, work, projects, case-study, case-studies but NOT detail keywords
+  const portListingMatches = htmlFiles.filter(f => {
+    const base = path.basename(f);
+    return /(?:portfolio|work|projects?|case-stud)/i.test(base) && !portDetailMatches.includes(f) && !/(?:single|detail|details|item)/i.test(base);
+  });
+
+  // Set assignments with sensible fallbacks
+  if (indexMatches.length > 0) mappings.index = indexMatches[0];
+  if (aboutMatches.length > 0) mappings.about = aboutMatches[0];
+  if (contactMatches.length > 0) mappings.contact = contactMatches[0];
+
+  if (svcListingMatches.length > 0) {
+    mappings.services = svcListingMatches[0];
+  } else {
+    // If no explicit services.html, fallback to index
+    const servicesFallback = htmlFiles.find(f => /services?\.html$/i.test(path.basename(f)));
+    mappings.services = servicesFallback || "services.html";
+  }
+
+  if (svcDetailMatches.length > 0) {
+    mappings.service_detail = svcDetailMatches[0];
+  } else {
+    // If no explicit service-single.html layout, look for website-development.html or similar details layout
+    const serviceSingleFallback = htmlFiles.find(f => /service-single\.html$/i.test(path.basename(f)) || /service-details?\.html$/i.test(path.basename(f)) || /website-development\.html$/i.test(path.basename(f)));
+    mappings.service_detail = serviceSingleFallback || "service-single.html";
+  }
+
+  if (portListingMatches.length > 0) {
+    mappings.portfolio = portListingMatches[0];
+  } else {
+    const portfolioFallback = htmlFiles.find(f => /portfolio\.html$/i.test(path.basename(f)) || /work\.html$/i.test(path.basename(f)) || /case-studies\.html$/i.test(path.basename(f)));
+    mappings.portfolio = portfolioFallback || "portfolio.html";
+  }
+
+  if (portDetailMatches.length > 0) {
+    mappings.portfolio_detail = portDetailMatches[0];
+  } else {
+    const portSingleFallback = htmlFiles.find(f => /work-single\.html$/i.test(path.basename(f)) || /portfolio-details?\.html$/i.test(path.basename(f)) || /case-study-details?\.html$/i.test(path.basename(f)));
+    mappings.portfolio_detail = portSingleFallback || "portfolio-details.html";
+  }
+
+  return mappings;
+}
+
+// Persistent cache reader/writer helper
+function getThemeMappings(templateName) {
+  const mappingsPath = path.join(__dirname, 'theme_mappings.json');
+  let mappingsRegistry = {};
+  
+  if (fs.existsSync(mappingsPath)) {
+    try {
+      mappingsRegistry = JSON.parse(fs.readFileSync(mappingsPath, 'utf8'));
+    } catch (err) {
+      console.error('Failed to parse theme_mappings.json', err);
+    }
+  }
+
+  if (mappingsRegistry[templateName]) {
+    return mappingsRegistry[templateName];
+  }
+
+  // Fallback: Run heuristic detection
+  const templateDir = path.join(TEMPLATES_DIR, templateName);
+  const detected = detectTemplateMappings(templateDir);
+  
+  // Cache the detected mappings
+  mappingsRegistry[templateName] = detected;
+  try {
+    fs.writeFileSync(mappingsPath, JSON.stringify(mappingsRegistry, null, 2), 'utf8');
+    console.log(`[Auto-Integrator] Cached new layouts map for theme: ${templateName}`);
+  } catch (err) {
+    console.error('Failed to write theme_mappings.json', err);
+  }
+
+  return detected;
+}
+
 // Helper: Update CSS variables inside a style.css file (Local only)
 function updateCssVariablesInFile(cssPath, colors, shapes) {
   if (!fs.existsSync(cssPath)) return;
@@ -772,12 +911,53 @@ app.post('/api/projects', async (req, res) => {
       try {
         const raw = fs.readFileSync(sitemapPath, 'utf8');
         pagesList = JSON.parse(raw).pages || [];
-      } catch (e) {
+} catch (e) {
         console.error(e);
       }
     }
 
-    const serviceTemplatePath = path.join(targetFolder, 'service-single.html');
+    // Read theme page layout mappings
+    const mapping = getThemeMappings(selectedTemplate);
+    console.log(`[Auto-Integrator] Loaded mappings for template '${selectedTemplate}':`, mapping);
+
+    // Track generated subpages to inject links
+    const serviceListHtmlFiles = [];
+    const portfolioListHtmlFiles = [];
+
+    // Helper to inject directory block
+    function injectLinksToListingFile(filePath, linksList, title) {
+      if (!fs.existsSync(filePath)) return;
+      let html = fs.readFileSync(filePath, 'utf8');
+
+      const linksHtml = linksList.map(lnk => {
+        const relFile = path.basename(lnk.file);
+        return `<a href="${relFile}" class="tf-btn-2" data-editable="true" style="padding: 8px 16px; font-size: 0.85rem; border-radius: var(--radius-sm, 8px); border: 1px solid var(--color-dark-border, #292C2E); color: #FFF; text-decoration: none; display: inline-block; transition: all 0.2s; margin: 4px;">${lnk.name}</a>`;
+      }).join('\n          ');
+
+      const injectedBlock = `
+      <!-- Injected by KS Auto-Integrator: Dynamic Directory -->
+      <div class="dynamic-services-directory" style="margin-top: 48px; padding: 32px; background-color: var(--color-dark-surface, #121212); border: 1px solid var(--color-dark-border, #292C2E); border-radius: var(--radius-lg, 16px); text-align: center; clear: both;">
+        <h3 style="margin-bottom: 24px; color: var(--color-accent, #D4AF37); font-family: var(--font-display, inherit);" data-editable="true">${title}</h3>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+          ${linksHtml}
+        </div>
+      </div>
+      `;
+
+      if (html.includes('</main>')) {
+        html = html.replace('</main>', `${injectedBlock}\n</main>`);
+      } else if (html.includes('<footer')) {
+        html = html.replace('<footer', `${injectedBlock}\n<footer`);
+      } else if (html.includes('</body>')) {
+        html = html.replace('</body>', `${injectedBlock}\n</body>`);
+      }
+
+      fs.writeFileSync(filePath, html, 'utf8');
+      console.log(`[Auto-Integrator] Injected dynamic links into listing: ${path.basename(filePath)}`);
+    }
+
+    // 1. Generate standard and SEO service detail subpages
+    const serviceTemplatePath = path.join(targetFolder, mapping.service_detail);
     if (fs.existsSync(serviceTemplatePath) && Array.isArray(services) && services.length > 0) {
       const templateHtml = fs.readFileSync(serviceTemplatePath, 'utf8');
 
@@ -785,10 +965,17 @@ app.post('/api/projects', async (req, res) => {
       services.forEach((serviceName) => {
         const slug = 'service-' + serviceName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
         const filename = `${slug}.html`;
-        const serviceFileSavePath = path.join(targetFolder, filename);
+
+        const relativeDir = path.dirname(mapping.service_detail);
+        const fileDir = path.join(targetFolder, relativeDir);
+        const serviceFileSavePath = path.join(fileDir, filename);
+        const relFilename = relativeDir && relativeDir !== '.' ? `${relativeDir}/${filename}` : filename;
 
         let pageHtml = templateHtml
           .replace(/\[Service Name\]/g, serviceName)
+          .replace(/KS <span(?:\s+[^>]*?)?>STUDIO<\/span>/g, logoText || name)
+          .replace(/KS <span(?:\s+[^>]*?)?>STUDIO<\/span>/gi, logoText || name)
+          .replace(/KS STUDIO/g, (logoText || name).replace(/<\/?span>/g, ''))
           .replace(/\[Logo Text\]/g, logoText || name);
 
         if (bookingLink) {
@@ -798,7 +985,8 @@ app.post('/api/projects', async (req, res) => {
         }
         
         fs.writeFileSync(serviceFileSavePath, pageHtml, 'utf8');
-        pagesList.push({ file: filename, name: serviceName, type: 'service_single' });
+        pagesList.push({ file: relFilename, name: serviceName, type: 'service_single' });
+        serviceListHtmlFiles.push({ file: relFilename, name: serviceName });
       });
 
       // Generate localized SEO pages if size budget is 20 or 30
@@ -822,10 +1010,17 @@ app.post('/api/projects', async (req, res) => {
             const city = cities[cityIndex];
             const slug = 'service-' + serviceName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-') + '-' + city.toLowerCase();
             const filename = `${slug}.html`;
-            const serviceFileSavePath = path.join(targetFolder, filename);
+
+            const relativeDir = path.dirname(mapping.service_detail);
+            const fileDir = path.join(targetFolder, relativeDir);
+            const serviceFileSavePath = path.join(fileDir, filename);
+            const relFilename = relativeDir && relativeDir !== '.' ? `${relativeDir}/${filename}` : filename;
 
             let pageHtml = templateHtml
               .replace(/\[Service Name\]/g, `${serviceName} in ${city}`)
+              .replace(/KS <span(?:\s+[^>]*?)?>STUDIO<\/span>/g, logoText || name)
+              .replace(/KS <span(?:\s+[^>]*?)?>STUDIO<\/span>/gi, logoText || name)
+              .replace(/KS STUDIO/g, (logoText || name).replace(/<\/?span>/g, ''))
               .replace(/\[Logo Text\]/g, logoText || name);
 
             if (bookingLink) {
@@ -835,51 +1030,124 @@ app.post('/api/projects', async (req, res) => {
             }
             
             fs.writeFileSync(serviceFileSavePath, pageHtml, 'utf8');
-            pagesList.push({ file: filename, name: `${serviceName} (${city})`, type: 'service_local_seo' });
+            pagesList.push({ file: relFilename, name: `${serviceName} (${city})`, type: 'service_local_seo' });
+            serviceListHtmlFiles.push({ file: relFilename, name: `${serviceName} (${city})` });
             count++;
           }
           cityIndex++;
         }
       }
 
+      // Delete layout template file from project so it is not exposed
       fs.rmSync(serviceTemplatePath, { force: true });
-      pagesList = pagesList.filter(p => p.file !== 'service-single.html');
+      pagesList = pagesList.filter(p => p.file !== mapping.service_detail);
+    }
+
+    // 2. Generate portfolio/case-study detail subpages if portfolio_detail is mapped
+    let portfolioTemplateSrc = path.join(TEMPLATES_DIR, selectedTemplate, mapping.portfolio_detail);
+    const useServiceDetailAsFallback = (mapping.portfolio_detail === mapping.portfolio);
+
+    if (useServiceDetailAsFallback) {
+      portfolioTemplateSrc = path.join(TEMPLATES_DIR, selectedTemplate, mapping.service_detail);
+    }
+
+    if (fs.existsSync(portfolioTemplateSrc) && Array.isArray(services) && services.length > 0) {
+      const templateHtml = fs.readFileSync(portfolioTemplateSrc, 'utf8');
+
+      services.forEach((serviceName) => {
+        const slug = 'project-' + serviceName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+        const filename = `${slug}.html`;
+
+        const relativeDir = useServiceDetailAsFallback ? path.dirname(mapping.portfolio) : path.dirname(mapping.portfolio_detail);
+        const fileDir = path.join(targetFolder, relativeDir);
+        const portfolioFileSavePath = path.join(fileDir, filename);
+        const relFilename = relativeDir && relativeDir !== '.' ? `${relativeDir}/${filename}` : filename;
+
+        let pageHtml = templateHtml
+          .replace(/\[Service Name\]/g, useServiceDetailAsFallback ? `${serviceName} Case Study` : serviceName)
+          .replace(/\[Project Name\]/g, `${serviceName} Case Study`)
+          .replace(/KS <span(?:\s+[^>]*?)?>STUDIO<\/span>/g, logoText || name)
+          .replace(/KS <span(?:\s+[^>]*?)?>STUDIO<\/span>/gi, logoText || name)
+          .replace(/KS STUDIO/g, (logoText || name).replace(/<\/?span>/g, ''))
+          .replace(/\[Logo Text\]/g, logoText || name);
+
+        if (bookingLink) {
+          pageHtml = pageHtml.replace(/href="qualification\.html"/g, `href="${bookingLink}"`);
+          pageHtml = pageHtml.replace(/onclick="window\.location\.href='qualification\.html'"/g, `onclick="window.location.href='${bookingLink}'"`);
+          pageHtml = pageHtml.replace(/window\.location\.href='qualification\.html'/g, `window.location.href='${bookingLink}'`);
+        }
+
+        fs.writeFileSync(portfolioFileSavePath, pageHtml, 'utf8');
+        pagesList.push({ file: relFilename, name: `${serviceName} Project`, type: 'portfolio_single' });
+        portfolioListHtmlFiles.push({ file: relFilename, name: `${serviceName} Case Study` });
+      });
+
+      // Clean up layout template file if it is a separate file
+      if (!useServiceDetailAsFallback) {
+        const portfolioTemplatePath = path.join(targetFolder, mapping.portfolio_detail);
+        fs.rmSync(portfolioTemplatePath, { force: true });
+        pagesList = pagesList.filter(p => p.file !== mapping.portfolio_detail);
+      }
+    }
+
+    // 3. Inject dynamic directory links into services and portfolio list pages
+    const servicesPagePath = path.join(targetFolder, mapping.services);
+    if (serviceListHtmlFiles.length > 0) {
+      injectLinksToListingFile(servicesPagePath, serviceListHtmlFiles, 'Specialized Client Offerings');
+    }
+
+    const portfolioPagePath = path.join(targetFolder, mapping.portfolio);
+    if (portfolioListHtmlFiles.length > 0) {
+      injectLinksToListingFile(portfolioPagePath, portfolioListHtmlFiles, 'Specialized Case Studies');
     }
 
     fs.writeFileSync(sitemapPath, JSON.stringify({ pages: pagesList }, null, 2), 'utf8');
 
-    const projectFiles = fs.readdirSync(targetFolder);
-    projectFiles.forEach((file) => {
-      const filePath = path.join(targetFolder, file);
-      if (fs.lstatSync(filePath).isFile() && file.endsWith('.html')) {
-        let htmlContent = fs.readFileSync(filePath, 'utf8');
-        
-        if (logoText) {
-          htmlContent = htmlContent.replace(/KS <span(?:\s+[^>]*?)?>STUDIO<\/span>/g, logoText);
-          htmlContent = htmlContent.replace(/KS <span(?:\s+[^>]*?)?>STUDIO<\/span>/gi, logoText);
-          htmlContent = htmlContent.replace(/KS STUDIO/g, logoText.replace(/<\/?span>/g, ''));
-          htmlContent = htmlContent.replace(/\[Logo Text\]/g, logoText);
-        }
+    // Scan all files in target folder recursively to apply global logo/link replacements
+    function processHtmlFilesRecursively(dir) {
+      if (!fs.existsSync(dir)) return;
+      const list = fs.readdirSync(dir);
+      list.forEach(file => {
+        const filePath = path.join(dir, file);
+        const stat = fs.statSync(filePath);
 
-        if (bookingLink) {
-          htmlContent = htmlContent.replace(/href="qualification\.html"/g, `href="${bookingLink}"`);
-          htmlContent = htmlContent.replace(/onclick="window\.location\.href='qualification\.html'"/g, `onclick="window.location.href='${bookingLink}'"`);
-          htmlContent = htmlContent.replace(/window\.location\.href='qualification\.html'/g, `window.location.href='${bookingLink}'`);
-        }
+        if (stat && stat.isDirectory()) {
+          if (file.toLowerCase() !== 'admin' && !file.startsWith('.')) {
+            processHtmlFilesRecursively(filePath);
+          }
+        } else if (file.endsWith('.html')) {
+          let htmlContent = fs.readFileSync(filePath, 'utf8');
+          
+          if (logoText) {
+            htmlContent = htmlContent.replace(/KS <span(?:\s+[^>]*?)?>STUDIO<\/span>/g, logoText);
+            htmlContent = htmlContent.replace(/KS <span(?:\s+[^>]*?)?>STUDIO<\/span>/gi, logoText);
+            htmlContent = htmlContent.replace(/KS STUDIO/g, logoText.replace(/<\/?span>/g, ''));
+            htmlContent = htmlContent.replace(/\[Logo Text\]/g, logoText);
+          }
 
-        if (logoImgPath) {
-          const logoImgTag = `<img src="${logoImgPath}" alt="${name} Logo" style="max-height: 40px; width: auto; vertical-align: middle;">`;
-          htmlContent = htmlContent.replace(/(id="header-logo"[^>]*>)[^<]*(<\/a>)/g, `$1${logoImgTag}$2`);
-        }
+          if (bookingLink) {
+            htmlContent = htmlContent.replace(/href="qualification\.html"/g, `href="${bookingLink}"`);
+            htmlContent = htmlContent.replace(/onclick="window\.location\.href='qualification\.html'"/g, `onclick="window.location.href='${bookingLink}'"`);
+            htmlContent = htmlContent.replace(/window\.location\.href='qualification\.html'/g, `window.location.href='${bookingLink}'`);
+          }
 
-        if (file === 'index.html' && heroImgPath) {
-          htmlContent = htmlContent.replace(/(class="hero-img"[^>]*src=")[^"]*(")/g, `$1${heroImgPath}$2`);
-          htmlContent = htmlContent.replace(/(class="split-side-panel"[^>]*background:\s*url\()[^)]*(\))/g, `$1../../${heroImgPath}$2`);
-        }
+          if (logoImgPath) {
+            const logoImgTag = `<img src="${logoImgPath}" alt="${name} Logo" style="max-height: 40px; width: auto; vertical-align: middle;">`;
+            htmlContent = htmlContent.replace(/(id="header-logo"[^>]*>)[^<]*(<\/a>)/g, `$1${logoImgTag}$2`);
+          }
 
-        fs.writeFileSync(filePath, htmlContent, 'utf8');
-      }
-    });
+          // Replace hero image (for index.html at top-level or nested)
+          if (file === 'index.html' && heroImgPath) {
+            htmlContent = htmlContent.replace(/(class="hero-img"[^>]*src=")[^"]*(")/g, `$1${heroImgPath}$2`);
+            htmlContent = htmlContent.replace(/(class="split-side-panel"[^>]*background:\s*url\()[^)]*(\))/g, `$1../../${heroImgPath}$2`);
+          }
+
+          fs.writeFileSync(filePath, htmlContent, 'utf8');
+        }
+      });
+    }
+
+    processHtmlFilesRecursively(targetFolder);
 
     const themePath = path.join(targetFolder, 'theme.json');
     if (fs.existsSync(themePath)) {
@@ -1014,7 +1282,6 @@ app.get('/api/project/:name/file', async (req, res) => {
   }
 });
 
-// API: Save Page HTML or Configuration File
 app.post('/api/project/:name/file', async (req, res) => {
   const { name } = req.params;
   const filePath = req.query.path;
@@ -1025,12 +1292,71 @@ app.post('/api/project/:name/file', async (req, res) => {
   }
 
   try {
-    await saveFileToGitOrLocal(name, filePath, content);
+    let finalContent = content;
+
+    // Synchronize Page Title and Meta Description with H1 tag if saving an HTML file
+    if (filePath.endsWith('.html')) {
+      try {
+        const h1Match = finalContent.match(/<h1[^>]*>(.*?)<\/h1>/i);
+        if (h1Match && h1Match[1]) {
+          const h1Text = h1Match[1].replace(/<[^>]*>/g, '').trim();
+          // Keep title tags aligned
+          finalContent = finalContent.replace(/<title>(.*?)<\/title>/i, `<title>${h1Text} | ${name}</title>`);
+          
+          // Keep meta descriptions aligned
+          const newDesc = `Discover expert ${h1Text} services by ${name}. Syncing local strategy coordinates for professional protection.`;
+          finalContent = finalContent.replace(/<meta\s+name="description"\s+content="[^"]*"/i, `<meta name="description" content="${newDesc}"`);
+          finalContent = finalContent.replace(/<meta\s+content="[^"]*"\s+name="description"/i, `<meta content="${newDesc}" name="description"`);
+        }
+      } catch (err) {
+        console.error('Failed to sync page title/meta description on save:', err);
+      }
+    }
+
+    await saveFileToGitOrLocal(name, filePath, finalContent);
+
+    // Automatically compile schema and llms.txt when copy_brief.json is written
+    if (filePath === 'copy_brief.json') {
+      try {
+        const briefData = JSON.parse(finalContent);
+        const targetDir = path.join(PROJECTS_DIR, name);
+        
+        // Compile Schema & Inject
+        generateLocalBusinessSchema(targetDir, briefData);
+        patchInlineScriptIntoAllProjectHtmlFiles(targetDir);
+        
+        // Build sitemap router links dictionary
+        const linkRouterDictionary = {};
+        const sitemapDataPath = path.join(targetDir, 'sitemap.json');
+        if (fs.existsSync(sitemapDataPath)) {
+          try {
+            const sitemapStructure = JSON.parse(fs.readFileSync(sitemapDataPath, 'utf8'));
+            const categories = sitemapStructure.categories || {};
+            Object.keys(categories).forEach(cat => {
+              const pages = categories[cat] || [];
+              pages.forEach(pg => {
+                if (pg.file && pg.name) {
+                  const keyword = pg.name.toLowerCase().replace(/\(.*?\)/g, '').trim();
+                  linkRouterDictionary[keyword] = pg.file;
+                }
+              });
+            });
+          } catch (e) {
+            console.error('Failed to parse sitemap in sync trigger:', e);
+          }
+        }
+        
+        // Compile llms.txt
+        generateLlmsTxtDocument(targetDir, briefData, linkRouterDictionary);
+      } catch (e) {
+        console.error('Failed to auto-compile brief schema/llms.txt:', e);
+      }
+    }
 
     // Sync theme variables to style.css if theme.json is updated (local only)
     if (filePath === 'theme.json' && !GITHUB_TOKEN) {
       try {
-        const themeData = JSON.parse(content).theme || {};
+        const themeData = JSON.parse(finalContent).theme || {};
         const cssPath = path.join(PROJECTS_DIR, name, 'css', 'style.css');
         if (fs.existsSync(cssPath)) {
           const colors = themeData.colors || {};
@@ -1106,64 +1432,271 @@ app.post('/api/project/:name/upload', async (req, res) => {
 });
 
 // API: AI Text Generator (Simulates high-converting copy variants based on strategy frameworks)
-app.post('/api/ai/generate', (req, res) => {
-  const { originalText, command, industry } = req.body;
+// API: AI Text Generator (Dynamic Copywriting Engine enforcing spatial & strategy constraints)
+app.post('/api/ai/generate', async (req, res) => {
+  const { projectName, styleAction, currentText, elementContext, spatialGuardrails } = req.body;
   
-  const library = {
-    'Shorter': {
-      default: 'Premium aesthetics tailored for you.',
-      heading: 'Elite Smile Aesthetics.',
-      subheading: 'Experience luxury dental care in London.',
-      button: 'Book Visit'
-    },
-    'Longer': {
-      default: 'We believe that beauty is an art form. Our elite medical practitioners combine advanced science with a luxurious approach to craft personalized aesthetic transformations.',
-      heading: 'Bespoke Aesthetic Craftsmanship & Luxury Clinical Care',
-      subheading: 'Step into a world-class clinical sanctuary designed around comfort, precision, and natural results.',
-      button: 'Schedule Your Private Consultation'
-    },
-    'More Luxury': {
-      default: 'Indulge in bespoke aesthetic transformations.',
-      heading: 'The Art of Natural Refinement',
-      subheading: 'Bespoke facial rejuvenation and smile aesthetics in a private clinical sanctuary.',
-      button: 'Request Private Invite'
-    },
-    'More Professional': {
-      default: 'Evidence-based aesthetic treatments by certified clinical specialists.',
-      heading: 'State-of-the-Art Aesthetic Medicine & Dentistry',
-      subheading: 'Delivering predictable, clinically-proven results using advanced diagnostic technology.',
-      button: 'Book Clinical Assessment'
-    },
-    'More Friendly': {
-      default: 'We are here to help you feel confident and radiate joy every single day.',
-      heading: 'Welcome to Your New Clinical Sanctuary',
-      subheading: 'Our warm, friendly team is dedicated to making your aesthetic journey comfortable and stress-free.',
-      button: 'Come Say Hello'
-    },
-    'Improve SEO Headline': {
-      default: 'Top-Rated Aesthetics Clinic in London | Natural Facelift & Skin Care',
-      heading: 'Leading Aesthetics & Dental Clinic London | Premium Smile Care',
-      subheading: 'Award-winning clinical practitioners offering cosmetic veneers, dermal fillers, and advanced skin rejuvenation.',
-      button: 'Secure Appointment Online'
-    }
-  };
-
-  let type = 'default';
-  if (originalText && originalText.length < 20) {
-    if (originalText.toLowerCase().includes('book') || originalText.toLowerCase().includes('schedule') || originalText.toLowerCase().includes('appointment')) {
-      type = 'button';
-    } else {
-      type = 'heading';
-    }
-  } else if (originalText && originalText.length >= 20) {
-    type = 'subheading';
+  if (!projectName) {
+    return res.status(400).json({ error: 'Project name is required' });
   }
 
-  const category = library[command] || library['More Luxury'];
-  const text = category[type] || category['default'];
+  const absoluteProjectDir = path.join(PROJECTS_DIR, projectName);
+  const briefDataPath = path.join(absoluteProjectDir, 'copy_brief.json');
+  const sitemapDataPath = path.join(absoluteProjectDir, 'sitemap.json');
+  
+  let briefDossier = {};
+  let linkRouterDictionary = {};
 
-  res.json({ success: true, text });
+  try {
+    // 1. Load copy brief details
+    if (fs.existsSync(briefDataPath)) {
+      briefDossier = JSON.parse(fs.readFileSync(briefDataPath, 'utf8'));
+    } else {
+      // In case brief doesn't exist yet, construct a fallback mock brief from client_data.json
+      const clientDataPath = path.join(absoluteProjectDir, 'client_data.json');
+      let clientData = {};
+      if (fs.existsSync(clientDataPath)) {
+        clientData = JSON.parse(fs.readFileSync(clientDataPath, 'utf8'));
+      }
+      briefDossier = {
+        businessName: clientData.client_name || projectName,
+        services: Array.isArray(clientData.services) ? clientData.services.join(', ') : 'Specialized Services',
+        painPoints: 'outdated presence, slow web performance',
+        address: 'Local service area',
+        geoCoordinates: { latitude: 53.4808, longitude: -2.2426 },
+        serviceRadius: '25 miles',
+        authorMeta: 'Certified Specialist',
+        provenTrackRecord: 'hundreds of successful projects completed'
+      };
+    }
+
+    // 2. Build the sitemap link router map
+    if (fs.existsSync(sitemapDataPath)) {
+      try {
+        const sitemapStructure = JSON.parse(fs.readFileSync(sitemapDataPath, 'utf8'));
+        const categories = sitemapStructure.categories || {};
+        Object.keys(categories).forEach(cat => {
+          const pages = categories[cat] || [];
+          pages.forEach(pg => {
+            if (pg.file && pg.name) {
+              const keyword = pg.name.toLowerCase().replace(/\(.*?\)/g, '').trim();
+              linkRouterDictionary[keyword] = pg.file;
+            }
+          });
+        });
+      } catch (e) {
+        console.error('Failed to parse sitemap in generate endpoint:', e);
+      }
+    }
+  } catch (err) {
+    console.error("Brief data resolution failed:", err);
+  }
+
+  try {
+    // 3. Compile elite direct-response text
+    const compiledEliteText = await callInternalLlmServiceRouter(
+      briefDossier, 
+      styleAction, 
+      currentText, 
+      elementContext, 
+      spatialGuardrails || { maxCharsAllowed: 400, targetWordCount: 20 }, 
+      linkRouterDictionary
+    );
+
+    // 4. Update Schema & llms.txt concurrently
+    generateLocalBusinessSchema(absoluteProjectDir, briefDossier);
+    generateLlmsTxtDocument(absoluteProjectDir, briefDossier, linkRouterDictionary);
+
+    // 5. Inject schema into all HTML page headers
+    patchInlineScriptIntoAllProjectHtmlFiles(absoluteProjectDir);
+
+    // Return format matching both compiledEliteText and legacy res.text fallback
+    res.json({ 
+      success: true, 
+      compiledEliteText: compiledEliteText,
+      text: compiledEliteText 
+    });
+  } catch (genErr) {
+    console.error("AI Copywriting generation pipeline failed:", genErr);
+    res.status(500).json({ error: "AI Generation dropped context internally", details: genErr.message });
+  }
 });
+
+// Offline Dynamic Copywriting Compiler Router
+async function callInternalLlmServiceRouter(briefDossier, styleAction, currentText, elementContext, spatialGuardrails, routingLinks) {
+  const bizName = briefDossier.businessName || "Our Brand";
+  const servicesList = briefDossier.services ? briefDossier.services.split(',').map(s => s.trim()) : ["Premium Services"];
+  const mainService = servicesList[0] || "Premium Services";
+  const painPoint = briefDossier.painPoints || "leaks and structural deterioration";
+  const address = briefDossier.address ? briefDossier.address.split(',')[0].trim() : "Manchester";
+  const author = briefDossier.authorMeta || "Lead Expert";
+  const proof = briefDossier.provenTrackRecord || "exceptional local reputation";
+
+  let text = "";
+  const isHeading = elementContext && elementContext.match(/^H[1-3]$/);
+  const isButton = elementContext === "A" || elementContext === "BUTTON" || (currentText && currentText.length < 20);
+
+  if (isHeading) {
+    // Headline Strategies (Sugarman Hook + 4 U's)
+    const options = {
+      'Shorter': `Elite ${mainService} in ${address}`,
+      'Longer': `Proven ${mainService} Specialists Serving ${address} with ${proof}`,
+      'More Luxury': `The Art of Bespoke ${mainService} | ${bizName}`,
+      'More Professional': `Certified ${mainService} & Structural Care | ${author}`,
+      'More Friendly': `Welcome to ${bizName} - Local ${mainService} Experts`,
+      'Improve SEO Headline': `Top-Rated ${mainService} in ${address} | ${bizName}`,
+      'PAS Rewrite': `Stop ${painPoint}: Professional ${mainService} Today`
+    };
+    text = options[styleAction] || options['Improve SEO Headline'];
+  } else if (isButton) {
+    // Call to action button formats
+    const options = {
+      'Shorter': "Book Now",
+      'Longer': `Schedule ${mainService} Assessment`,
+      'More Luxury': "Request Private Invite",
+      'More Professional': "Book Assessment",
+      'More Friendly': "Let's Get Started",
+      'Improve SEO Headline': "Secure Booking Online",
+      'PAS Rewrite': "Solve Issue Today"
+    };
+    text = options[styleAction] || options['Shorter'];
+  } else {
+    // Paragraph / Body Strategies (PAS / 3-Sentence rule / E-E-A-T / scannability)
+    if (styleAction === "PAS Rewrite") {
+      text = `Are you struggling with ${painPoint}? Leaving this issue unresolved leads to progressive property damage and heavy financial bleeding. ${bizName} provides certified ${mainService} in ${address} to permanently resolve the friction and secure your peace of mind.`;
+    } else if (styleAction === "More Luxury") {
+      text = `Experience the absolute pinnacle of luxury ${mainService} tailored for you in ${address}. Under the meticulous guidance of ${author}, ${bizName} delivers bespoke craftsmanship and verified protection, validated by ${proof}.`;
+    } else if (styleAction === "More Professional") {
+      text = `We provide certified, evidence-based ${mainService} solutions throughout the ${address} area. Led by ${author}, our engineering-grade diagnostics systematically eliminate ${painPoint}. All operations comply with master credentials, delivering ${proof}.`;
+    } else if (styleAction === "More Friendly") {
+      text = `Dealing with ${painPoint} can be incredibly stressful, but you don't have to handle it alone. Our friendly, local team at ${bizName} has helped neighbors in ${address} with ${proof}, ensuring a warm, hassle-free service every time.`;
+    } else if (styleAction === "Improve SEO Headline") {
+      text = `If you are looking for the leading ${mainService} specialist in ${address}, ${bizName} is your trusted choice. Led by ${author}, we specialize in resolving ${painPoint} and have finalized ${proof} with outstanding local ratings.`;
+    } else if (styleAction === "Shorter") {
+      text = `${bizName} provides expert ${mainService} in ${address}. We resolve ${painPoint} quickly. Led by ${author}, we guarantee premium quality.`;
+    } else {
+      // Default / Longer / 3-Sentence Capsule
+      text = `${bizName} is the premier local specialist for ${mainService} in the ${address} region, dedicated to resolving complex ${painPoint} challenges. Directed by ${author}, our operations are supported by a proven record of ${proof}. Read our service pages to discover how we can help you today.`;
+    }
+
+    // Interweave link router dictionary keywords safely (no double-replacements or tag nesting)
+    const keywords = Object.keys(routingLinks)
+      .filter(keyword => keyword.length > 3 && !['home', 'contact', 'faq'].includes(keyword))
+      .sort((a, b) => b.length - a.length);
+
+    if (keywords.length > 0) {
+      const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const parts = text.split(/(<[^>]+>)/g);
+      for (let i = 0; i < parts.length; i += 2) {
+        let partText = parts[i];
+        if (!partText) continue;
+        const placeholders = [];
+        keywords.forEach(keyword => {
+          const escapedKeyword = escapeRegExp(keyword);
+          const regex = new RegExp(`\\b(${escapedKeyword})\\b`, 'gi');
+          partText = partText.replace(regex, (match) => {
+            const placeholder = `%%LINK_TOKEN_${placeholders.length}%%`;
+            placeholders.push({
+              token: placeholder,
+              html: `<a href="${routingLinks[keyword]}" data-editable="true">${match}</a>`
+            });
+            return placeholder;
+          });
+        });
+        placeholders.forEach(item => {
+          partText = partText.replace(item.token, item.html);
+        });
+        parts[i] = partText;
+      }
+      text = parts.join('');
+    }
+  }
+
+  // Enforce rigid max characters spatial guardrail limit
+  const maxChars = spatialGuardrails.maxCharsAllowed || 400;
+  if (text.length > maxChars) {
+    let truncated = text.substring(0, maxChars);
+    const lastSpace = truncated.lastIndexOf(' ');
+    if (lastSpace > 0) {
+      truncated = truncated.substring(0, lastSpace);
+    }
+    // Close any trailing split anchor tags to avoid broken DOM
+    if (truncated.includes('<a') && !truncated.includes('</a>')) {
+      truncated += '</a>';
+    }
+    text = truncated;
+  }
+
+  return text;
+}
+
+// Structured schema configuration graph writer
+function generateLocalBusinessSchema(dirTarget, dossier) {
+  const outputSchemaPath = path.join(dirTarget, 'structured_schema.jsonld');
+  const localBusinessPayload = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "@id": `https://placeholder-brand-url.com/#local-entity`,
+    "name": dossier.businessName,
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": dossier.address
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": dossier.geoCoordinates?.latitude || 0,
+      "longitude": dossier.geoCoordinates?.longitude || 0
+    },
+    "areaServed": {
+      "@type": "GeoCircle",
+      "geoRadius": dossier.serviceRadius
+    },
+    "knowsAbout": dossier.services ? dossier.services.split(',').map(s => s.trim()) : [],
+    "author": {
+      "@type": "Person",
+      "name": dossier.authorMeta,
+      "jobTitle": "Expert Operator"
+    }
+  };
+  fs.writeFileSync(outputSchemaPath, JSON.stringify(localBusinessPayload, null, 4), 'utf8');
+}
+
+// Machine Discovery llms.txt Compiler
+function generateLlmsTxtDocument(dirTarget, dossier, routingLinks) {
+  const textRootDocPath = path.join(dirTarget, 'llms.txt');
+  let markdownPayload = `# ${dossier.businessName}\n\n> Verified professional service entity specialized in ${dossier.services || 'local solutions'}.\n\n## Core Topic Channels & Service Links\n`;
+  
+  Object.keys(routingLinks).forEach(keyword => {
+    markdownPayload += `- [${keyword.toUpperCase()} Expert Details Matrix - Local Options](/${routingLinks[keyword]})\n`;
+  });
+  
+  fs.writeFileSync(textRootDocPath, markdownPayload, 'utf8');
+}
+
+// Injects the structured schema block across project pages natively
+function patchInlineScriptIntoAllProjectHtmlFiles(dirTarget) {
+  const schemaBlockPath = path.join(dirTarget, 'structured_schema.jsonld');
+  if (!fs.existsSync(schemaBlockPath)) return;
+  
+  const activeSchemaRawDataString = fs.readFileSync(schemaBlockPath, 'utf8');
+  const htmlFiles = fs.readdirSync(dirTarget).filter(f => f.endsWith('.html'));
+
+  htmlFiles.forEach(file => {
+    const fullPath = path.join(dirTarget, file);
+    let contents = fs.readFileSync(fullPath, 'utf8');
+    
+    // Schema script tag element
+    const scriptElementPayload = `<script id="ks-brief-schema" type="application/ld+json">\n${activeSchemaRawDataString}\n</script>`;
+    
+    if (contents.includes('id="ks-brief-schema"')) {
+      contents = contents.replace(/<script id="ks-brief-schema"[\s\S]*?<\/script>/, scriptElementPayload);
+    } else if (contents.includes('</head>')) {
+      contents = contents.replace('</head>', `  ${scriptElementPayload}\n</head>`);
+    }
+    
+    fs.writeFileSync(fullPath, contents, 'utf8');
+  });
+}
 
 // API: AI Image search (Loads matching high-end clinical and salon stock photographs based on prompt tags)
 app.post('/api/ai/image', (req, res) => {

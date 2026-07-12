@@ -44,9 +44,67 @@ function switchTab(tabName) {
   document.querySelectorAll('.tab-panel-section').forEach(panel => panel.style.display = 'none');
   document.getElementById(`panel-${tabName}`).style.display = 'block';
 
-  // Load history log if tab is selected
+  // Load history log or brief if selected
   if (tabName === 'history') {
     loadVersionHistory();
+  } else if (tabName === 'brief' && currentProject) {
+    loadClientBriefData();
+  }
+}
+
+// Implement Data Synchronization Loops for client form management
+async function loadClientBriefData() {
+  try {
+    const response = await fetch(`${API_BASE}/api/project/${encodeURIComponent(currentProject)}/file?path=copy_brief.json`);
+    if (response.ok) {
+      const serverPayload = await response.json();
+      document.getElementById('brief-biz-name').value = serverPayload.businessName || '';
+      document.getElementById('brief-services').value = serverPayload.services || '';
+      document.getElementById('brief-pain-points').value = serverPayload.painPoints || '';
+      document.getElementById('brief-address').value = serverPayload.address || '';
+      document.getElementById('brief-lat').value = serverPayload.geoCoordinates?.latitude || '';
+      document.getElementById('brief-lon').value = serverPayload.geoCoordinates?.longitude || '';
+      document.getElementById('brief-radius').value = serverPayload.serviceRadius || '';
+      document.getElementById('brief-author').value = serverPayload.authorMeta || '';
+      document.getElementById('brief-proof').value = serverPayload.provenTrackRecord || '';
+    }
+  } catch (err) {
+    console.error("Dossier parsing connection reset:", err);
+    showToast("Failed to sync brief data from server", "error");
+  }
+}
+
+async function saveClientBrief(event) {
+  event.preventDefault();
+  const compiledBrief = {
+    businessName: document.getElementById('brief-biz-name').value,
+    services: document.getElementById('brief-services').value,
+    painPoints: document.getElementById('brief-pain-points').value,
+    address: document.getElementById('brief-address').value,
+    geoCoordinates: {
+      latitude: parseFloat(document.getElementById('brief-lat').value) || 0,
+      longitude: parseFloat(document.getElementById('brief-lon').value) || 0
+    },
+    serviceRadius: document.getElementById('brief-radius').value,
+    authorMeta: document.getElementById('brief-author').value,
+    provenTrackRecord: document.getElementById('brief-proof').value
+  };
+
+  try {
+    showToast("Saving and compiling strategy brief...", "info");
+    const syncResponse = await fetch(`${API_BASE}/api/project/${encodeURIComponent(currentProject)}/file?path=copy_brief.json`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: JSON.stringify(compiledBrief, null, 2) })
+    });
+    if (syncResponse.ok) {
+      showToast("✨ Client Strategy Brief written and synced successfully!", "success");
+    } else {
+      throw new Error("Failed to save copy brief");
+    }
+  } catch (err) {
+    console.error("Dossier writing pipeline failed:", err);
+    showToast("System error tracking brief updates to server disk storage", "error");
   }
 }
 
@@ -1525,6 +1583,14 @@ async function triggerAiRewrite(inputId, commandName) {
   if (!el) return;
 
   const originalText = el.innerText || el.textContent || '';
+  const resolvedHtmlTagContext = el.tagName || 'P';
+  
+  // Extract max layout container bounds or calculate length safety bounds
+  const spatialCeiling = parseInt(el.getAttribute('data-max-chars'), 10) || 
+                          (originalText.length > 0 ? Math.ceil(originalText.length * 1.3) : 400);
+  
+  const referenceWordCountValue = originalText.split(/\s+/).filter(Boolean).length || 20;
+
   showToast(`Running conversion AI framework '${commandName}'...`, 'info');
 
   try {
@@ -1532,18 +1598,36 @@ async function triggerAiRewrite(inputId, commandName) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        originalText,
-        command: commandName,
-        industry: projectData ? projectData.industry : ''
+        projectName: currentProject,
+        styleAction: commandName,
+        currentText: originalText,
+        elementContext: resolvedHtmlTagContext,
+        spatialGuardrails: {
+          maxCharsAllowed: spatialCeiling,
+          targetWordCount: referenceWordCountValue
+        }
       })
     });
     if (!res.ok) throw new Error('AI service error');
     const data = await res.json();
 
-    el.innerText = data.text;
+    const outputText = data.compiledEliteText || data.text || '';
+    el.innerText = outputText;
+
+    // Synchronize title tag if rewriting H1
+    if (resolvedHtmlTagContext === 'H1') {
+      const iframe = document.getElementById('previewIframe');
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+      if (iframeDoc) {
+        const pageTitle = iframeDoc.querySelector('title');
+        if (pageTitle) {
+          pageTitle.innerText = `${outputText} | ${projectData ? projectData.client_name : currentProject}`;
+        }
+      }
+    }
 
     const sidebarInp = document.getElementById(inputId);
-    if (sidebarInp) sidebarInp.value = data.text;
+    if (sidebarInp) sidebarInp.value = outputText;
 
     showToast('AI copywriting generated and applied!', 'success');
     showFloatingToolbar(el, inputId);

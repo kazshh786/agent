@@ -1,0 +1,47 @@
+{
+  "editorial-luxe": {
+    "index": "index.html",
+    "services": "services.html",
+    "service_detail": "service-single.html",
+    "about": "space.html",
+    "contact": "qualification.html",
+    "portfolio": "case-studies.html",
+    "portfolio_detail": "case-studies.html"
+  },
+  "agenio-creative-agency-ai-html-template-2026-05-27-12-55-43-utc": {
+    "index": "main-files/agenio/index.html",
+    "services": "main-files/agenio/service.html",
+    "service_detail": "main-files/agenio/service-details.html",
+    "about": "main-files/agenio/about.html",
+    "contact": "main-files/agenio/contact.html",
+    "portfolio": "main-files/agenio/work.html",
+    "portfolio_detail": "main-files/agenio/work-details.html"
+  },
+  "aigocy-ai-agency-technology-html-template-2026-02-21-10-52-45-utc": {
+    "index": "aigocy/aigocy/index.html",
+    "services": "aigocy/aigocy/service.html",
+    "service_detail": "aigocy/aigocy/service-single.html",
+    "about": "aigocy/aigocy/about.html",
+    "contact": "aigocy/aigocy/contact.html",
+    "portfolio": "aigocy/aigocy/work.html",
+    "portfolio_detail": "aigocy/aigocy/work-single.html"
+  },
+  "amoxi-creative-agency-portfolio-html-template-2026-05-28-07-28-50-utc": {
+    "index": "amoxi-html-package/amoxi-html-main/index.html",
+    "services": "amoxi-html-package/amoxi-html-main/services.html",
+    "service_detail": "amoxi-html-package/amoxi-html-main/service-d-web-development.html",
+    "about": "amoxi-html-package/amoxi-html-main/about.html",
+    "contact": "amoxi-html-package/amoxi-html-main/contact.html",
+    "portfolio": "amoxi-html-package/amoxi-html-main/portfolio.html",
+    "portfolio_detail": "amoxi-html-package/amoxi-html-main/portfolio-details.html"
+  },
+  "noile-business-agency-html-template-2023-12-26-01-19-19-utc": {
+    "index": "noile-package-files/noile-html-main/index.html",
+    "services": "noile-package-files/noile-html-main/services.html",
+    "service_detail": "noile-package-files/noile-html-main/website-development.html",
+    "about": "noile-package-files/noile-html-main/about.html",
+    "contact": "noile-package-files/noile-html-main/contact.html",
+    "portfolio": "noile-package-files/noile-html-main/case-study.html",
+    "portfolio_detail": "noile-package-files/noile-html-main/case-study-details.html"
+  }
+}

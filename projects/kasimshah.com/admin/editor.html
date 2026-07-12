@@ -31,7 +31,6 @@
         <div style="font-size: 0.8rem; color: var(--color-muted);" id="editingPageLabel">Page: index.html</div>
       </div>
 
-      <!-- Tab Navigation -->
       <div class="editor-sidebar-tabs" id="editor-tabs-bar">
         <button class="tab-btn active" onclick="switchTab('content')" id="tab-btn-content">
           <span class="material-icons" style="font-size: 1rem; vertical-align: middle; margin-right: 4px;">edit</span> Copy
@@ -41,6 +40,9 @@
         </button>
         <button class="tab-btn" onclick="switchTab('pages')" id="tab-btn-pages">
           <span class="material-icons" style="font-size: 1rem; vertical-align: middle; margin-right: 4px;">folder</span> Pages
+        </button>
+        <button class="tab-btn" onclick="switchTab('brief')" id="tab-btn-brief">
+          <span class="material-icons" style="font-size: 1rem; vertical-align: middle; margin-right: 4px;">assignment</span> Brief
         </button>
         <button class="tab-btn" onclick="switchTab('history')" id="tab-btn-history">
           <span class="material-icons" style="font-size: 1rem; vertical-align: middle; margin-right: 4px;">history</span> History
@@ -157,6 +159,70 @@
               <span class="material-icons" style="font-size: 1.1rem;">add_to_photos</span> Add New Page
             </button>
           </div>
+        </div>
+
+        <!-- CLIENT STRATEGY BRIEF TAB -->
+        <div class="tab-panel-section" id="panel-brief" style="display: none;">
+          <h3 style="font-size: 1.2rem; margin-bottom: 8px; border-bottom: 1px solid var(--color-dark-border); padding-bottom: 8px;">Client Strategy Onboarding Form</h3>
+          <p style="color: var(--color-muted); font-size: 0.8rem; margin-bottom: 20px; font-style: italic;">
+            Captures real-world business attributes to eliminate generic text outputs.
+          </p>
+          
+          <form id="form-copy-brief" onsubmit="saveClientBrief(event)">
+            <div style="margin-bottom: 24px; border-bottom: 1px solid var(--color-dark-border); padding-bottom: 16px;">
+              <h4 style="font-size: 0.95rem; color: var(--color-accent); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">1. Transactional Service Profiles</h4>
+              <div class="form-group" style="margin-bottom: 12px;">
+                <label for="brief-biz-name" style="display: block; font-size: 0.8rem; margin-bottom: 6px; color: var(--color-secondary);">Core Brand Legal Name</label>
+                <input type="text" id="brief-biz-name" class="form-control" style="width: 100%;" required>
+              </div>
+              <div class="form-group" style="margin-bottom: 12px;">
+                <label for="brief-services" style="display: block; font-size: 0.8rem; margin-bottom: 6px; color: var(--color-secondary);">Target Core Capabilities / Services (Comma list)</label>
+                <textarea id="brief-services" class="form-control" rows="2" placeholder="e.g., Emergency Roofing, Gutter Repair" style="width: 100%; resize: vertical; font-family: inherit;" required></textarea>
+              </div>
+              <div class="form-group" style="margin-bottom: 12px;">
+                <label for="brief-pain-points" style="display: block; font-size: 0.8rem; margin-bottom: 6px; color: var(--color-secondary);">Core Customer Pain Points & Challenges</label>
+                <textarea id="brief-pain-points" class="form-control" rows="2" placeholder="e.g., Active water entry causing property rot" style="width: 100%; resize: vertical; font-family: inherit;" required></textarea>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 24px; border-bottom: 1px solid var(--color-dark-border); padding-bottom: 16px;">
+              <h4 style="font-size: 0.95rem; color: var(--color-accent); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">2. Local Entity Coordinates</h4>
+              <div class="form-group" style="margin-bottom: 12px;">
+                <label for="brief-address" style="display: block; font-size: 0.8rem; margin-bottom: 6px; color: var(--color-secondary);">NAP Address (Sync with Google Profile)</label>
+                <input type="text" id="brief-address" class="form-control" placeholder="e.g., 100 Business Rd, Manchester" style="width: 100%;" required>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                <div class="form-group">
+                  <label for="brief-lat" style="display: block; font-size: 0.8rem; margin-bottom: 6px; color: var(--color-secondary);">Exact Latitude</label>
+                  <input type="number" step="any" id="brief-lat" class="form-control" placeholder="53.4808" style="width: 100%;" required>
+                </div>
+                <div class="form-group">
+                  <label for="brief-lon" style="display: block; font-size: 0.8rem; margin-bottom: 6px; color: var(--color-secondary);">Exact Longitude</label>
+                  <input type="number" step="any" id="brief-lon" class="form-control" placeholder="-2.2426" style="width: 100%;" required>
+                </div>
+              </div>
+              <div class="form-group" style="margin-bottom: 12px;">
+                <label for="brief-radius" style="display: block; font-size: 0.8rem; margin-bottom: 6px; color: var(--color-secondary);">Target Radius Range Area</label>
+                <input type="text" id="brief-radius" class="form-control" placeholder="e.g., 30 miles" style="width: 100%;" required>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 24px;">
+              <h4 style="font-size: 0.95rem; color: var(--color-accent); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">3. Experience Validation Framework</h4>
+              <div class="form-group" style="margin-bottom: 12px;">
+                <label for="brief-author" style="display: block; font-size: 0.8rem; margin-bottom: 6px; color: var(--color-secondary);">Content Author / Certifications</label>
+                <input type="text" id="brief-author" class="form-control" placeholder="e.g., Master Roofer with 20 Years Experience" style="width: 100%;" required>
+              </div>
+              <div class="form-group" style="margin-bottom: 12px;">
+                <label for="brief-proof" style="display: block; font-size: 0.8rem; margin-bottom: 6px; color: var(--color-secondary);">Quantifiable Proof Metrics</label>
+                <textarea id="brief-proof" class="form-control" rows="2" placeholder="e.g., Finalized over 2,500 projects locally" style="width: 100%; resize: vertical; font-family: inherit;" required></textarea>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; min-height: 40px; margin-top: 12px;">
+              💾 Compile Strategy Matrix & Save Data
+            </button>
+          </form>
         </div>
 
         <!-- VERSION HISTORY & RESTORE TAB -->
