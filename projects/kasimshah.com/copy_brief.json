@@ -1,0 +1,13 @@
+{
+  "businessName": "Kasim Shah Agency",
+  "services": "Conversion UX, Growth Retainers, Local SEO",
+  "painPoints": "low conversion rates, slow site performance",
+  "address": "100 Innovation Way, Manchester, M1 1ED",
+  "geoCoordinates": {
+    "latitude": 53.4808,
+    "longitude": -2.2426
+  },
+  "serviceRadius": "30 miles",
+  "authorMeta": "Kasim Shah, Lead Architect",
+  "provenTrackRecord": "over 1,200 successful retainers since 2018"
+}
