@@ -91,8 +91,11 @@ async function loadProjects() {
             </div>
           </div>
           
-          <div style="font-size: 0.85rem; color: var(--color-muted);">
-            Pages Index: <strong>${pagesCount} views</strong> | Status: <span style="color: var(--color-success);">● Operational</span>
+          <div style="font-size: 0.85rem; color: var(--color-muted); display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-dark-border); padding-top: 12px; margin-top: 12px;">
+            <span>Pages Index: <strong>${pagesCount} views</strong></span>
+            <a href="analytics.html?project=${encodeURIComponent(proj.name)}" style="display: inline-flex; align-items: center; gap: 4px; font-weight: 600; color: var(--color-accent); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;">
+              <span class="material-icons" style="font-size: 1.15rem; vertical-align: middle;">analytics</span> Analytics
+            </a>
           </div>
         </div>
 
