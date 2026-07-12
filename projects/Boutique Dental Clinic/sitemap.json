@@ -109,6 +109,16 @@
       "file": "service-veneers-treatment-glasgow.html",
       "name": "Veneers Treatment (Glasgow)",
       "type": "service_local_seo"
+    },
+    {
+      "file": "project-dental-implants.html",
+      "name": "Dental Implants Project",
+      "type": "portfolio_single"
+    },
+    {
+      "file": "project-veneers-treatment.html",
+      "name": "Veneers Treatment Project",
+      "type": "portfolio_single"
     }
   ]
 }
