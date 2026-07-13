@@ -118,21 +118,28 @@ function validateBody(body, requiredFields) {
 }
 
 /**
- * Calls the secure write_audit_log RPC using the caller-scoped Supabase client.
- * Does NOT silently ignore errors, to ensure critical audit logs are recorded.
+ * Writes API-generated audit events through the server-only service client.
+ * The generic database RPC is not exposed to browser users because it would
+ * allow callers to fabricate event names and metadata.
  */
-async function writeAuditLog(supabase, { workspaceId, actorId, action, entityType, entityId, metadata }) {
-  const { error } = await supabase.rpc('write_audit_log', {
-    p_workspace_id: workspaceId,
-    p_action: action,
-    p_entity_type: entityType,
-    p_entity_id: entityId,
-    p_metadata: metadata || {}
+async function writeAuditLog(_callerClient, { workspaceId, actorId, action, entityType, entityId, metadata }) {
+  if (!workspaceId || !actorId || !action || !entityType) {
+    throw new Error('Audit log requires workspace, actor, action, and entity type');
+  }
+
+  const serviceClient = createSupabaseServiceClient();
+  const { error } = await serviceClient.from('audit_logs').insert({
+    workspace_id: workspaceId,
+    actor_id: actorId,
+    action,
+    entity_type: entityType,
+    entity_id: entityId || null,
+    metadata: metadata || {}
   });
 
   if (error) {
-    console.error('[audit_log] Failed to write audit log via RPC:', error.message);
-    throw new Error(`Audit log failure: ${error.message}`);
+    console.error('[audit_log] Server audit write failed:', error.message);
+    throw new Error('Audit log write failed');
   }
 }
 
