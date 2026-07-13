@@ -1,0 +1,36 @@
+{
+  "name": "ks-unified-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Production-ready multi-tenant agency dashboard with Supabase auth, workspace isolation, and Vercel serverless API.",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "dev": "npx vercel dev",
+    "build": "node scripts/build.js",
+    "test": "jest --verbose --forceExit",
+    "verify": "node scripts/verify.js",
+    "test:auth": "jest tests/auth.test.js --verbose",
+    "test:membership": "jest tests/membership.test.js --verbose",
+    "test:roles": "jest tests/roles.test.js --verbose",
+    "test:validation": "jest tests/validation.test.js --verbose",
+    "test:api": "jest tests/api-routes.test.js --verbose",
+    "test:workspace": "jest tests/workspace-switching.test.js --verbose",
+    "test:engine": "jest tests/website-engine.test.js --verbose",
+    "test:xss": "jest tests/xss.test.js --verbose",
+    "test:methods": "jest tests/http-methods.test.js --verbose"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": ["**/tests/**/*.test.js"],
+    "collectCoverage": false,
+    "verbose": true
+  }
+}

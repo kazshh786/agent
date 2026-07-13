@@ -1,27 +1,44 @@
 /**
- * KS Agency Unified Dashboard - Controller Script
- * Handles view routing, API fetch requests, Supabase database bindings,
- * POS checkout drawer actions, CRM timeline feeds, and Chart.js feeds.
+ * KS Agency Unified Dashboard - Controller Script (Production Foundation)
+ *
+ * Handles:
+ * - Supabase authentication (login, register, logout, password reset)
+ * - Multi-tenant workspace management (creation, switching, validation)
+ * - View routing and module rendering
+ * - Safe DOM manipulation (no innerHTML with user data)
+ * - Website Engine proxy via server-side API
+ * - POS checkout, CRM timeline, social campaign UI
  */
 
 // --- 1. CONFIGURATION & STATE ---
-const API_BASE = 'http://localhost:3000'; // local Website Generator API
-const SUPABASE_URL = 'https://edycdjjzapimvlzdebkl.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_1kOdM2M1WntwU-aZNEk11w_oaVqkKv3';
+// Configuration is loaded from the global KS_CONFIG object injected by index.html
+// which reads from meta tags or Vercel environment injection.
+const AppConfig = {
+  supabaseUrl: '',
+  supabaseAnonKey: '',
+  appUrl: window.location.origin
+};
 
 const AppState = {
+  // Auth
+  user: null,
+  session: null,
+  authLoading: true,
+
+  // Workspace
   activeView: 'overview',
+  currentWorkspace: null,
+  workspaces: [],
+
+  // Website Engine
   apiStatus: 'checking',
   supabaseStatus: 'checking',
-  
-  // Compiled Web Engine projects from local API
   webProjects: [],
-  templates: [],
-  
+
   // Supabase OS salon tenants list
   tenants: [],
   selectedTenant: null,
-  
+
   // Data for active tenant
   services: [],
   staff: [],
@@ -31,12 +48,12 @@ const AppState = {
   crmClients: [],
   checkoutTransactions: [],
   selectedClient: null,
-  
+
   // Social Auto marketing queues
   socialSet: 'kasim-agency',
   scheduledPosts: [],
   inbox: [],
-  
+
   // POS Cart State
   cartItems: [],
   cartTotal: 0
@@ -44,89 +61,723 @@ const AppState = {
 
 let supabaseClient = null;
 
-// Initialize Supabase dynamic CDN client
+// --- 2. SAFE DOM HELPERS ---
+// These replace innerHTML interpolation with safe DOM creation.
+
+function createEl(tag, attrs, children) {
+  const el = document.createElement(tag);
+  if (attrs) {
+    Object.entries(attrs).forEach(([key, val]) => {
+      if (key === 'className') el.className = val;
+      else if (key === 'textContent') el.textContent = val;
+      else if (key === 'style' && typeof val === 'object') {
+        Object.assign(el.style, val);
+      } else if (key.startsWith('on') && typeof val === 'function') {
+        el.addEventListener(key.slice(2).toLowerCase(), val);
+      } else {
+        el.setAttribute(key, val);
+      }
+    });
+  }
+  if (children) {
+    (Array.isArray(children) ? children : [children]).forEach(child => {
+      if (typeof child === 'string') {
+        el.appendChild(document.createTextNode(child));
+      } else if (child instanceof Node) {
+        el.appendChild(child);
+      }
+    });
+  }
+  return el;
+}
+
+function clearEl(el) {
+  while (el.firstChild) el.removeChild(el.firstChild);
+}
+
+function escapeForAttribute(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+// --- 3. SUPABASE AUTH ---
+
 function initSupabase() {
+  // Read config from meta tags
+  const urlMeta = document.querySelector('meta[name="supabase-url"]');
+  const keyMeta = document.querySelector('meta[name="supabase-anon-key"]');
+
+  if (urlMeta) AppConfig.supabaseUrl = urlMeta.getAttribute('content');
+  if (keyMeta) AppConfig.supabaseAnonKey = keyMeta.getAttribute('content');
+
+  if (!AppConfig.supabaseUrl || !AppConfig.supabaseAnonKey) {
+    console.warn('Supabase configuration not found in meta tags. Auth will be unavailable.');
+    AppState.authLoading = false;
+    AppState.supabaseStatus = 'offline';
+    showAuthScreen();
+    updateStatusBar();
+    return;
+  }
+
   if (typeof supabase !== 'undefined') {
     try {
-      supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      supabaseClient = supabase.createClient(AppConfig.supabaseUrl, AppConfig.supabaseAnonKey, {
+        auth: {
+          autoRefreshToken: true,
+          persistSession: true,
+          detectSessionInUrl: true
+        }
+      });
       AppState.supabaseStatus = 'online';
       updateStatusBar();
-      fetchSupabaseTenants();
+
+      // Listen for auth state changes
+      supabaseClient.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          AppState.session = session;
+          AppState.user = session?.user || null;
+          AppState.authLoading = false;
+          onAuthenticated();
+        } else if (event === 'SIGNED_OUT') {
+          AppState.session = null;
+          AppState.user = null;
+          showAuthScreen();
+        } else if (event === 'PASSWORD_RECOVERY') {
+          showResetPasswordForm();
+        }
+      });
+
+      // Check existing session
+      checkExistingSession();
     } catch (err) {
       console.error('Supabase init failed:', err);
       AppState.supabaseStatus = 'offline';
+      AppState.authLoading = false;
+      showAuthScreen();
       updateStatusBar();
     }
   } else {
     console.warn('Supabase client SDK not loaded from CDN.');
     AppState.supabaseStatus = 'offline';
+    AppState.authLoading = false;
+    showAuthScreen();
     updateStatusBar();
   }
 }
 
-// --- 2. LIFE-CYCLE LOADERS ---
-document.addEventListener('DOMContentLoaded', async () => {
-  initSupabase();
+async function checkExistingSession() {
+  try {
+    const { data: { session }, error } = await supabaseClient.auth.getSession();
+    if (error) throw error;
+
+    if (session) {
+      AppState.session = session;
+      AppState.user = session.user;
+      AppState.authLoading = false;
+      onAuthenticated();
+    } else {
+      AppState.authLoading = false;
+      showAuthScreen();
+    }
+  } catch (err) {
+    console.error('Session check failed:', err);
+    AppState.authLoading = false;
+    showAuthScreen();
+  }
+}
+
+async function handleLogin(email, password) {
+  const errorEl = document.getElementById('auth-error');
+  clearEl(errorEl);
+  errorEl.style.display = 'none';
+
+  if (!email || !password) {
+    showAuthError('Please enter both email and password.');
+    return;
+  }
+
+  setAuthLoading(true);
+
+  try {
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+
+    if (data.user && !data.user.email_confirmed_at) {
+      showAuthError('Please check your email to verify your account before logging in.');
+      setAuthLoading(false);
+      return;
+    }
+    // Auth state change listener will handle the rest
+  } catch (err) {
+    showAuthError(getFriendlyAuthError(err));
+    setAuthLoading(false);
+  }
+}
+
+async function handleRegister(email, password, fullName) {
+  const errorEl = document.getElementById('auth-error');
+  clearEl(errorEl);
+  errorEl.style.display = 'none';
+
+  if (!email || !password) {
+    showAuthError('Please enter both email and password.');
+    return;
+  }
+  if (password.length < 8) {
+    showAuthError('Password must be at least 8 characters.');
+    return;
+  }
+
+  setAuthLoading(true);
+
+  try {
+    const { data, error } = await supabaseClient.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { full_name: fullName || '' },
+        emailRedirectTo: `${AppConfig.appUrl}/auth/callback`
+      }
+    });
+    if (error) throw error;
+
+    if (data.user && !data.user.email_confirmed_at) {
+      showAuthSuccess('Account created! Please check your email to verify your account.');
+    }
+    setAuthLoading(false);
+  } catch (err) {
+    showAuthError(getFriendlyAuthError(err));
+    setAuthLoading(false);
+  }
+}
+
+async function handleForgotPassword(email) {
+  if (!email) {
+    showAuthError('Please enter your email address.');
+    return;
+  }
+
+  setAuthLoading(true);
+
+  try {
+    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+      redirectTo: `${AppConfig.appUrl}/reset-password`
+    });
+    if (error) throw error;
+    showAuthSuccess('Password reset email sent. Please check your inbox.');
+    setAuthLoading(false);
+  } catch (err) {
+    showAuthError(getFriendlyAuthError(err));
+    setAuthLoading(false);
+  }
+}
+
+async function handlePasswordReset(newPassword) {
+  if (!newPassword || newPassword.length < 8) {
+    showAuthError('Password must be at least 8 characters.');
+    return;
+  }
+
+  setAuthLoading(true);
+
+  try {
+    const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
+    if (error) throw error;
+    showAuthSuccess('Password updated successfully! You can now log in.');
+    setTimeout(() => showLoginForm(), 2000);
+    setAuthLoading(false);
+  } catch (err) {
+    showAuthError(getFriendlyAuthError(err));
+    setAuthLoading(false);
+  }
+}
+
+async function handleLogout() {
+  try {
+    await supabaseClient.auth.signOut();
+  } catch (err) {
+    console.error('Logout error:', err);
+  }
+  AppState.user = null;
+  AppState.session = null;
+  AppState.currentWorkspace = null;
+  AppState.workspaces = [];
+  localStorage.removeItem('ks_selected_workspace');
+  showAuthScreen();
+}
+
+function getFriendlyAuthError(err) {
+  const msg = err.message || '';
+  if (msg.includes('Invalid login')) return 'Invalid email or password. Please try again.';
+  if (msg.includes('Email not confirmed')) return 'Please verify your email before logging in.';
+  if (msg.includes('already registered')) return 'An account with this email already exists.';
+  if (msg.includes('rate limit')) return 'Too many attempts. Please wait a moment and try again.';
+  if (msg.includes('network')) return 'Network error. Please check your connection.';
+  return msg || 'An unexpected error occurred. Please try again.';
+}
+
+// --- 4. AUTH UI MANAGEMENT ---
+
+function showAuthScreen() {
+  document.getElementById('auth-overlay').style.display = 'flex';
+  document.getElementById('app-container').style.display = 'none';
+  document.getElementById('loading-overlay').style.display = 'none';
+  showLoginForm();
+}
+
+function showDashboard() {
+  document.getElementById('auth-overlay').style.display = 'none';
+  document.getElementById('app-container').style.display = 'flex';
+  document.getElementById('loading-overlay').style.display = 'none';
+}
+
+function showLoginForm() {
+  document.getElementById('auth-login-form').style.display = 'block';
+  document.getElementById('auth-register-form').style.display = 'none';
+  document.getElementById('auth-forgot-form').style.display = 'none';
+  document.getElementById('auth-reset-form').style.display = 'none';
+  clearAuthMessages();
+}
+
+function showRegisterForm() {
+  document.getElementById('auth-login-form').style.display = 'none';
+  document.getElementById('auth-register-form').style.display = 'block';
+  document.getElementById('auth-forgot-form').style.display = 'none';
+  document.getElementById('auth-reset-form').style.display = 'none';
+  clearAuthMessages();
+}
+
+function showForgotPasswordForm() {
+  document.getElementById('auth-login-form').style.display = 'none';
+  document.getElementById('auth-register-form').style.display = 'none';
+  document.getElementById('auth-forgot-form').style.display = 'block';
+  document.getElementById('auth-reset-form').style.display = 'none';
+  clearAuthMessages();
+}
+
+function showResetPasswordForm() {
+  document.getElementById('auth-login-form').style.display = 'none';
+  document.getElementById('auth-register-form').style.display = 'none';
+  document.getElementById('auth-forgot-form').style.display = 'none';
+  document.getElementById('auth-reset-form').style.display = 'block';
+  clearAuthMessages();
+}
+
+function clearAuthMessages() {
+  const errorEl = document.getElementById('auth-error');
+  const successEl = document.getElementById('auth-success');
+  clearEl(errorEl);
+  clearEl(successEl);
+  errorEl.style.display = 'none';
+  successEl.style.display = 'none';
+}
+
+function showAuthError(message) {
+  const el = document.getElementById('auth-error');
+  el.textContent = message;
+  el.style.display = 'block';
+  const successEl = document.getElementById('auth-success');
+  successEl.style.display = 'none';
+}
+
+function showAuthSuccess(message) {
+  const el = document.getElementById('auth-success');
+  el.textContent = message;
+  el.style.display = 'block';
+  const errorEl = document.getElementById('auth-error');
+  errorEl.style.display = 'none';
+}
+
+function setAuthLoading(loading) {
+  const btns = document.querySelectorAll('.auth-form .btn-primary');
+  btns.forEach(btn => {
+    btn.disabled = loading;
+    if (loading) {
+      btn.dataset.originalText = btn.textContent;
+      btn.textContent = 'Loading...';
+    } else if (btn.dataset.originalText) {
+      btn.textContent = btn.dataset.originalText;
+    }
+  });
+}
+
+// --- 5. WORKSPACE MANAGEMENT ---
+
+async function onAuthenticated() {
+  showDashboard();
+  updateUserDisplay();
   setupNavigation();
-  checkApiConnection();
+  checkApiHealth();
   loadSocialData();
-  
-  // Attach event listener callbacks
-  document.getElementById('btn-unison-wizard').addEventListener('click', openUnisonWizard);
-  document.getElementById('btn-close-wizard').addEventListener('click', closeUnisonWizard);
-  document.getElementById('wizard-form').addEventListener('submit', handleWizardSubmit);
-  document.getElementById('btn-close-checkout').addEventListener('click', closeCheckoutDrawer);
-  document.getElementById('btn-process-checkout').addEventListener('click', processPOSCheckout);
-  
-  // Load initially active modules
-  await loadWebCatalog();
+
+  // Load workspaces
+  await loadWorkspaces();
+
+  if (AppState.workspaces.length === 0) {
+    showWorkspaceOnboarding();
+  } else {
+    // Restore persisted workspace or use first
+    const savedWsId = localStorage.getItem('ks_selected_workspace');
+    const saved = AppState.workspaces.find(w => w.id === savedWsId);
+    if (saved) {
+      await selectWorkspace(saved);
+    } else {
+      await selectWorkspace(AppState.workspaces[0]);
+    }
+  }
+}
+
+function updateUserDisplay() {
+  const nameEl = document.getElementById('user-display-name');
+  const emailEl = document.getElementById('user-display-email');
+  if (nameEl && AppState.user) {
+    nameEl.textContent = AppState.user.user_metadata?.full_name || 'User';
+  }
+  if (emailEl && AppState.user) {
+    emailEl.textContent = AppState.user.email || '';
+  }
+}
+
+async function loadWorkspaces() {
+  if (!supabaseClient || !AppState.user) return;
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('workspace_members')
+      .select('workspace_id, role, workspaces(id, name, slug, owner_id)')
+      .eq('user_id', AppState.user.id);
+
+    if (error) throw error;
+
+    AppState.workspaces = (data || []).map(row => ({
+      ...row.workspaces,
+      role: row.role
+    }));
+
+    renderWorkspaceSelector();
+  } catch (err) {
+    console.error('Failed to load workspaces:', err);
+    showToast('Failed to load workspaces.', 'error');
+  }
+}
+
+function renderWorkspaceSelector() {
+  const selector = document.getElementById('workspace-selector');
+  if (!selector) return;
+  clearEl(selector);
+
+  if (AppState.workspaces.length === 0) {
+    selector.appendChild(createEl('option', { value: '', textContent: 'No workspaces' }));
+    return;
+  }
+
+  AppState.workspaces.forEach(ws => {
+    const opt = createEl('option', {
+      value: ws.id,
+      textContent: ws.name
+    });
+    if (AppState.currentWorkspace && ws.id === AppState.currentWorkspace.id) {
+      opt.selected = true;
+    }
+    selector.appendChild(opt);
+  });
+
+  // Add create option
+  selector.appendChild(createEl('option', { value: '__create__', textContent: '+ Create New Workspace' }));
+}
+
+async function selectWorkspace(workspace) {
+  if (!workspace || !workspace.id) return;
+
+  // Revalidate membership server-side
+  try {
+    const { data, error } = await supabaseClient
+      .from('workspace_members')
+      .select('role')
+      .eq('workspace_id', workspace.id)
+      .eq('user_id', AppState.user.id)
+      .single();
+
+    if (error || !data) {
+      showToast('You no longer have access to this workspace.', 'error');
+      AppState.workspaces = AppState.workspaces.filter(w => w.id !== workspace.id);
+      renderWorkspaceSelector();
+      if (AppState.workspaces.length > 0) {
+        await selectWorkspace(AppState.workspaces[0]);
+      } else {
+        showWorkspaceOnboarding();
+      }
+      return;
+    }
+
+    workspace.role = data.role;
+  } catch (err) {
+    console.error('Workspace validation failed:', err);
+  }
+
+  AppState.currentWorkspace = workspace;
+  localStorage.setItem('ks_selected_workspace', workspace.id);
+  renderWorkspaceSelector();
+
+  // Refresh all data for the selected workspace
+  await loadWebProjects();
+  await fetchSupabaseTenants();
   renderOverviewTelemetry();
+
+  showToast(`Workspace: ${workspace.name}`, 'info');
+}
+
+async function handleWorkspaceSelectorChange(e) {
+  const val = e.target.value;
+  if (val === '__create__') {
+    showWorkspaceCreationModal();
+    // Reset selector to current
+    renderWorkspaceSelector();
+    return;
+  }
+  const ws = AppState.workspaces.find(w => w.id === val);
+  if (ws) await selectWorkspace(ws);
+}
+
+function showWorkspaceOnboarding() {
+  document.getElementById('workspace-onboarding-overlay').style.display = 'flex';
+}
+
+function hideWorkspaceOnboarding() {
+  document.getElementById('workspace-onboarding-overlay').style.display = 'none';
+}
+
+function showWorkspaceCreationModal() {
+  document.getElementById('workspace-create-modal').style.display = 'flex';
+}
+
+function hideWorkspaceCreationModal() {
+  document.getElementById('workspace-create-modal').style.display = 'none';
+}
+
+async function handleCreateWorkspace(name, slug) {
+  if (!name || name.length < 2) {
+    showToast('Workspace name must be at least 2 characters.', 'error');
+    return;
+  }
+
+  // Validate slug
+  const slugRegex = /^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/;
+  const cleanSlug = slug.toLowerCase().replace(/[^a-z0-9-]/g, '');
+  if (!slugRegex.test(cleanSlug)) {
+    showToast('Slug must be 3-63 characters: lowercase letters, numbers, and hyphens.', 'error');
+    return;
+  }
+
+  try {
+    const { data, error } = await supabaseClient.rpc('create_workspace_with_owner', {
+      p_name: name,
+      p_slug: cleanSlug
+    });
+
+    if (error) throw error;
+
+    showToast('Workspace created successfully!', 'success');
+    hideWorkspaceOnboarding();
+    hideWorkspaceCreationModal();
+
+    await loadWorkspaces();
+    const newWs = AppState.workspaces.find(w => w.slug === cleanSlug);
+    if (newWs) await selectWorkspace(newWs);
+  } catch (err) {
+    showToast(`Failed to create workspace: ${err.message}`, 'error');
+  }
+}
+
+// --- 6. API HELPERS ---
+
+function getApiHeaders() {
+  const headers = {
+    'Content-Type': 'application/json'
+  };
+  if (AppState.session?.access_token) {
+    headers['Authorization'] = `Bearer ${AppState.session.access_token}`;
+  }
+  if (AppState.currentWorkspace?.id) {
+    headers['X-Workspace-Id'] = AppState.currentWorkspace.id;
+  }
+  return headers;
+}
+
+async function apiRequest(path, options = {}) {
+  const url = `/api${path}`;
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      ...getApiHeaders(),
+      ...(options.headers || {})
+    }
+  });
+  const body = await res.json();
+  if (!res.ok) {
+    throw new Error(body.error?.message || `API error: ${res.status}`);
+  }
+  return body;
+}
+
+// --- 7. LIFECYCLE LOADERS ---
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Show loading overlay
+  document.getElementById('loading-overlay').style.display = 'flex';
+  document.getElementById('app-container').style.display = 'none';
+  document.getElementById('auth-overlay').style.display = 'none';
+
+  initSupabase();
+  bindAuthForms();
+  bindWorkspaceForms();
 });
 
-// Update connection badges in sidebar
+function bindAuthForms() {
+  // Login form
+  const loginForm = document.getElementById('login-form');
+  if (loginForm) {
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      handleLogin(email, password);
+    });
+  }
+
+  // Register form
+  const registerForm = document.getElementById('register-form');
+  if (registerForm) {
+    registerForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('register-email').value.trim();
+      const password = document.getElementById('register-password').value;
+      const name = document.getElementById('register-name').value.trim();
+      handleRegister(email, password, name);
+    });
+  }
+
+  // Forgot password form
+  const forgotForm = document.getElementById('forgot-form');
+  if (forgotForm) {
+    forgotForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('forgot-email').value.trim();
+      handleForgotPassword(email);
+    });
+  }
+
+  // Reset password form
+  const resetForm = document.getElementById('reset-form');
+  if (resetForm) {
+    resetForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const password = document.getElementById('reset-new-password').value;
+      handlePasswordReset(password);
+    });
+  }
+
+  // Navigation links between forms
+  document.getElementById('show-register')?.addEventListener('click', (e) => { e.preventDefault(); showRegisterForm(); });
+  document.getElementById('show-login')?.addEventListener('click', (e) => { e.preventDefault(); showLoginForm(); });
+  document.getElementById('show-forgot')?.addEventListener('click', (e) => { e.preventDefault(); showForgotPasswordForm(); });
+  document.getElementById('show-login-from-forgot')?.addEventListener('click', (e) => { e.preventDefault(); showLoginForm(); });
+  document.getElementById('show-login-from-reset')?.addEventListener('click', (e) => { e.preventDefault(); showLoginForm(); });
+
+  // Logout button
+  document.getElementById('btn-logout')?.addEventListener('click', handleLogout);
+}
+
+function bindWorkspaceForms() {
+  // Workspace selector
+  const selector = document.getElementById('workspace-selector');
+  if (selector) selector.addEventListener('change', handleWorkspaceSelectorChange);
+
+  // Onboarding workspace creation
+  const onboardingForm = document.getElementById('onboarding-workspace-form');
+  if (onboardingForm) {
+    onboardingForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('onboarding-ws-name').value.trim();
+      const slug = document.getElementById('onboarding-ws-slug').value.trim().toLowerCase();
+      handleCreateWorkspace(name, slug);
+    });
+  }
+
+  // Modal workspace creation
+  const modalForm = document.getElementById('modal-workspace-form');
+  if (modalForm) {
+    modalForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('modal-ws-name').value.trim();
+      const slug = document.getElementById('modal-ws-slug').value.trim().toLowerCase();
+      handleCreateWorkspace(name, slug);
+    });
+  }
+
+  document.getElementById('btn-close-ws-modal')?.addEventListener('click', hideWorkspaceCreationModal);
+
+  // Wizard, checkout, report buttons
+  document.getElementById('btn-unison-wizard')?.addEventListener('click', openUnisonWizard);
+  document.getElementById('btn-close-wizard')?.addEventListener('click', closeUnisonWizard);
+  document.getElementById('wizard-form')?.addEventListener('submit', handleWizardSubmit);
+  document.getElementById('btn-close-checkout')?.addEventListener('click', closeCheckoutDrawer);
+  document.getElementById('btn-process-checkout')?.addEventListener('click', processPOSCheckout);
+  document.getElementById('btn-download-report')?.addEventListener('click', generateTelemetryReport);
+}
+
+// --- 8. STATUS BAR ---
+
 function updateStatusBar() {
   const apiDot = document.getElementById('api-status-dot');
   const apiText = document.getElementById('api-status-text');
   const dbDot = document.getElementById('db-status-dot');
   const dbText = document.getElementById('db-status-text');
-  
-  if (AppState.apiStatus === 'online') {
-    apiDot.className = 'status-dot online';
-    apiText.textContent = 'API ONLINE';
-  } else {
-    apiDot.className = 'status-dot offline';
-    apiText.textContent = 'API OFFLINE';
+
+  if (apiDot && apiText) {
+    if (AppState.apiStatus === 'online') {
+      apiDot.className = 'status-dot online';
+      apiText.textContent = 'ENGINE ONLINE';
+    } else if (AppState.apiStatus === 'unavailable') {
+      apiDot.className = 'status-dot offline';
+      apiText.textContent = 'ENGINE UNAVAILABLE';
+    } else {
+      apiDot.className = 'status-dot offline';
+      apiText.textContent = 'ENGINE OFFLINE';
+    }
   }
-  
-  if (AppState.supabaseStatus === 'online') {
-    dbDot.className = 'status-dot online';
-    dbText.textContent = 'SUPABASE CONNECTED';
-  } else {
-    dbDot.className = 'status-dot offline';
-    dbText.textContent = 'SUPABASE DISCONNECTED';
+
+  if (dbDot && dbText) {
+    if (AppState.supabaseStatus === 'online') {
+      dbDot.className = 'status-dot online';
+      dbText.textContent = 'DATABASE CONNECTED';
+    } else {
+      dbDot.className = 'status-dot offline';
+      dbText.textContent = 'DATABASE DISCONNECTED';
+    }
   }
 }
 
-// Check if website generator API is running
-async function checkApiConnection() {
+// Check health via server-side API
+async function checkApiHealth() {
   try {
-    const res = await fetch(`${API_BASE}/api/templates`);
-    if (res.ok) {
-      AppState.apiStatus = 'online';
-      const templates = await res.json();
-      AppState.templates = templates;
-      populateTemplateOptions();
-    } else {
-      AppState.apiStatus = 'offline';
-    }
+    const data = await apiRequest('/health');
+    AppState.apiStatus = data.components?.websiteEngine === 'healthy' ? 'online' : 'unavailable';
+    AppState.supabaseStatus = data.components?.database === 'healthy' ? 'online' : 'offline';
   } catch (err) {
-    console.warn('Website compiler API offline. Running in sandbox simulated mode.');
-    AppState.apiStatus = 'offline';
+    // Health endpoint may not be deployed yet, fall back to direct checks
+    AppState.apiStatus = 'unavailable';
+    console.warn('Health check failed:', err.message);
   }
   updateStatusBar();
 }
 
-// --- 3. DYNAMIC ROUTING & NAVIGATION ---
+// --- 9. DYNAMIC ROUTING & NAVIGATION ---
+
 function setupNavigation() {
   const links = document.querySelectorAll('.nav-item');
   links.forEach(link => {
@@ -134,7 +785,6 @@ function setupNavigation() {
       e.preventDefault();
       const view = link.getAttribute('data-view');
       switchView(view);
-      
       links.forEach(l => l.classList.remove('active'));
       link.classList.add('active');
     });
@@ -143,40 +793,30 @@ function setupNavigation() {
 
 function switchView(viewName) {
   AppState.activeView = viewName;
-  
-  // Hide all views
   const views = document.querySelectorAll('.dashboard-view');
   views.forEach(v => v.classList.remove('active'));
-  
-  // Show target view
+
   const target = document.getElementById(`view-${viewName}`);
-  if (target) {
-    target.classList.add('active');
-  }
-  
-  // Run screen-specific refresh scripts
-  if (viewName === 'overview') {
-    renderOverviewTelemetry();
-  } else if (viewName === 'web') {
-    renderWebCatalogView();
-  } else if (viewName === 'social') {
-    renderSocialDashboard();
-  } else if (viewName === 'salon') {
-    renderSalonOsModule();
-  }
+  if (target) target.classList.add('active');
+
+  if (viewName === 'overview') renderOverviewTelemetry();
+  else if (viewName === 'web') renderWebCatalogView();
+  else if (viewName === 'social') renderSocialDashboard();
+  else if (viewName === 'salon') renderSalonOsModule();
 }
 
-// Toast helper
+// Toast helper - uses safe DOM creation
 function showToast(message, type = 'success') {
   const container = document.getElementById('toast-container');
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.innerHTML = `
-    <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : type === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-info'}"></i>
-    <div>${message}</div>
-  `;
+  const iconMap = { success: 'fa-circle-check', error: 'fa-triangle-exclamation', info: 'fa-circle-info' };
+
+  const toast = createEl('div', { className: `toast ${type}` }, [
+    createEl('i', { className: `fa-solid ${iconMap[type] || iconMap.info}` }),
+    createEl('div', { textContent: message })
+  ]);
+
   container.appendChild(toast);
-  
+
   setTimeout(() => {
     toast.style.transition = 'all 0.5s ease';
     toast.style.opacity = '0';
@@ -185,7 +825,8 @@ function showToast(message, type = 'success') {
   }, 4000);
 }
 
-// --- 4. THE UNISON ACTION CENTER (Wizard) ---
+// --- 10. UNISON WIZARD ---
+
 function openUnisonWizard() {
   document.getElementById('unison-wizard-overlay').classList.add('active');
   document.getElementById('wiz-step-1').classList.add('active');
@@ -193,9 +834,6 @@ function openUnisonWizard() {
   document.getElementById('wiz-step-3').classList.remove('active');
   document.getElementById('wiz-btn-prev').style.display = 'none';
   document.getElementById('wiz-btn-next').textContent = 'Next: Service Settings';
-  
-  // Sync select options
-  populateTemplateOptions();
   updateWizardProgress(1);
 }
 
@@ -208,19 +846,15 @@ function updateWizardProgress(stepNum) {
   const steps = document.querySelectorAll('#wizard-indicator .w-step');
   steps.forEach((step, idx) => {
     step.className = 'w-step';
-    if (idx + 1 === stepNum) {
-      step.classList.add('active');
-    } else if (idx + 1 < stepNum) {
-      step.classList.add('completed');
-    }
+    if (idx + 1 === stepNum) step.classList.add('active');
+    else if (idx + 1 < stepNum) step.classList.add('completed');
   });
 }
 
 let wizardStep = 1;
 function moveWizard(direction) {
   const currentPanel = document.getElementById(`wiz-step-${wizardStep}`);
-  
-  // Basic validation before advancing
+
   if (direction === 1) {
     if (wizardStep === 1) {
       const name = document.getElementById('wizName').value.trim();
@@ -230,8 +864,7 @@ function moveWizard(direction) {
         return;
       }
     } else if (wizardStep === 2) {
-      const industry = document.getElementById('wizIndustry').value;
-      if (!industry) {
+      if (!document.getElementById('wizIndustry').value) {
         showToast('Please select an industry vertical.', 'error');
         return;
       }
@@ -240,19 +873,15 @@ function moveWizard(direction) {
 
   currentPanel.classList.remove('active');
   wizardStep += direction;
-  const nextPanel = document.getElementById(`wiz-step-${wizardStep}`);
-  nextPanel.classList.add('active');
+  document.getElementById(`wiz-step-${wizardStep}`).classList.add('active');
 
-  // Footers
   const prevBtn = document.getElementById('wiz-btn-prev');
   const nextBtn = document.getElementById('wiz-btn-next');
-
   prevBtn.style.display = wizardStep === 1 ? 'none' : 'inline-flex';
-  
+
   if (wizardStep === 3) {
     nextBtn.textContent = 'Compile & Provision Workspace';
     nextBtn.className = 'btn btn-accent';
-    // Load preview card summaries
     document.getElementById('summary-biz-name').textContent = document.getElementById('wizName').value;
     document.getElementById('summary-subdomain').textContent = document.getElementById('wizSubdomain').value.toLowerCase() + '.kasimshah.com';
     document.getElementById('summary-industry').textContent = document.getElementById('wizIndustry').value.toUpperCase();
@@ -261,310 +890,221 @@ function moveWizard(direction) {
     nextBtn.textContent = wizardStep === 1 ? 'Next: Service Settings' : 'Next: Confirm Details';
     nextBtn.className = 'btn btn-primary';
   }
-  
+
   updateWizardProgress(wizardStep);
 }
 
-// Trigger move wizard binds
-document.getElementById('wiz-btn-next').addEventListener('click', () => {
-  if (wizardStep < 3) {
-    moveWizard(1);
-  }
-});
-document.getElementById('wiz-btn-prev').addEventListener('click', () => {
-  if (wizardStep > 1) {
-    moveWizard(-1);
-  }
+// Wizard navigation buttons
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('wiz-btn-next')?.addEventListener('click', () => {
+    if (wizardStep < 3) moveWizard(1);
+  });
+  document.getElementById('wiz-btn-prev')?.addEventListener('click', () => {
+    if (wizardStep > 1) moveWizard(-1);
+  });
 });
 
-// Handle the unison workspace provision compile actions
+// Handle workspace provision via server-side API
 async function handleWizardSubmit(e) {
   e.preventDefault();
-  
+
   const submitBtn = document.getElementById('wiz-btn-next');
   submitBtn.disabled = true;
-  submitBtn.textContent = 'PROVISIONING UNIFIED CLOUD...';
-  
+  submitBtn.textContent = 'PROVISIONING...';
+
   const name = document.getElementById('wizName').value.trim();
   const subdomain = document.getElementById('wizSubdomain').value.trim().toLowerCase();
   const industry = document.getElementById('wizIndustry').value;
   const templateName = document.getElementById('wizTemplate').value;
   const color = document.getElementById('wizColor').value;
-  const email = document.getElementById('wizOwnerEmail').value.trim() || `owner@${subdomain}.com`;
-  const password = document.getElementById('wizOwnerPassword').value || 'kasimshah123';
-  
+
   showToast(`Initiating compile request for '${name}'...`, 'info');
-  
+
   let webSuccess = false;
-  let dbSuccess = false;
+  let projectSuccess = false;
 
-  // Step 1: Compile Web Engine Project via local API (simulated fallback if offline)
+  // Step 1: Create project record via API
   try {
-    if (AppState.apiStatus === 'online') {
-      const res = await fetch(`${API_BASE}/api/projects`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: name,
-          templateName: templateName,
-          industry: industry,
-          bottleneck: 'conversion',
-          bookingLink: `https://${subdomain}.kasimshah.com/book`,
-          pageSize: '10',
-          brandColor: color,
-          vibe: 'Luxury/Editorial',
-          tone: 'Sophisticated/Editorial',
-          logoText: `${name.toUpperCase()}`,
-          services: industry === 'barber' ? ['Skin Fade', 'Beard Trim'] : industry === 'nails' ? ['Gel Manicure', 'Acrylic Set'] : ['Laser Facial']
-        })
-      });
-      if (res.ok) {
-        webSuccess = true;
-        showToast('Web Engine compiled successfully!', 'success');
-      } else {
-        const err = await res.json();
-        showToast(`Web compile failed: ${err.error}`, 'error');
-      }
-    } else {
-      // simulated success
-      webSuccess = true;
-      showToast('Simulated Web Engine compile draft created!', 'success');
-      // Add mock web project
-      AppState.webProjects.push({
+    await apiRequest('/projects', {
+      method: 'POST',
+      body: JSON.stringify({
         name: name,
-        clientData: { industry: industry, revenue_bottleneck: 'conversion' },
-        theme: { vibe: 'Luxury/Editorial', colors: { '--md-sys-color-primary': color } },
-        pages: ['index.html', 'services.html', 'about.html', 'contact.html']
-      });
-    }
-  } catch (err) {
-    showToast(`Web compiler API connection failure: ${err.message}`, 'error');
-  }
-
-  // Step 2: Provision Multi-Tenant Supabase Workspace
-  try {
-    if (AppState.supabaseStatus === 'online' && supabaseClient) {
-      // Sign up or insert via RPC or API
-      const { data: session } = await supabaseClient.auth.getSession();
-      const token = session?.access_token || '';
-      
-      const response = await fetch(`${API_BASE}/api/admin/provision`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          salonName: name,
-          subdomain: subdomain,
-          industry: industry,
-          ownerEmail: email,
-          ownerPassword: password
-        })
-      });
-      
-      if (response.ok) {
-        dbSuccess = true;
-        showToast('Supabase workspace & domains provisioned successfully!', 'success');
-      } else {
-        // Fallback: insert directly into tenants table if service role isn't available
-        const { data, error } = await supabaseClient
-          .from('tenants')
-          .insert([
-            { name: name, subdomain: subdomain, primary_color: '#0f172a', secondary_color: '#475569', accent_color: color }
-          ])
-          .select();
-        
-        if (!error) {
-          dbSuccess = true;
-          showToast('Direct Supabase tenant workspace record provisioned.', 'success');
-        } else {
-          showToast(`Tenant provisioning failed: ${error.message}`, 'error');
-        }
-      }
-    } else {
-      dbSuccess = true;
-      showToast('Simulated Supabase tenant created in memory.', 'success');
-    }
-  } catch (err) {
-    showToast(`Database connection failure: ${err.message}`, 'error');
-  }
-
-  // Step 3: Register Social Set profile
-  if (webSuccess || dbSuccess) {
-    // Add brand to local lists
-    KSSocialMockData.brands.push({ id: subdomain, name: name });
-    // Add account
-    KSSocialMockData.socialAccounts.push({
-      id: `acc-${Date.now()}`,
-      platform: 'instagram',
-      handle: `@${subdomain}.clinic`,
-      name: name,
-      avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&auto=format&fit=crop&q=80',
-      status: 'connected',
-      followers: '150',
-      weeklyChange: '+0.0%'
+        type: 'website',
+        external_project_path: subdomain
+      })
     });
-    
-    // Seed starter scheduled posts based on industry vertical
+    projectSuccess = true;
+    showToast('Project record created.', 'success');
+  } catch (err) {
+    showToast(`Project creation failed: ${err.message}`, 'error');
+  }
+
+  // Step 2: Compile via website engine proxy
+  try {
+    await apiRequest('/website-engine/compile', {
+      method: 'POST',
+      body: JSON.stringify({
+        projectName: name,
+        templateName: templateName,
+        industry: industry,
+        brandColor: color,
+        bookingLink: `https://${subdomain}.kasimshah.com/book`
+      })
+    });
+    webSuccess = true;
+    showToast('Web Engine compiled successfully!', 'success');
+  } catch (err) {
+    if (err.message.includes('ENGINE_UNAVAILABLE') || err.message.includes('not configured')) {
+      showToast('Website Engine unavailable. Project record created without compilation.', 'error');
+      // Show retry control
+      showEngineUnavailableNotice();
+    } else {
+      showToast(`Web compile failed: ${err.message}`, 'error');
+    }
+  }
+
+  // Step 3: Register social set (mock — social publishing not connected)
+  if (projectSuccess) {
     KSSocialMockData.scheduledPosts.push({
       id: `post-${Date.now()}`,
       platforms: ['instagram'],
-      content: `Welcome to the grand opening of ${name}! We specialize in professional, high-standard ${industry} care. Book your appointment online today! 💅✨ #${industry} #GrandOpening`,
-      mediaType: 'image',
-      mediaUrl: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=600&auto=format&fit=crop&q=80',
+      content: `Welcome to ${name}! Professional ${industry} services now booking online. ✨`,
+      mediaType: 'none',
+      mediaUrl: '',
       scheduleDate: new Date(Date.now() + 86400000).toISOString(),
       status: 'scheduled'
     });
-    
-    showToast('Social Set campaigns configured and scheduled!', 'success');
-    
-    // Refresh modules
-    await loadWebCatalog();
-    await fetchSupabaseTenants();
-    
-    // Switch to overview to celebrate
+    showToast('Social campaign template queued (mock).', 'info');
+  }
+
+  if (projectSuccess || webSuccess) {
+    await loadWebProjects();
     closeUnisonWizard();
     switchView('overview');
-    showToast(`Workspace compiled & online: https://${subdomain}.kasimshah.com`, 'success');
-  } else {
-    showToast('Provision pipeline rolled back due to error.', 'error');
+    renderOverviewTelemetry();
   }
-  
+
   submitBtn.disabled = false;
   submitBtn.textContent = 'Compile & Provision Workspace';
   wizardStep = 1;
 }
 
-// Populate template dropdown configurations
-function populateTemplateOptions() {
-  const select = document.getElementById('wizTemplate');
-  if (!select) return;
-  select.innerHTML = '';
-  
-  if (AppState.templates.length > 0) {
-    AppState.templates.forEach(tpl => {
-      const opt = document.createElement('option');
-      opt.value = tpl;
-      opt.textContent = tpl.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-      select.appendChild(opt);
-    });
-  } else {
-    select.innerHTML = `
-      <option value="editorial-luxe">Editorial Luxe Theme</option>
-      <option value="tech-sleek">Tech Sleek Theme</option>
-      <option value="boutique-warm">Boutique Warm Theme</option>
-    `;
-  }
+function showEngineUnavailableNotice() {
+  const container = document.getElementById('engine-status-notice');
+  if (!container) return;
+  clearEl(container);
+  container.style.display = 'flex';
+
+  container.appendChild(createEl('div', { className: 'engine-unavailable-banner' }, [
+    createEl('i', { className: 'fa-solid fa-triangle-exclamation', style: { color: 'var(--warning-color)', marginRight: '8px' } }),
+    createEl('span', { textContent: 'Website Engine unavailable. Compilation features are disabled.' }),
+    createEl('button', {
+      className: 'btn btn-secondary',
+      textContent: 'Retry',
+      style: { marginLeft: '12px', padding: '4px 12px', fontSize: '0.75rem' },
+      onClick: () => { checkApiHealth(); container.style.display = 'none'; }
+    })
+  ]));
 }
 
-// --- 5. MODULE: COMPILER & FUNNELS ---
-async function loadWebCatalog() {
+// --- 11. WEB CATALOG ---
+
+async function loadWebProjects() {
+  if (!AppState.currentWorkspace) {
+    AppState.webProjects = [];
+    return;
+  }
+
   try {
-    const res = await fetch(`${API_BASE}/api/projects`);
-    if (res.ok) {
-      AppState.webProjects = await res.json();
-    }
+    const data = await apiRequest('/projects');
+    AppState.webProjects = data.projects || [];
   } catch (err) {
-    console.warn('Failed to load live web catalog. Using default values.');
-    AppState.webProjects = [
-      {
-        name: 'kasimshah.com',
-        clientData: { industry: 'Digital Agency', revenue_bottleneck: 'N/A' },
-        theme: { vibe: 'Luxury/Editorial', colors: { '--md-sys-color-primary': '#D4AF37' } },
-        pages: ['index.html', 'about.html', 'contact.html', 'blog.html']
-      }
-    ];
+    console.warn('Failed to load projects from API:', err.message);
+    AppState.webProjects = [];
   }
 }
 
 function renderOverviewTelemetry() {
-  document.getElementById('overview-web-count').textContent = AppState.webProjects.length;
-  
+  const webCountEl = document.getElementById('overview-web-count');
+  const postsCountEl = document.getElementById('overview-posts-count');
+  const tenantsCountEl = document.getElementById('overview-tenants-count');
+
+  if (webCountEl) webCountEl.textContent = AppState.webProjects.length;
+
   const postsCount = KSSocialMockData.scheduledPosts.filter(p => p.status === 'scheduled').length;
-  document.getElementById('overview-posts-count').textContent = postsCount;
-  
-  document.getElementById('overview-tenants-count').textContent = AppState.tenants.length;
-  
-  // Render Unison Activity feed log
+  if (postsCountEl) postsCountEl.textContent = postsCount;
+  if (tenantsCountEl) tenantsCountEl.textContent = AppState.tenants.length;
+
+  // Render activity feed using safe DOM
   const feed = document.getElementById('overview-activity-feed');
-  feed.innerHTML = '';
-  
+  if (!feed) return;
+  clearEl(feed);
+
   const logs = [
-    { text: 'Initial agency dashboard runtime online', time: 'Just now', type: 'system' },
-    { text: `Supabase state synced: ${AppState.tenants.length} tenants loaded`, time: '2 mins ago', type: 'db' },
-    { text: `Catalog synced: ${AppState.webProjects.length} client sites detected`, time: '5 mins ago', type: 'web' },
-    { text: `Social marketing engine online: ${postsCount} scheduled runs`, time: '10 mins ago', type: 'social' }
+    { text: 'Dashboard session authenticated', time: 'Just now', type: 'system' },
+    { text: `Database sync: ${AppState.tenants.length} tenants loaded`, time: '2 mins ago', type: 'db' },
+    { text: `Projects: ${AppState.webProjects.length} records`, time: '5 mins ago', type: 'web' },
+    { text: `Social queue: ${postsCount} scheduled posts (mock)`, time: '10 mins ago', type: 'social' }
   ];
-  
+
   logs.forEach(log => {
-    const div = document.createElement('div');
-    div.style.display = 'flex';
-    div.style.justifyContent = 'space-between';
-    div.style.fontSize = '0.85rem';
-    div.style.padding = '8px 0';
-    div.style.borderBottom = '1px solid rgba(255, 255, 255, 0.03)';
-    div.innerHTML = `
-      <span><i class="fa-solid fa-circle-chevron-right" style="color: var(--primary-color); font-size: 0.65rem; margin-right: 8px;"></i>${log.text}</span>
-      <span style="color: var(--text-muted); font-size: 0.75rem;">${log.time}</span>
-    `;
+    const div = createEl('div', {
+      style: { display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', padding: '8px 0', borderBottom: '1px solid rgba(255, 255, 255, 0.03)' }
+    }, [
+      createEl('span', {}, [
+        createEl('i', { className: 'fa-solid fa-circle-chevron-right', style: { color: 'var(--primary-color)', fontSize: '0.65rem', marginRight: '8px' } }),
+        document.createTextNode(log.text)
+      ]),
+      createEl('span', { style: { color: 'var(--text-muted)', fontSize: '0.75rem' }, textContent: log.time })
+    ]);
     feed.appendChild(div);
   });
 }
 
 function renderWebCatalogView() {
   const grid = document.getElementById('web-engines-grid');
-  grid.innerHTML = '';
-  
+  if (!grid) return;
+  clearEl(grid);
+
   if (AppState.webProjects.length === 0) {
-    grid.innerHTML = '<div class="glass-card">No compiled engines configured. Spin one up using the Actions wizard.</div>';
+    grid.appendChild(createEl('div', { className: 'glass-card', textContent: 'No projects found. Create one using the Provision Workspace wizard.' }));
     return;
   }
-  
+
   AppState.webProjects.forEach(proj => {
-    const card = document.createElement('div');
-    card.className = 'glass-card interactive';
-    
-    const color = proj.theme.colors?.['--md-sys-color-primary'] || '#6366f1';
-    
-    card.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
-        <h3 style="font-family: var(--font-display); font-size: 1.25rem;">${proj.name}</h3>
-        <span class="badge badge-primary">${proj.theme.vibe || 'Luxury'}</span>
-      </div>
-      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">
-        Industry: <strong>${proj.clientData.industry || 'General'}</strong><br>
-        Key Bottleneck: <strong>${proj.clientData.revenue_bottleneck || 'conversion'}</strong>
-      </p>
-      
-      <div style="display:flex; gap: 8px; align-items:center; margin-bottom:16px;">
-        <span style="font-size:0.75rem; color:var(--text-muted);">Palette:</span>
-        <span style="width:12px; height:12px; border-radius:50%; background-color:${color}; display:inline-block;"></span>
-        <span style="font-size:0.75rem; color:var(--text-secondary);">${color}</span>
-      </div>
-      
-      <div class="engine-card-footer">
-        <span style="font-size: 0.8rem; color: var(--text-muted);">Pages Count: <strong>${proj.pages ? proj.pages.length : 0} views</strong></span>
-        <div style="display:flex; gap:8px;">
-          <a href="${API_BASE}/projects/${proj.name}/index.html" target="_blank" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.75rem;">Launch ↗</a>
-          <button class="btn btn-primary" onclick="launchVisualEditor('${proj.name}')" style="padding: 6px 12px; font-size: 0.75rem;">Edit</button>
-        </div>
-      </div>
-    `;
+    const card = createEl('div', { className: 'glass-card interactive' });
+
+    const header = createEl('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' } }, [
+      createEl('h3', { style: { fontFamily: 'var(--font-display)', fontSize: '1.25rem' }, textContent: proj.name }),
+      createEl('span', { className: `badge badge-${proj.status === 'active' ? 'success' : 'primary'}`, textContent: proj.status || 'draft' })
+    ]);
+
+    const info = createEl('p', {
+      style: { fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '16px' }
+    }, [
+      document.createTextNode('Type: '),
+      createEl('strong', { textContent: proj.type || 'website' }),
+      document.createTextNode(proj.external_project_path ? ` | Path: ${proj.external_project_path}` : '')
+    ]);
+
+    const footer = createEl('div', { className: 'engine-card-footer' }, [
+      createEl('span', { style: { fontSize: '0.8rem', color: 'var(--text-muted)' }, textContent: `Created: ${new Date(proj.created_at).toLocaleDateString()}` })
+    ]);
+
+    card.appendChild(header);
+    card.appendChild(info);
+    card.appendChild(footer);
     grid.appendChild(card);
   });
 }
 
-function launchVisualEditor(projName) {
-  // Simulates launching the visual editor interface
-  showToast(`Launching Visual Editor for ${projName}...`, 'info');
-  window.open(`${API_BASE}/admin/editor.html?project=${encodeURIComponent(projName)}`, '_blank');
-}
+// --- 12. SOCIAL AUTOMATION ---
 
-// --- 6. MODULE: SOCIAL AUTOMATION ---
 function loadSocialData() {
-  AppState.scheduledPosts = KSSocialMockData.scheduledPosts;
-  AppState.inbox = KSSocialMockData.inboxMessages;
+  if (typeof KSSocialMockData !== 'undefined') {
+    AppState.scheduledPosts = KSSocialMockData.scheduledPosts;
+    AppState.inbox = KSSocialMockData.inboxMessages;
+  }
 }
 
 function renderSocialDashboard() {
@@ -576,117 +1116,137 @@ function renderSocialDashboard() {
 
 function renderSocialAccounts() {
   const container = document.getElementById('social-accounts-list');
-  container.innerHTML = '';
-  
+  if (!container) return;
+  clearEl(container);
+
+  if (typeof KSSocialMockData === 'undefined') return;
+
   KSSocialMockData.socialAccounts.forEach(acc => {
-    const card = document.createElement('div');
-    card.className = 'glass-card';
-    card.style.padding = '16px';
-    card.style.display = 'flex';
-    card.style.alignItems = 'center';
-    card.style.gap = '12px';
-    
-    let iconClass = 'fa-instagram';
-    let iconColor = '#e1306c';
-    if (acc.platform === 'twitter') { iconClass = 'fa-twitter'; iconColor = '#1da1f2'; }
-    if (acc.platform === 'linkedin') { iconClass = 'fa-linkedin-in'; iconColor = '#0077b5'; }
-    if (acc.platform === 'tiktok') { iconClass = 'fa-tiktok'; iconColor = '#fe2c55'; }
-    if (acc.platform === 'pinterest') { iconClass = 'fa-pinterest'; iconColor = '#bd081c'; }
-    
-    card.innerHTML = `
-      <img src="${acc.avatar}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
-      <div style="flex-grow:1;">
-        <h4 style="font-size:0.85rem; font-weight:700;">${acc.name}</h4>
-        <span style="font-size:0.75rem; color:var(--text-muted);">${acc.handle}</span>
-      </div>
-      <div style="text-align:right;">
-        <div style="font-weight:700; font-size:0.9rem;">${acc.followers}</div>
-        <span style="font-size:0.7rem; color:var(--success-color);">${acc.weeklyChange}</span>
-      </div>
-      <i class="fa-brands ${iconClass}" style="color:${iconColor}; font-size:1.2rem;"></i>
-    `;
+    const iconMap = {
+      instagram: { cls: 'fa-instagram', color: '#e1306c' },
+      twitter: { cls: 'fa-twitter', color: '#1da1f2' },
+      linkedin: { cls: 'fa-linkedin-in', color: '#0077b5' },
+      tiktok: { cls: 'fa-tiktok', color: '#fe2c55' },
+      pinterest: { cls: 'fa-pinterest', color: '#bd081c' }
+    };
+    const icon = iconMap[acc.platform] || iconMap.instagram;
+
+    const card = createEl('div', {
+      className: 'glass-card',
+      style: { padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }
+    }, [
+      createEl('img', { src: acc.avatar, style: { width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' } }),
+      createEl('div', { style: { flexGrow: '1' } }, [
+        createEl('h4', { style: { fontSize: '0.85rem', fontWeight: '700' }, textContent: acc.name }),
+        createEl('span', { style: { fontSize: '0.75rem', color: 'var(--text-muted)' }, textContent: acc.handle })
+      ]),
+      createEl('div', { style: { textAlign: 'right' } }, [
+        createEl('div', { style: { fontWeight: '700', fontSize: '0.9rem' }, textContent: acc.followers }),
+        createEl('span', { style: { fontSize: '0.7rem', color: 'var(--success-color)' }, textContent: acc.weeklyChange })
+      ]),
+      createEl('i', { className: `fa-brands ${icon.cls}`, style: { color: icon.color, fontSize: '1.2rem' } })
+    ]);
+
     container.appendChild(card);
   });
 }
 
 function renderScheduledPostsList() {
   const container = document.getElementById('scheduled-posts-list');
-  container.innerHTML = '';
-  
-  const scheduled = AppState.scheduledPosts.filter(p => p.status === 'scheduled');
-  
+  if (!container) return;
+  clearEl(container);
+
+  const scheduled = (AppState.scheduledPosts || []).filter(p => p.status === 'scheduled');
+
   if (scheduled.length === 0) {
-    container.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem;">No posts currently scheduled.</div>';
+    container.appendChild(createEl('div', {
+      style: { color: 'var(--text-muted)', fontSize: '0.85rem' },
+      textContent: 'No posts currently scheduled.'
+    }));
     return;
   }
-  
+
   scheduled.forEach(post => {
-    const item = document.createElement('div');
-    item.style.padding = '12px';
-    item.style.borderBottom = '1px solid rgba(255, 255, 255, 0.04)';
-    item.style.display = 'flex';
-    item.style.gap = '12px';
-    
     const date = new Date(post.scheduleDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-    
-    item.innerHTML = `
-      <div style="flex-grow:1;">
-        <p style="font-size:0.85rem; margin-bottom:4px; line-height:1.4;">${post.content}</p>
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:0.75rem; color:var(--text-muted);"><i class="fa-regular fa-clock" style="margin-right:4px;"></i>${date}</span>
-          <div style="display:flex; gap:6px;">
-            ${post.platforms.map(p => `<span class="badge badge-muted" style="font-size:0.55rem; padding: 2px 6px;">${p}</span>`).join('')}
-          </div>
-        </div>
-      </div>
-    `;
+
+    const badgesContainer = createEl('div', { style: { display: 'flex', gap: '6px' } });
+    post.platforms.forEach(p => {
+      badgesContainer.appendChild(createEl('span', {
+        className: 'badge badge-muted',
+        style: { fontSize: '0.55rem', padding: '2px 6px' },
+        textContent: p
+      }));
+    });
+
+    const item = createEl('div', {
+      style: { padding: '12px', borderBottom: '1px solid rgba(255, 255, 255, 0.04)', display: 'flex', gap: '12px' }
+    }, [
+      createEl('div', { style: { flexGrow: '1' } }, [
+        createEl('p', { style: { fontSize: '0.85rem', marginBottom: '4px', lineHeight: '1.4' }, textContent: post.content }),
+        createEl('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } }, [
+          createEl('span', { style: { fontSize: '0.75rem', color: 'var(--text-muted)' } }, [
+            createEl('i', { className: 'fa-regular fa-clock', style: { marginRight: '4px' } }),
+            document.createTextNode(date)
+          ]),
+          badgesContainer
+        ])
+      ])
+    ]);
+
     container.appendChild(item);
   });
 }
 
 function renderCompetitorBenchmark() {
   const container = document.getElementById('competitors-list');
-  container.innerHTML = '';
-  
+  if (!container) return;
+  clearEl(container);
+
+  if (typeof KSSocialMockData === 'undefined') return;
+
   KSSocialMockData.analytics.competitors.forEach(comp => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><strong>${comp.name}</strong></td>
-      <td>${comp.followers}</td>
-      <td>${comp.postsPerWeek} posts/wk</td>
-      <td>${comp.avgEngagement}</td>
-      <td>
-        <span class="badge ${comp.status.includes('leading') ? 'badge-success' : 'badge-muted'}">${comp.status.replace('_', ' ')}</span>
-      </td>
-    `;
+    const tr = createEl('tr', {}, [
+      createEl('td', {}, [createEl('strong', { textContent: comp.name })]),
+      createEl('td', { textContent: comp.followers }),
+      createEl('td', { textContent: `${comp.postsPerWeek} posts/wk` }),
+      createEl('td', { textContent: comp.avgEngagement }),
+      createEl('td', {}, [
+        createEl('span', {
+          className: `badge ${comp.status.includes('leading') ? 'badge-success' : 'badge-muted'}`,
+          textContent: comp.status.replace('_', ' ')
+        })
+      ])
+    ]);
     container.appendChild(tr);
   });
 }
 
 function renderInboxFeeds() {
   const container = document.getElementById('social-inbox-list');
-  container.innerHTML = '';
-  
-  AppState.inbox.forEach(msg => {
-    const div = document.createElement('div');
-    div.style.padding = '12px';
-    div.style.borderBottom = '1px solid rgba(255, 255, 255, 0.04)';
-    div.style.display = 'flex';
-    div.style.gap = '12px';
-    div.style.cursor = 'pointer';
-    div.style.background = msg.unread ? 'rgba(99, 102, 241, 0.05)' : 'transparent';
-    
-    div.innerHTML = `
-      <img src="${msg.senderAvatar}" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
-      <div style="flex-grow:1;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
-          <strong style="font-size:0.85rem;">${msg.sender}</strong>
-          <span style="font-size:0.7rem; color:var(--text-muted);">${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-        </div>
-        <p style="font-size:0.8rem; color:var(--text-secondary); text-overflow:ellipsis; overflow:hidden; white-space:nowrap; max-width: 200px;">${msg.content}</p>
-      </div>
-    `;
-    
+  if (!container) return;
+  clearEl(container);
+
+  (AppState.inbox || []).forEach(msg => {
+    const div = createEl('div', {
+      style: {
+        padding: '12px',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
+        display: 'flex',
+        gap: '12px',
+        cursor: 'pointer',
+        background: msg.unread ? 'rgba(99, 102, 241, 0.05)' : 'transparent'
+      }
+    }, [
+      createEl('img', { src: msg.senderAvatar, style: { width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' } }),
+      createEl('div', { style: { flexGrow: '1' } }, [
+        createEl('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' } }, [
+          createEl('strong', { style: { fontSize: '0.85rem' }, textContent: msg.sender }),
+          createEl('span', { style: { fontSize: '0.7rem', color: 'var(--text-muted)' }, textContent: new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) })
+        ]),
+        createEl('p', { style: { fontSize: '0.8rem', color: 'var(--text-secondary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '200px' }, textContent: msg.content })
+      ])
+    ]);
+
     div.addEventListener('click', () => openInboxMessageDetails(msg));
     container.appendChild(div);
   });
@@ -694,47 +1254,77 @@ function renderInboxFeeds() {
 
 function openInboxMessageDetails(msg) {
   const details = document.getElementById('social-inbox-details');
-  details.innerHTML = `
-    <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:12px;">
-      <img src="${msg.senderAvatar}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
-      <div>
-        <h4 style="font-size:0.9rem; font-weight:700;">${msg.sender}</h4>
-        <span style="font-size:0.75rem; color:var(--text-muted);">Source: ${msg.platform.toUpperCase()} (${msg.type})</span>
-      </div>
-    </div>
-    <div id="thread-chat-log" style="display:flex; flex-direction:column; gap:12px; height:180px; overflow-y:auto; margin-bottom:16px;">
-      ${msg.thread.map(t => `
-        <div style="align-self: ${t.role === 'agent' ? 'flex-end' : 'flex-start'}; background: ${t.role === 'agent' ? 'var(--primary-color)' : 'rgba(255,255,255,0.04)'}; color: #fff; padding: 10px 14px; border-radius: var(--border-radius-sm); font-size: 0.8rem; max-width: 80%;">
-          <p>${t.text}</p>
-          <span style="font-size: 0.65rem; color: rgba(255,255,255,0.6); display:block; text-align:right; margin-top:4px;">${t.time}</span>
-        </div>
-      `).join('')}
-    </div>
-    <div style="display:flex; gap:8px;">
-      <input type="text" id="inbox-reply-input" class="form-control" placeholder="Type a response..." style="padding: 8px 12px; font-size:0.8rem;">
-      <button class="btn btn-primary" onclick="sendInboxReply('${msg.id}')" style="padding: 8px 16px; font-size:0.8rem;">Send</button>
-    </div>
-  `;
+  clearEl(details);
+  details.style.display = 'flex';
+  details.style.flexDirection = 'column';
+  details.style.justifyContent = 'flex-start';
+  details.style.alignItems = 'stretch';
+
+  // Header
+  const header = createEl('div', {
+    style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '12px' }
+  }, [
+    createEl('img', { src: msg.senderAvatar, style: { width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' } }),
+    createEl('div', {}, [
+      createEl('h4', { style: { fontSize: '0.9rem', fontWeight: '700' }, textContent: msg.sender }),
+      createEl('span', { style: { fontSize: '0.75rem', color: 'var(--text-muted)' }, textContent: `Source: ${msg.platform.toUpperCase()} (${msg.type})` })
+    ])
+  ]);
+  details.appendChild(header);
+
+  // Thread
+  const chatLog = createEl('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px', height: '180px', overflowY: 'auto', marginBottom: '16px' } });
+  (msg.thread || []).forEach(t => {
+    const bubble = createEl('div', {
+      style: {
+        alignSelf: t.role === 'agent' ? 'flex-end' : 'flex-start',
+        background: t.role === 'agent' ? 'var(--primary-color)' : 'rgba(255,255,255,0.04)',
+        color: '#fff',
+        padding: '10px 14px',
+        borderRadius: 'var(--border-radius-sm)',
+        fontSize: '0.8rem',
+        maxWidth: '80%'
+      }
+    }, [
+      createEl('p', { textContent: t.text }),
+      createEl('span', { style: { fontSize: '0.65rem', color: 'rgba(255,255,255,0.6)', display: 'block', textAlign: 'right', marginTop: '4px' }, textContent: t.time })
+    ]);
+    chatLog.appendChild(bubble);
+  });
+  details.appendChild(chatLog);
+
+  // Reply input
+  const replyRow = createEl('div', { style: { display: 'flex', gap: '8px' } }, [
+    createEl('input', { type: 'text', id: 'inbox-reply-input', className: 'form-control', placeholder: 'Type a response...', style: { padding: '8px 12px', fontSize: '0.8rem' } }),
+    createEl('button', {
+      className: 'btn btn-primary',
+      style: { padding: '8px 16px', fontSize: '0.8rem' },
+      textContent: 'Send',
+      onClick: () => sendInboxReply(msg.id)
+    })
+  ]);
+  details.appendChild(replyRow);
 }
 
-window.sendInboxReply = function(msgId) {
+function sendInboxReply(msgId) {
   const input = document.getElementById('inbox-reply-input');
-  const replyText = input.value.trim();
+  const replyText = input?.value.trim();
   if (!replyText) return;
-  
+
   const msg = AppState.inbox.find(m => m.id === msgId);
   if (msg) {
-    msg.thread.push({ sender: 'Kasim Shah', role: 'agent', text: replyText, time: 'Now' });
+    msg.thread.push({ sender: 'Agent', role: 'agent', text: replyText, time: 'Now' });
     msg.unread = false;
-    showToast('Reply dispatched via API integrations!', 'success');
+    showToast('Reply dispatched (mock — social integration not connected).', 'info');
     renderInboxFeeds();
     openInboxMessageDetails(msg);
   }
-};
+}
 
-// --- 7. MODULE: MULTI-TENANT SALON OS ---
+// --- 13. MULTI-TENANT SALON OS ---
+
 async function fetchSupabaseTenants() {
-  if (!supabaseClient) return;
+  if (!supabaseClient || !AppState.currentWorkspace) return;
   try {
     const { data, error } = await supabaseClient
       .from('tenants')
@@ -750,27 +1340,36 @@ async function fetchSupabaseTenants() {
   }
 }
 
+function renderSalonOsModule() {
+  renderTenantsSelectorList();
+}
+
 function renderTenantsSelectorList() {
   const container = document.getElementById('salon-tenants-list');
   if (!container) return;
-  container.innerHTML = '';
-  
+  clearEl(container);
+
   if (AppState.tenants.length === 0) {
-    container.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; padding:12px;">No active tenants registered in Supabase.</div>';
+    container.appendChild(createEl('div', {
+      style: { color: 'var(--text-muted)', fontSize: '0.85rem', padding: '12px' },
+      textContent: 'No active tenants registered in database.'
+    }));
     return;
   }
-  
+
   AppState.tenants.forEach(tenant => {
-    const btn = document.createElement('button');
-    btn.className = `tenant-nav-btn ${AppState.selectedTenant?.id === tenant.id ? 'active' : ''}`;
-    btn.innerHTML = `
-      <i class="fa-solid fa-shop"></i>
-      <div style="text-align:left; flex-grow:1;">
-        <div style="font-weight:600; font-size:0.85rem;">${tenant.name}</div>
-        <span style="font-size:0.7rem; color:var(--text-muted);">${tenant.subdomain}.kasimshah.com</span>
-      </div>
-      <span style="width:8px; height:8px; border-radius:50%; background-color:${tenant.accent_color || '#10b981'};"></span>
-    `;
+    const btn = createEl('button', {
+      className: `tenant-nav-btn ${AppState.selectedTenant?.id === tenant.id ? 'active' : ''}`
+    }, [
+      createEl('i', { className: 'fa-solid fa-shop' }),
+      createEl('div', { style: { textAlign: 'left', flexGrow: '1' } }, [
+        createEl('div', { style: { fontWeight: '600', fontSize: '0.85rem' }, textContent: tenant.name }),
+        createEl('span', { style: { fontSize: '0.7rem', color: 'var(--text-muted)' }, textContent: `${tenant.subdomain}.kasimshah.com` })
+      ]),
+      createEl('span', {
+        style: { width: '8px', height: '8px', borderRadius: '50%', backgroundColor: tenant.accent_color || '#10b981' }
+      })
+    ]);
     btn.addEventListener('click', () => selectTenantWorkspace(tenant));
     container.appendChild(btn);
   });
@@ -779,20 +1378,13 @@ function renderTenantsSelectorList() {
 async function selectTenantWorkspace(tenant) {
   AppState.selectedTenant = tenant;
   renderTenantsSelectorList();
-  
-  // Show active tenant screen workspace panels
+
   document.getElementById('tenant-workspace-title').textContent = tenant.name;
   document.getElementById('tenant-workspace-subtitle').textContent = `Subdomain: ${tenant.subdomain}.kasimshah.com`;
   document.getElementById('tenant-active-panel').style.display = 'block';
-  
-  // Set theme properties dynamically
-  const wrp = document.getElementById('tenant-active-panel');
-  wrp.style.setProperty('--primary-color', tenant.primary_color || '#6366f1');
-  wrp.style.setProperty('--accent-color', tenant.accent_color || '#10b981');
-  
+
   showToast(`Synced workspace schema for '${tenant.name}'`, 'info');
-  
-  // Fetch tenant related data models
+
   await fetchTenantDbDetails(tenant.id);
   renderTenantCalendar();
   renderTenantCRMTab();
@@ -801,152 +1393,145 @@ async function selectTenantWorkspace(tenant) {
 
 async function fetchTenantDbDetails(tenantId) {
   if (!supabaseClient) {
-    // simulated seeding data
     AppState.services = [
       { id: 's1', name: 'Luxury Hair Cut', duration: 45, price: 4500 },
       { id: 's2', name: 'Hot Towel Beard Shave', duration: 30, price: 2500 }
     ];
-    AppState.staff = [
-      { id: 'u1', name: 'Master Stylist Kasim', role: 'owner' }
-    ];
-    AppState.crmClients = [
-      { id: 'c1', name: 'John Doe', email: 'john@gmail.com', loyalty_points: 120 }
-    ];
+    AppState.staff = [{ id: 'u1', name: 'Master Stylist', role: 'owner' }];
+    AppState.crmClients = [{ id: 'c1', name: 'John Doe', email: 'john@gmail.com', loyalty_points: 120 }];
     AppState.appointments = [];
     return;
   }
-  
+
   try {
-    // 1. Fetch services
     const { data: svcs } = await supabaseClient.from('services').select('*').eq('tenant_id', tenantId);
     AppState.services = svcs || [];
-    
-    // 2. Fetch staff (users)
+
     const { data: users } = await supabaseClient.from('users').select('*').eq('tenant_id', tenantId);
     AppState.staff = users || [];
-    
-    // 3. Fetch clients (if exists or fallback users)
+
     const { data: clients } = await supabaseClient.from('clients').select('*').eq('tenant_id', tenantId);
     AppState.crmClients = clients || [];
-    if (AppState.crmClients.length === 0) {
-      // Mock client if table is empty so UI is interactive
-      AppState.crmClients = [
-        { id: 'c-mock-1', tenant_id: tenantId, name: 'Alice Watson', email: 'alice@watson.com', phone: '+44 7911 123456', loyalty_points: 150 },
-        { id: 'c-mock-2', tenant_id: tenantId, name: 'Marcus Sterling', email: 'marcus@sterling.co', phone: '+44 7911 654321', loyalty_points: 80 }
-      ];
-    }
-    
-    // 4. Fetch waitlists
+
     const { data: wlist } = await supabaseClient.from('waitlist').select('*').eq('tenant_id', tenantId);
     AppState.waitlist = wlist || [];
-    
-    // 5. Fetch appointments
+
     const { data: appts } = await supabaseClient.from('appointments').select('*, services(name, price), users(name)').eq('tenant_id', tenantId);
     AppState.appointments = appts || [];
-    
-    // 6. Fetch off-peak rules
+
     const { data: rules } = await supabaseClient.from('off_peak_rules').select('*').eq('tenant_id', tenantId);
     AppState.offPeakRules = rules || [];
-    
   } catch (err) {
     console.error('Failed to query tenant records:', err);
   }
 }
 
-// Render Weekly Calendar View
+// Calendar rendering
 function renderTenantCalendar() {
   const container = document.getElementById('tenant-calendar-container');
-  container.innerHTML = '';
-  
-  // Simple calendar calendar visual rendering
-  const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  
-  const div = document.createElement('div');
-  div.className = 'calendar-component';
-  
-  let headerHtml = `
-    <div class="calendar-days-header">
-      ${daysOfWeek.map(d => `<div>${d.slice(0,3)}</div>`).join('')}
-    </div>
-    <div class="calendar-grid">
-  `;
-  
-  // Render 28 cells (simulated month)
+  if (!container) return;
+  clearEl(container);
+
+  const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const calDiv = createEl('div', { className: 'calendar-component' });
+
+  const headerRow = createEl('div', { className: 'calendar-days-header' });
+  daysOfWeek.forEach(d => headerRow.appendChild(createEl('div', { textContent: d })));
+  calDiv.appendChild(headerRow);
+
+  const grid = createEl('div', { className: 'calendar-grid' });
   for (let i = 1; i <= 28; i++) {
     const hasAppts = i === 12 || i === 15 || i === 22;
-    headerHtml += `
-      <div class="calendar-cell ${hasAppts ? 'has-events' : ''} ${i === 13 ? 'today' : ''}" onclick="showDayAppointments(${i})">
-        <div class="cell-day-num">${i}</div>
-        <div class="cell-events-dots">
-          ${hasAppts ? '<span class="event-dot primary"></span>' : ''}
-        </div>
-      </div>
-    `;
+    const cell = createEl('div', {
+      className: `calendar-cell ${hasAppts ? 'has-events' : ''} ${i === 13 ? 'today' : ''}`,
+      onClick: () => showDayAppointments(i)
+    }, [
+      createEl('div', { className: 'cell-day-num', textContent: String(i) })
+    ]);
+    if (hasAppts) {
+      const dots = createEl('div', { className: 'cell-events-dots' });
+      dots.appendChild(createEl('span', { className: 'event-dot primary' }));
+      cell.appendChild(dots);
+    }
+    grid.appendChild(cell);
   }
-  
-  headerHtml += '</div>';
-  div.innerHTML = headerHtml;
-  container.appendChild(div);
-  
-  // Load waitlist entries card list
+  calDiv.appendChild(grid);
+  container.appendChild(calDiv);
+
+  // Load waitlist
   const wlContainer = document.getElementById('tenant-waitlist-box');
-  wlContainer.innerHTML = '';
+  if (!wlContainer) return;
+  clearEl(wlContainer);
+
   if (AppState.waitlist.length === 0) {
-    wlContainer.innerHTML = '<div style="color:var(--text-muted); font-size:0.8rem;">No clients currently in waitlist.</div>';
+    wlContainer.appendChild(createEl('div', {
+      style: { color: 'var(--text-muted)', fontSize: '0.8rem' },
+      textContent: 'No clients currently in waitlist.'
+    }));
   } else {
     AppState.waitlist.forEach(wl => {
-      const card = document.createElement('div');
-      card.style.background = 'rgba(255,255,255,0.02)';
-      card.style.padding = '8px 12px';
-      card.style.borderRadius = '6px';
-      card.style.borderLeft = '3px solid var(--warning-color)';
-      card.style.marginBottom = '6px';
-      card.style.fontSize = '0.8rem';
-      card.innerHTML = `
-        <strong>${wl.client_name || 'Client'}</strong> waiting for Service ID: ${wl.service_id || 'Cut'}<br>
-        <span style="font-size:0.7rem; color:var(--text-muted)">Preferred: ${wl.preferred_date} (${wl.status})</span>
-      `;
+      const card = createEl('div', {
+        style: { background: 'rgba(255,255,255,0.02)', padding: '8px 12px', borderRadius: '6px', borderLeft: '3px solid var(--warning-color)', marginBottom: '6px', fontSize: '0.8rem' }
+      }, [
+        createEl('strong', { textContent: wl.client_name || 'Client' }),
+        document.createTextNode(` waiting for Service ID: ${wl.service_id || 'Cut'}`),
+        createEl('br'),
+        createEl('span', { style: { fontSize: '0.7rem', color: 'var(--text-muted)' }, textContent: `Preferred: ${wl.preferred_date} (${wl.status})` })
+      ]);
       wlContainer.appendChild(card);
     });
   }
 }
 
-window.showDayAppointments = function(dayNum) {
-  // Shows list of active appointments on calendar cell click
+function showDayAppointments(dayNum) {
   const container = document.getElementById('tenant-waitlist-box');
-  container.innerHTML = `<h4>Appointments on Day ${dayNum}</h4>`;
-  
+  if (!container) return;
+  clearEl(container);
+
+  container.appendChild(createEl('h4', { textContent: `Appointments on Day ${dayNum}` }));
+
   const dailyAppts = AppState.appointments.filter(a => new Date(a.start_time).getDate() === dayNum);
-  
+
   if (dailyAppts.length === 0) {
-    container.innerHTML += '<p style="font-size:0.8rem; color:var(--text-muted); margin-top:8px;">No bookings scheduled.</p>';
+    container.appendChild(createEl('p', {
+      style: { fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '8px' },
+      textContent: 'No bookings scheduled.'
+    }));
   } else {
     dailyAppts.forEach(a => {
-      container.innerHTML += `
-        <div style="padding:8px; background:rgba(255,255,255,0.02); border-radius:6px; margin-top:6px; font-size:0.8rem;">
-          <strong>${a.users?.name || 'Stylist'}</strong> &mdash; ${a.services?.name || 'Hair Cut'}<br>
-          <span style="color:var(--text-muted)">Time: ${new Date(a.start_time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} (${a.status})</span>
-        </div>
-      `;
+      container.appendChild(createEl('div', {
+        style: { padding: '8px', background: 'rgba(255,255,255,0.02)', borderRadius: '6px', marginTop: '6px', fontSize: '0.8rem' }
+      }, [
+        createEl('strong', { textContent: a.users?.name || 'Stylist' }),
+        document.createTextNode(` — ${a.services?.name || 'Hair Cut'}`),
+        createEl('br'),
+        createEl('span', { style: { color: 'var(--text-muted)' }, textContent: `Time: ${new Date(a.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} (${a.status})` })
+      ]));
     });
   }
-};
+}
 
-// Render CRM Client Timeline & Profile
+// CRM Tab
 function renderTenantCRMTab() {
   const selector = document.getElementById('crm-client-select');
-  selector.innerHTML = '<option value="">-- Choose Client Profile --</option>';
-  
+  if (!selector) return;
+  clearEl(selector);
+
+  selector.appendChild(createEl('option', { value: '', textContent: '-- Choose Client Profile --' }));
+
   AppState.crmClients.forEach(c => {
-    const opt = document.createElement('option');
-    opt.value = c.id;
-    opt.textContent = `${c.name} (Pts: ${c.loyalty_points || 0})`;
-    selector.appendChild(opt);
+    selector.appendChild(createEl('option', {
+      value: c.id,
+      textContent: `${c.name} (Pts: ${c.loyalty_points || 0})`
+    }));
   });
-  
-  selector.addEventListener('change', (e) => {
-    const id = e.target.value;
-    const client = AppState.crmClients.find(c => c.id === id);
+
+  // Remove old listeners by cloning
+  const newSelector = selector.cloneNode(true);
+  selector.parentNode.replaceChild(newSelector, selector);
+
+  newSelector.addEventListener('change', (e) => {
+    const client = AppState.crmClients.find(c => c.id === e.target.value);
     if (client) {
       AppState.selectedClient = client;
       renderClientTimelineDetails(client);
@@ -956,201 +1541,201 @@ function renderTenantCRMTab() {
 
 function renderClientTimelineDetails(client) {
   const container = document.getElementById('crm-client-details-box');
-  container.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:16px;">
-      <div>
-        <h3 style="font-family:var(--font-display); font-size:1.3rem;">${client.name}</h3>
-        <p style="font-size:0.85rem; color:var(--text-secondary);">${client.email} | ${client.phone || '+44 7911 000000'}</p>
-      </div>
-      <div style="text-align:right;">
-        <span class="badge badge-success" style="font-size:0.8rem; padding: 6px 12px;">${client.loyalty_points || 0} LOYALTY POINTS</span>
-      </div>
-    </div>
-    
-    <div style="display:flex; gap:12px; margin-bottom:24px;">
-      <button class="btn btn-primary" onclick="openPOSCheckoutDrawer('${client.id}')" style="padding: 8px 16px; font-size:0.8rem;"><i class="fa-solid fa-cart-plus"></i> Open POS Checkout</button>
-      <button class="btn btn-secondary" onclick="viewClientIntakeForms('${client.id}')" style="padding: 8px 16px; font-size:0.8rem;"><i class="fa-regular fa-clipboard"></i> Intake Forms</button>
-    </div>
-    
-    <h4>Timeline Chronological History</h4>
-    <div class="client-timeline">
-      <div class="timeline-item">
-        <span class="timeline-dot checkout"></span>
-        <div class="timeline-meta">
-          <span>Checkout Transaction Completed</span>
-          <span>12 Jul 2026</span>
-        </div>
-        <div class="timeline-card">
-          Completed checkout checkout receipt. Total spent: £45.00.<br>
-          <span style="color:var(--success-color); font-size:0.75rem;">+45 Loyalty Points Credited</span>
-        </div>
-      </div>
-      <div class="timeline-item">
-        <span class="timeline-dot appointment"></span>
-        <div class="timeline-meta">
-          <span>Salon Visit Booked</span>
-          <span>10 Jul 2026</span>
-        </div>
-        <div class="timeline-card">
-          Standard Gel Manicure scheduled with Stylist Sarah.<br>
-          <span style="color:var(--primary-color); font-size:0.75rem;">Status: Completed</span>
-        </div>
-      </div>
-    </div>
-  `;
+  if (!container) return;
+  clearEl(container);
+  container.style.display = 'flex';
+  container.style.flexDirection = 'column';
+  container.style.justifyContent = 'flex-start';
+  container.style.alignItems = 'stretch';
+  container.style.minHeight = '220px';
+
+  // Header
+  const header = createEl('div', {
+    style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '16px' }
+  }, [
+    createEl('div', {}, [
+      createEl('h3', { style: { fontFamily: 'var(--font-display)', fontSize: '1.3rem' }, textContent: client.name }),
+      createEl('p', { style: { fontSize: '0.85rem', color: 'var(--text-secondary)' }, textContent: `${client.email} | ${client.phone || '+44 7911 000000'}` })
+    ]),
+    createEl('div', { style: { textAlign: 'right' } }, [
+      createEl('span', { className: 'badge badge-success', style: { fontSize: '0.8rem', padding: '6px 12px' }, textContent: `${client.loyalty_points || 0} LOYALTY POINTS` })
+    ])
+  ]);
+  container.appendChild(header);
+
+  // Actions
+  const actions = createEl('div', { style: { display: 'flex', gap: '12px', marginBottom: '24px' } }, [
+    createEl('button', {
+      className: 'btn btn-primary',
+      style: { padding: '8px 16px', fontSize: '0.8rem' },
+      onClick: () => openPOSCheckoutDrawer(client.id)
+    }, [
+      createEl('i', { className: 'fa-solid fa-cart-plus' }),
+      document.createTextNode(' Open POS Checkout')
+    ]),
+    createEl('button', {
+      className: 'btn btn-secondary',
+      style: { padding: '8px 16px', fontSize: '0.8rem' },
+      onClick: () => showToast('Intake forms retrieved (mock).', 'info')
+    }, [
+      createEl('i', { className: 'fa-regular fa-clipboard' }),
+      document.createTextNode(' Intake Forms')
+    ])
+  ]);
+  container.appendChild(actions);
+
+  // Timeline
+  container.appendChild(createEl('h4', { textContent: 'Timeline Chronological History' }));
+  const timeline = createEl('div', { className: 'client-timeline' });
+
+  const events = [
+    { dot: 'checkout', title: 'Checkout Transaction Completed', date: '12 Jul 2026', detail: 'Completed checkout receipt.', extra: '+45 Loyalty Points Credited', extraColor: 'var(--success-color)' },
+    { dot: 'appointment', title: 'Salon Visit Booked', date: '10 Jul 2026', detail: 'Standard service scheduled.', extra: 'Status: Completed', extraColor: 'var(--primary-color)' }
+  ];
+
+  events.forEach(ev => {
+    timeline.appendChild(createEl('div', { className: 'timeline-item' }, [
+      createEl('span', { className: `timeline-dot ${ev.dot}` }),
+      createEl('div', { className: 'timeline-meta' }, [
+        createEl('span', { textContent: ev.title }),
+        createEl('span', { textContent: ev.date })
+      ]),
+      createEl('div', { className: 'timeline-card' }, [
+        document.createTextNode(ev.detail),
+        createEl('br'),
+        createEl('span', { style: { color: ev.extraColor, fontSize: '0.75rem' }, textContent: ev.extra })
+      ])
+    ]));
+  });
+  container.appendChild(timeline);
 }
 
-window.viewClientIntakeForms = function(clientId) {
-  showToast('Intake form responses retrieved from secure CRM records.', 'info');
-};
-
-// POS Checkout Drawer
-window.openPOSCheckoutDrawer = function(clientId) {
+// POS Checkout
+function openPOSCheckoutDrawer(clientId) {
   const client = AppState.crmClients.find(c => c.id === clientId);
   if (!client) return;
-  
+
   document.getElementById('checkout-client-name').textContent = client.name;
   document.getElementById('checkout-client-points').textContent = `${client.loyalty_points || 0} pts`;
-  
-  // Populate services catalog listing in cart
-  const container = document.getElementById('checkout-services-select');
-  container.innerHTML = '<option value="">-- Choose Item / Service --</option>';
+
+  const svcContainer = document.getElementById('checkout-services-select');
+  clearEl(svcContainer);
+  svcContainer.appendChild(createEl('option', { value: '', textContent: '-- Choose Item / Service --' }));
   AppState.services.forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s.id;
-    opt.textContent = `${s.name} (£${(s.price / 100).toFixed(2)})`;
-    container.appendChild(opt);
+    svcContainer.appendChild(createEl('option', { value: s.id, textContent: `${s.name} (£${(s.price / 100).toFixed(2)})` }));
   });
-  
-  // Staff lists
+
   const staffSel = document.getElementById('checkout-staff-select');
-  staffSel.innerHTML = '<option value="">-- Assign Stylist --</option>';
+  clearEl(staffSel);
+  staffSel.appendChild(createEl('option', { value: '', textContent: '-- Assign Stylist --' }));
   AppState.staff.forEach(stf => {
-    const opt = document.createElement('option');
-    opt.value = stf.id;
-    opt.textContent = stf.name;
-    staffSel.appendChild(opt);
+    staffSel.appendChild(createEl('option', { value: stf.id, textContent: stf.name }));
   });
 
   AppState.cartItems = [];
   renderPOSCartList();
-  
   document.getElementById('pos-checkout-drawer').classList.add('active');
-};
+}
 
 function closeCheckoutDrawer() {
   document.getElementById('pos-checkout-drawer').classList.remove('active');
 }
 
-// Add item to cart
-document.getElementById('btn-add-cart').addEventListener('click', () => {
-  const itemVal = document.getElementById('checkout-services-select').value;
-  const staffVal = document.getElementById('checkout-staff-select').value;
-  
-  if (!itemVal) {
-    showToast('Please select a service or retail item.', 'error');
-    return;
-  }
-  
-  const svc = AppState.services.find(s => s.id === itemVal);
-  if (svc) {
-    AppState.cartItems.push({
-      id: svc.id,
-      name: svc.name,
-      price: svc.price,
-      staffId: staffVal
-    });
-    renderPOSCartList();
-    showToast(`${svc.name} added to cart.`, 'success');
-  }
+// Cart management
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('btn-add-cart')?.addEventListener('click', () => {
+    const itemVal = document.getElementById('checkout-services-select').value;
+    const staffVal = document.getElementById('checkout-staff-select').value;
+
+    if (!itemVal) {
+      showToast('Please select a service or retail item.', 'error');
+      return;
+    }
+
+    const svc = AppState.services.find(s => s.id === itemVal);
+    if (svc) {
+      AppState.cartItems.push({ id: svc.id, name: svc.name, price: svc.price, staffId: staffVal });
+      renderPOSCartList();
+      showToast(`${svc.name} added to cart.`, 'success');
+    }
+  });
 });
 
 function renderPOSCartList() {
   const container = document.getElementById('checkout-cart-items');
-  container.innerHTML = '';
-  
+  if (!container) return;
+  clearEl(container);
+
   let total = 0;
   AppState.cartItems.forEach((item, idx) => {
     total += item.price;
-    const div = document.createElement('div');
-    div.style.display = 'flex';
-    div.style.justifyContent = 'space-between';
-    div.style.fontSize = '0.85rem';
-    div.style.padding = '8px 0';
-    div.style.borderBottom = '1px solid rgba(255,255,255,0.04)';
-    div.innerHTML = `
-      <div>
-        <strong>${item.name}</strong><br>
-        <span style="font-size:0.7rem; color:var(--text-muted)">Staff: ${AppState.staff.find(s=>s.id===item.staffId)?.name || 'House'}</span>
-      </div>
-      <div style="display:flex; align-items:center; gap:8px;">
-        <span>£${(item.price / 100).toFixed(2)}</span>
-        <button onclick="removeCartItem(${idx})" style="background:none; border:none; color:var(--danger-color); cursor:pointer;"><i class="fa-solid fa-trash-can"></i></button>
-      </div>
-    `;
+    const staffName = AppState.staff.find(s => s.id === item.staffId)?.name || 'House';
+
+    const div = createEl('div', {
+      style: { display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }
+    }, [
+      createEl('div', {}, [
+        createEl('strong', { textContent: item.name }),
+        createEl('br'),
+        createEl('span', { style: { fontSize: '0.7rem', color: 'var(--text-muted)' }, textContent: `Staff: ${staffName}` })
+      ]),
+      createEl('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, [
+        createEl('span', { textContent: `£${(item.price / 100).toFixed(2)}` }),
+        createEl('button', {
+          style: { background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer' },
+          onClick: () => { AppState.cartItems.splice(idx, 1); renderPOSCartList(); }
+        }, [createEl('i', { className: 'fa-solid fa-trash-can' })])
+      ])
+    ]);
     container.appendChild(div);
   });
-  
-  AppState.cartTotal = total;
-  document.getElementById('checkout-subtotal').textContent = `£${(total / 100).toFixed(2)}`;
-  
-  // Loyalty warning calculations (1 point per £1 spent)
-  const earnedPoints = Math.floor(total / 100);
-  document.getElementById('checkout-earned-points').textContent = `+${earnedPoints} loyalty points`;
-  document.getElementById('checkout-total').textContent = `£${(total / 100).toFixed(2)}`;
-}
 
-window.removeCartItem = function(index) {
-  AppState.cartItems.splice(index, 1);
-  renderPOSCartList();
-};
+  AppState.cartTotal = total;
+  const subtotalEl = document.getElementById('checkout-subtotal');
+  const earnedEl = document.getElementById('checkout-earned-points');
+  const totalEl = document.getElementById('checkout-total');
+  if (subtotalEl) subtotalEl.textContent = `£${(total / 100).toFixed(2)}`;
+  const earnedPoints = Math.floor(total / 100);
+  if (earnedEl) earnedEl.textContent = `+${earnedPoints} loyalty points`;
+  if (totalEl) totalEl.textContent = `£${(total / 100).toFixed(2)}`;
+}
 
 async function processPOSCheckout() {
   if (AppState.cartItems.length === 0) {
     showToast('Cart is currently empty.', 'error');
     return;
   }
-  
+
   const btn = document.getElementById('btn-process-checkout');
   btn.disabled = true;
   btn.textContent = 'COMMITTING TRANSACTION...';
-  
+
   const client = AppState.selectedClient;
   const earnedPoints = Math.floor(AppState.cartTotal / 100);
-  
+
   try {
     if (AppState.supabaseStatus === 'online' && supabaseClient) {
-      // 1. Insert POS checkout transaction
-      const { data: tx, error: txErr } = await supabaseClient
+      const { error: txErr } = await supabaseClient
         .from('checkout_transactions')
-        .insert([
-          {
-            tenant_id: AppState.selectedTenant.id,
-            client_id: client.id,
-            total_amount: AppState.cartTotal,
-            payment_method: 'card',
-            items_json: AppState.cartItems
-          }
-        ])
+        .insert([{
+          tenant_id: AppState.selectedTenant.id,
+          client_id: client.id,
+          total_amount: AppState.cartTotal,
+          payment_method: 'card',
+          items_json: AppState.cartItems
+        }])
         .select();
-        
+
       if (txErr) throw txErr;
-      
-      // 2. Increment client loyalty points in Supabase (Module 5 trigger does this automatically on Postgres table triggers, but update client local state too)
-      const { error: ptsErr } = await supabaseClient
+
+      await supabaseClient
         .from('clients')
         .update({ loyalty_points: (client.loyalty_points || 0) + earnedPoints })
         .eq('id', client.id);
-        
-      if (ptsErr) console.warn('Warning: loyalty sync failed on direct update:', ptsErr.message);
     }
-    
-    // Update local variables
+
     client.loyalty_points = (client.loyalty_points || 0) + earnedPoints;
     showToast(`POS Checkout successful! £${(AppState.cartTotal / 100).toFixed(2)} recorded.`, 'success');
-    showToast(`Client credited with ${earnedPoints} loyalty points!`, 'success');
-    
-    // Refresh UI
     renderClientTimelineDetails(client);
     renderTenantCRMTab();
     closeCheckoutDrawer();
@@ -1162,38 +1747,123 @@ async function processPOSCheckout() {
   }
 }
 
-// Render configs and off-peak rules
+// Billing/Rules
 function renderTenantBillingAndRules() {
   const container = document.getElementById('tenant-billing-panel');
-  container.innerHTML = '';
-  
-  const div = document.createElement('div');
-  div.innerHTML = `
-    <h4 style="margin-bottom:12px;">Active Off-Peak Discounts</h4>
-    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:20px;">
-      ${AppState.offPeakRules.length === 0 ? '<p style="font-size:0.8rem; color:var(--text-muted);">No off-peak rules defined.</p>' : 
-        AppState.offPeakRules.map(r => `
-          <div style="display:flex; justify-content:space-between; font-size:0.85rem; padding:8px; background:rgba(255,255,255,0.02); border-radius:6px;">
-            <span>Day ${r.dayOfWeek || 'Mon'}: ${r.startTime} - ${r.endTime}</span>
-            <span style="color:var(--success-color); font-weight:700;">-${r.discountPercentage}% off</span>
-          </div>
-        `).join('')}
-    </div>
-    
-    <h4>SMS Automations Rules</h4>
-    <p style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4; margin-top:8px;">
-      Trigger event: <strong>booking_created</strong><br>
-      Template text: <span style="font-family:var(--font-mono); font-size:0.75rem; background:#000; padding:2px 6px; border-radius:4px;">Hello [Client], your booking for [Service] is confirmed!</span>
-    </p>
-  `;
-  container.appendChild(div);
+  if (!container) return;
+  clearEl(container);
+
+  container.appendChild(createEl('h4', { style: { marginBottom: '12px' }, textContent: 'Active Off-Peak Discounts' }));
+
+  const rulesContainer = createEl('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' } });
+  if (AppState.offPeakRules.length === 0) {
+    rulesContainer.appendChild(createEl('p', { style: { fontSize: '0.8rem', color: 'var(--text-muted)' }, textContent: 'No off-peak rules defined.' }));
+  } else {
+    AppState.offPeakRules.forEach(r => {
+      rulesContainer.appendChild(createEl('div', {
+        style: { display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', padding: '8px', background: 'rgba(255,255,255,0.02)', borderRadius: '6px' }
+      }, [
+        createEl('span', { textContent: `Day ${r.dayOfWeek || 'Mon'}: ${r.startTime} - ${r.endTime}` }),
+        createEl('span', { style: { color: 'var(--success-color)', fontWeight: '700' }, textContent: `-${r.discountPercentage}% off` })
+      ]));
+    });
+  }
+  container.appendChild(rulesContainer);
+
+  container.appendChild(createEl('h4', { textContent: 'SMS Automations Rules' }));
+  container.appendChild(createEl('p', {
+    style: { fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.4', marginTop: '8px' }
+  }, [
+    document.createTextNode('Trigger event: '),
+    createEl('strong', { textContent: 'booking_created' }),
+    createEl('br'),
+    document.createTextNode('Template: Hello [Client], your booking for [Service] is confirmed!')
+  ]));
 }
 
-// --- 8. GLOBAL SETTINGS ---
+// --- 14. GLOBAL SETTINGS ---
+
 function generateTelemetryReport() {
-  showToast('Generating PDF report summaries...', 'info');
-  setTimeout(() => {
-    showToast('Report generated successfully! Download started.', 'success');
-  }, 1000);
+  showToast('Report generation not yet implemented.', 'info');
 }
-document.getElementById('btn-download-report').addEventListener('click', generateTelemetryReport);
+
+// --- 15. INLINE SCRIPT FUNCTIONS (safe tab switching) ---
+
+window.switchSocialTab = function(tabId) {
+  const panels = document.querySelectorAll('.social-tab-panel');
+  panels.forEach(p => p.style.display = 'none');
+  const target = document.getElementById(`social-tab-${tabId}`);
+  if (target) target.style.display = 'block';
+
+  const btns = document.querySelectorAll('#view-social .tab-row button');
+  btns.forEach(b => b.classList.remove('active'));
+  // Find the clicked button by matching tabId
+  btns.forEach(b => {
+    if (b.textContent.toLowerCase().includes(tabId.replace('publisher', 'publisher').replace('inbox', 'moderation').replace('benchmarks', 'competitor'))) {
+      b.classList.add('active');
+    }
+  });
+};
+
+window.switchTenantSubTab = function(tabId) {
+  const panels = document.querySelectorAll('.tenant-panel-content');
+  panels.forEach(p => p.style.display = 'none');
+  const target = document.getElementById(`tenant-panel-${tabId}`);
+  if (target) target.style.display = 'block';
+
+  const btns = document.querySelectorAll('.tenant-workspace-layout .tab-btn');
+  btns.forEach(b => b.classList.remove('active'));
+  const activeBtn = document.getElementById(`tenant-tab-${tabId}`);
+  if (activeBtn) activeBtn.classList.add('active');
+};
+
+window.scheduleMockPost = function() {
+  const text = document.getElementById('social-post-text').value.trim();
+  const media = document.getElementById('social-post-media').value.trim();
+
+  if (!text) {
+    showToast('Please draft copy text for your campaign post.', 'error');
+    return;
+  }
+
+  if (typeof KSSocialMockData !== 'undefined') {
+    KSSocialMockData.scheduledPosts.push({
+      id: `post-${Date.now()}`,
+      platforms: ['instagram', 'twitter'],
+      content: text,
+      mediaType: media ? 'image' : 'none',
+      mediaUrl: media || '',
+      scheduleDate: new Date(Date.now() + 86400000 * 2).toISOString(),
+      status: 'scheduled'
+    });
+    document.getElementById('social-post-text').value = '';
+    renderSocialDashboard();
+    showToast('Campaign post added to queue (mock — social publishing not connected).', 'info');
+  }
+};
+
+window.generateAICopy = function() {
+  const postText = document.getElementById('social-post-text');
+  if (postText) {
+    postText.value = 'Transform your routine with our premium wellness packages. Designed to rejuvenate and elevate. Book your session now! ✨💆‍♀️';
+    const mockupCaption = document.getElementById('mockup-caption');
+    if (mockupCaption) mockupCaption.textContent = postText.value;
+  }
+  showToast('AI copy generated (mock — AI integration not connected).', 'info');
+};
+
+// Live preview bindings
+document.addEventListener('DOMContentLoaded', () => {
+  const postText = document.getElementById('social-post-text');
+  const postMedia = document.getElementById('social-post-media');
+
+  postText?.addEventListener('input', (e) => {
+    const caption = document.getElementById('mockup-caption');
+    if (caption) caption.textContent = e.target.value || 'Your caption copy will render here...';
+  });
+
+  postMedia?.addEventListener('input', (e) => {
+    const img = document.getElementById('mockup-img');
+    if (img) img.src = e.target.value || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80';
+  });
+});
