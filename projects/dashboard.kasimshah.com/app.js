@@ -75,6 +75,40 @@ function createEl(tag, attrs, children) {
       } else if (key.startsWith('on') && typeof val === 'function') {
         el.addEventListener(key.slice(2).toLowerCase(), val);
       } else {
+        // Strict URL validation
+        if (key.toLowerCase() === 'href' || key.toLowerCase() === 'src') {
+          try {
+            const url = new URL(val, window.location.origin);
+            const protocol = url.protocol.toLowerCase();
+            
+            if (key.toLowerCase() === 'href') {
+              if (!['https:', 'http:', 'mailto:', 'tel:'].includes(protocol)) {
+                console.warn(`Unsafe URL blocked for href: ${val}`);
+                return; // Skip setting this attribute
+              }
+            } else if (key.toLowerCase() === 'src') {
+              if (!['https:', 'data:'].includes(protocol) && url.origin !== window.location.origin) {
+                console.warn(`Unsafe URL blocked for src: ${val}`);
+                return;
+              }
+              // For data:, we only allow images
+              if (protocol === 'data:' && !val.startsWith('data:image/')) {
+                console.warn(`Unsafe data URI blocked for src: ${val}`);
+                return;
+              }
+            }
+          } catch (e) {
+            // Invalid URL
+            if (val.startsWith('#') || val.startsWith('/')) {
+              // Same-origin relative URLs are handled well by new URL(val, origin)
+              // so if it throws, it's malformed. 
+              // Wait, new URL('/foo', 'http://a.com') works. 
+              // If it threw, it's definitely malformed.
+            }
+            console.warn(`Malformed URL blocked for ${key}: ${val}`);
+            return;
+          }
+        }
         el.setAttribute(key, val);
       }
     });
@@ -107,15 +141,8 @@ function escapeForAttribute(str) {
 // --- 3. SUPABASE AUTH ---
 
 function initSupabase() {
-  // Read config from meta tags
-  const urlMeta = document.querySelector('meta[name="supabase-url"]');
-  const keyMeta = document.querySelector('meta[name="supabase-anon-key"]');
-
-  if (urlMeta) AppConfig.supabaseUrl = urlMeta.getAttribute('content');
-  if (keyMeta) AppConfig.supabaseAnonKey = keyMeta.getAttribute('content');
-
   if (!AppConfig.supabaseUrl || !AppConfig.supabaseAnonKey) {
-    console.warn('Supabase configuration not found in meta tags. Auth will be unavailable.');
+    console.warn('Supabase configuration missing. Auth will be unavailable.');
     AppState.authLoading = false;
     AppState.supabaseStatus = 'offline';
     showAuthScreen();
@@ -626,11 +653,24 @@ async function apiRequest(path, options = {}) {
 
 // --- 7. LIFECYCLE LOADERS ---
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   // Show loading overlay
   document.getElementById('loading-overlay').style.display = 'flex';
   document.getElementById('app-container').style.display = 'none';
   document.getElementById('auth-overlay').style.display = 'none';
+
+  try {
+    const res = await fetch('/api/config');
+    if (res.ok) {
+      const config = await res.json();
+      AppConfig.supabaseUrl = config.supabaseUrl;
+      AppConfig.supabaseAnonKey = config.supabaseAnonKey;
+    } else {
+      console.error('Failed to load configuration from /api/config');
+    }
+  } catch (err) {
+    console.error('Network error loading configuration:', err);
+  }
 
   initSupabase();
   bindAuthForms();

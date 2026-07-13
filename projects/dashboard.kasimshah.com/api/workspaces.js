@@ -36,7 +36,7 @@ async function handleGet(req, res) {
 
   const { data: memberships, error } = await supabase
     .from('workspace_members')
-    .select('role, workspace_id, workspaces(id, name, slug, logo_url, created_at)')
+    .select('role, workspace_id, workspaces(id, name, slug, created_at)')
     .eq('user_id', user.id);
 
   if (error) {
@@ -105,16 +105,6 @@ async function handlePost(req, res) {
     }
     return errorResponse(res, 500, 'INTERNAL_ERROR', 'Failed to create workspace');
   }
-
-  // Audit log (fire-and-forget)
-  await writeAuditLog(supabase, {
-    workspaceId: workspace?.id || null,
-    actorId: user.id,
-    action: 'workspace.created',
-    entityType: 'workspace',
-    entityId: workspace?.id || null,
-    metadata: { name: name.trim(), slug },
-  });
 
   return res.status(201).json({ workspace });
 }

@@ -99,6 +99,11 @@ describe('Website Engine Proxy', () => {
     await compileRoute(req, res);
     
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith(mockResponse);
+    expect(res.json).toHaveBeenCalledWith({
+      success: true,
+      projectId: mockResponse.projectId,
+      url: mockResponse.url,
+      correlationId: 'test-correlation-id'
+    });
   });
 });

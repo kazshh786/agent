@@ -118,25 +118,21 @@ function validateBody(body, requiredFields) {
 }
 
 /**
- * Inserts a row into the audit_logs table.
- * Silently logs errors — never throws.
+ * Calls the secure write_audit_log RPC using the caller-scoped Supabase client.
+ * Does NOT silently ignore errors, to ensure critical audit logs are recorded.
  */
 async function writeAuditLog(supabase, { workspaceId, actorId, action, entityType, entityId, metadata }) {
-  try {
-    const { error } = await supabase.from('audit_logs').insert({
-      workspace_id: workspaceId,
-      actor_id: actorId,
-      action,
-      entity_type: entityType,
-      entity_id: entityId,
-      metadata: metadata || null,
-    });
+  const { error } = await supabase.rpc('write_audit_log', {
+    p_workspace_id: workspaceId,
+    p_action: action,
+    p_entity_type: entityType,
+    p_entity_id: entityId,
+    p_metadata: metadata || {}
+  });
 
-    if (error) {
-      console.error('[audit_log] Failed to write audit log:', error.message);
-    }
-  } catch (err) {
-    console.error('[audit_log] Unexpected error writing audit log:', err.message);
+  if (error) {
+    console.error('[audit_log] Failed to write audit log via RPC:', error.message);
+    throw new Error(`Audit log failure: ${error.message}`);
   }
 }
 

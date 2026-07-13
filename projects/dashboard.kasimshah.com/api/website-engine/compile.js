@@ -9,7 +9,57 @@ const {
 } = require('../_utils');
 
 const PROJECT_NAME_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9.\-]{0,98}[a-zA-Z0-9]$/;
-const PATH_TRAVERSAL_REGEX = /\.\./;
+const TEMPLATE_NAME_REGEX = /^[a-z0-9-]{2,50}$/;
+
+const ALLOWED_COLORS = ['luxe-dark', 'minimal-light', 'vibrant', 'corporate'];
+const ALLOWED_FONTS = ['inter', 'roboto', 'outfit', 'playfair'];
+
+function validateSettingsSchema(settings) {
+  if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
+    return null;
+  }
+
+  // Prevent deep nesting (max depth 1 is implicitly enforced since we only pick primitive values)
+  if (JSON.stringify(settings).length > 2000) {
+    return null; // Size limit
+  }
+
+  const sanitized = {};
+  
+  if (settings.colorScheme) {
+    if (ALLOWED_COLORS.includes(settings.colorScheme)) {
+      sanitized.colorScheme = settings.colorScheme;
+    } else {
+      return { error: 'Invalid colorScheme' };
+    }
+  }
+
+  if (settings.fontFamily) {
+    if (ALLOWED_FONTS.includes(settings.fontFamily)) {
+      sanitized.fontFamily = settings.fontFamily;
+    } else {
+      return { error: 'Invalid fontFamily' };
+    }
+  }
+
+  if (settings.seoTitle) {
+    if (typeof settings.seoTitle === 'string' && settings.seoTitle.length <= 100) {
+      sanitized.seoTitle = settings.seoTitle;
+    } else {
+      return { error: 'Invalid seoTitle' };
+    }
+  }
+
+  if (settings.seoDescription) {
+    if (typeof settings.seoDescription === 'string' && settings.seoDescription.length <= 300) {
+      sanitized.seoDescription = settings.seoDescription;
+    } else {
+      return { error: 'Invalid seoDescription' };
+    }
+  }
+
+  return sanitized;
+}
 
 module.exports = async function (req, res) {
   if (handleCors(req, res)) return;
@@ -20,7 +70,6 @@ module.exports = async function (req, res) {
   }
 
   try {
-    // --- Auth & RBAC ---
     const auth = await requireAuth(req);
     if (auth.error) {
       return errorResponse(res, auth.status, auth.error, 'Authentication required');
@@ -42,7 +91,6 @@ module.exports = async function (req, res) {
       return errorResponse(res, roleCheck.status, roleCheck.error, 'Insufficient permissions');
     }
 
-    // --- Engine configuration ---
     const engineUrl = process.env.WEBSITE_ENGINE_API_URL;
     const engineToken = process.env.WEBSITE_ENGINE_API_TOKEN;
 
@@ -50,39 +98,30 @@ module.exports = async function (req, res) {
       return errorResponse(res, 503, 'ENGINE_UNAVAILABLE', 'Website engine is not configured');
     }
 
-    // --- Validate body ---
     const validation = validateBody(req.body, ['projectName', 'templateName']);
     if (!validation.valid) {
-      return errorResponse(
-        res,
-        400,
-        'VALIDATION_ERROR',
-        `Missing required fields: ${validation.missing.join(', ')}`
-      );
+      return errorResponse(res, 400, 'VALIDATION_ERROR', `Missing required fields: ${validation.missing.join(', ')}`);
     }
 
-    const { projectName, templateName } = req.body;
+    const { projectName, templateName, settings } = req.body;
 
-    // Validate projectName: alphanumeric, hyphens, dots only. No path traversal. Max 100 chars.
     if (!PROJECT_NAME_REGEX.test(projectName)) {
-      return errorResponse(
-        res,
-        400,
-        'VALIDATION_ERROR',
-        'Project name must be 2-100 characters, alphanumeric with hyphens and dots, no path traversal'
-      );
+      return errorResponse(res, 400, 'VALIDATION_ERROR', 'Project name must be 2-100 characters, alphanumeric with hyphens and dots, no path traversal');
     }
 
-    if (PATH_TRAVERSAL_REGEX.test(projectName)) {
-      return errorResponse(
-        res,
-        400,
-        'VALIDATION_ERROR',
-        'Project name contains path traversal sequences'
-      );
+    if (!TEMPLATE_NAME_REGEX.test(templateName)) {
+      return errorResponse(res, 400, 'VALIDATION_ERROR', 'Template name is invalid');
     }
 
-    // --- Proxy to website engine ---
+    let sanitizedSettings = undefined;
+    if (settings !== undefined) {
+      const parsedSettings = validateSettingsSchema(settings);
+      if (parsedSettings && parsedSettings.error) {
+        return errorResponse(res, 400, 'VALIDATION_ERROR', parsedSettings.error);
+      }
+      sanitizedSettings = parsedSettings;
+    }
+
     const correlationId = generateCorrelationId();
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30000);
@@ -99,18 +138,14 @@ module.exports = async function (req, res) {
         body: JSON.stringify({
           projectName,
           templateName,
-          // Forward any additional safe fields from the body
-          ...(req.body.settings && typeof req.body.settings === 'object'
-            ? { settings: req.body.settings }
-            : {}),
+          ...(sanitizedSettings ? { settings: sanitizedSettings } : {}),
         }),
         signal: controller.signal,
       });
       clearTimeout(timeout);
     } catch (fetchErr) {
       clearTimeout(timeout);
-
-      // Audit the failed attempt
+      
       await writeAuditLog(supabase, {
         workspaceId,
         actorId: user.id,
@@ -123,14 +158,6 @@ module.exports = async function (req, res) {
       return errorResponse(res, 503, 'ENGINE_UNAVAILABLE', 'Website engine is unreachable or timed out');
     }
 
-    // --- Handle engine response ---
-    let engineBody;
-    try {
-      engineBody = await engineRes.json();
-    } catch {
-      engineBody = null;
-    }
-
     if (!engineRes.ok) {
       await writeAuditLog(supabase, {
         workspaceId,
@@ -141,13 +168,21 @@ module.exports = async function (req, res) {
         metadata: { projectName, templateName, correlationId, engineStatus: engineRes.status },
       });
 
-      const errorMessage =
-        engineBody?.error?.message || engineBody?.message || 'Website engine returned an error';
+      // Map to controlled public error code
+      let publicCode = 'ENGINE_ERROR';
+      if (engineRes.status === 400) publicCode = 'ENGINE_VALIDATION_ERROR';
+      if (engineRes.status === 401 || engineRes.status === 403) publicCode = 'ENGINE_AUTH_ERROR';
 
-      return errorResponse(res, engineRes.status, 'ENGINE_ERROR', errorMessage);
+      return errorResponse(res, engineRes.status, publicCode, `Website engine compilation failed (Correlation ID: ${correlationId})`);
     }
 
-    // Success audit
+    let engineBody;
+    try {
+      engineBody = await engineRes.json();
+    } catch {
+      return errorResponse(res, 502, 'ENGINE_ERROR', `Website engine returned invalid response (Correlation ID: ${correlationId})`);
+    }
+
     await writeAuditLog(supabase, {
       workspaceId,
       actorId: user.id,
@@ -157,8 +192,14 @@ module.exports = async function (req, res) {
       metadata: { projectName, templateName, correlationId },
     });
 
-    return res.status(engineRes.status).json(engineBody);
-  } catch {
+    // Only return explicit fields from the engine to prevent downstream leaking
+    return res.status(200).json({
+      success: true,
+      projectId: engineBody.projectId,
+      url: engineBody.url,
+      correlationId
+    });
+  } catch (err) {
     return errorResponse(res, 500, 'INTERNAL_ERROR', 'An unexpected error occurred');
   }
 };

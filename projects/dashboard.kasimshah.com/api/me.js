@@ -23,7 +23,7 @@ module.exports = async function (req, res) {
     // Fetch user profile
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, email, full_name, avatar_url')
+      .select('id, full_name, avatar_url')
       .eq('id', user.id)
       .single();
 
@@ -34,7 +34,7 @@ module.exports = async function (req, res) {
     // Fetch user's workspaces
     const { data: memberships, error: memberError } = await supabase
       .from('workspace_members')
-      .select('role, workspace_id, workspaces(id, name, slug, logo_url, created_at)')
+      .select('role, workspace_id, workspaces(id, name, slug, created_at)')
       .eq('user_id', user.id);
 
     if (memberError) {
@@ -49,7 +49,7 @@ module.exports = async function (req, res) {
     return res.status(200).json({
       user: {
         id: profile.id,
-        email: profile.email,
+        email: user.email,
         fullName: profile.full_name,
         avatarUrl: profile.avatar_url,
       },
