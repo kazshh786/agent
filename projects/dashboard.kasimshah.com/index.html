@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agency OS | Unified Control Hub</title>
+  <meta name="description" content="Centralized agent control panel to compile, schedule, moderate, and checkout client workspaces in unison under dashboard.kasimshah.com.">
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- FontAwesome & Fonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Chart.js and Supabase Client SDK via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <!-- TOAST ALERTS CONTAINER -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <div class="app-container">
+    
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <i class="fa-solid fa-microchip"></i>
+        <span>KASIM <span>SHAH</span></span>
+      </div>
+      
+      <ul class="nav-menu">
+        <li class="nav-item active" data-view="overview">
+          <a href="#">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>Overview Hub</span>
+          </a>
+        </li>
+        <li class="nav-item" data-view="web">
+          <a href="#">
+            <i class="fa-solid fa-laptop-code"></i>
+            <span>Web Compiler</span>
+          </a>
+        </li>
+        <li class="nav-item" data-view="social">
+          <a href="#">
+            <i class="fa-solid fa-share-nodes"></i>
+            <span>Social Campaigner</span>
+          </a>
+        </li>
+        <li class="nav-item" data-view="salon">
+          <a href="#">
+            <i class="fa-solid fa-shop"></i>
+            <span>Multi-Tenant OS</span>
+          </a>
+        </li>
+      </ul>
+      
+      <div class="sidebar-footer">
+        <div class="connection-pill">
+          <span><i class="fa-solid fa-bolt"></i> Local Engine</span>
+          <span><span class="status-dot offline" id="api-status-dot"></span> <small id="api-status-text">OFFLINE</small></span>
+        </div>
+        <div class="connection-pill">
+          <span><i class="fa-solid fa-database"></i> Database Cloud</span>
+          <span><span class="status-dot offline" id="db-status-dot"></span> <small id="db-status-text">DISCONNECTED</small></span>
+        </div>
+      </div>
+    </aside>
+    
+    <!-- MAIN WORKSPACE -->
+    <main class="workspace">
+      
+      <!-- 1. HUB: OVERVIEW -->
+      <section class="dashboard-view active" id="view-overview">
+        <div class="workspace-header">
+          <div class="workspace-title">
+            <h1>Unified Control Hub</h1>
+            <p>Orchestrate conversion layouts, social schedulers, and client bookings in unison.</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-primary" id="btn-unison-wizard">
+              <i class="fa-solid fa-circle-plus"></i> Provision Workspace
+            </button>
+            <button class="btn btn-secondary" id="btn-download-report">
+              <i class="fa-solid fa-file-arrow-down"></i> Agency Telemetry
+            </button>
+          </div>
+        </div>
+        
+        <!-- Stats summary row -->
+        <div class="stats-grid">
+          <div class="glass-card stat-card">
+            <div class="stat-card-content">
+              <div class="stat-info">
+                <span class="stat-title">Web Engines</span>
+                <span class="stat-value" id="overview-web-count">0</span>
+                <span class="stat-trend positive"><i class="fa-solid fa-arrow-trend-up"></i> +12% growth</span>
+              </div>
+              <div class="stat-icon"><i class="fa-solid fa-code"></i></div>
+            </div>
+          </div>
+          
+          <div class="glass-card stat-card">
+            <div class="stat-card-content">
+              <div class="stat-info">
+                <span class="stat-title">Scheduled Posts</span>
+                <span class="stat-value" id="overview-posts-count">0</span>
+                <span class="stat-trend positive"><i class="fa-solid fa-arrow-trend-up"></i> +22% queue</span>
+              </div>
+              <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
+            </div>
+          </div>
+          
+          <div class="glass-card stat-card">
+            <div class="stat-card-content">
+              <div class="stat-info">
+                <span class="stat-title">Active Salon Tenants</span>
+                <span class="stat-value" id="overview-tenants-count">0</span>
+                <span class="stat-trend neutral"><i class="fa-solid fa-circle"></i> Syncing ok</span>
+              </div>
+              <div class="stat-icon"><i class="fa-solid fa-store"></i></div>
+            </div>
+          </div>
+          
+          <div class="glass-card stat-card">
+            <div class="stat-card-content">
+              <div class="stat-info">
+                <span class="stat-title">Avg Web Vitals</span>
+                <span class="stat-value">98%</span>
+                <span class="stat-trend positive"><i class="fa-solid fa-arrow-trend-up"></i> Optimal speed</span>
+              </div>
+              <div class="stat-icon"><i class="fa-solid fa-gauge-high"></i></div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Pipeline visualization -->
+        <div class="glass-card pipeline-visualizer">
+          <h3 style="font-family: var(--font-display); font-size: 1.2rem; margin-bottom: 12px;">Unison Pipeline Visualizer</h3>
+          <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 24px;">Agency system mapping details explaining how layout and database assets flow in unison.</p>
+          
+          <div class="pipeline-nodes">
+            <div class="pipeline-node active web-node">
+              <i class="fa-solid fa-globe"></i>
+              <h4>1. Web Engine</h4>
+              <p>Compiles html draft layouts & setups Vercel domains</p>
+            </div>
+            
+            <i class="fa-solid fa-arrow-right-long pipeline-arrow"></i>
+            
+            <div class="pipeline-node active db-node">
+              <i class="fa-solid fa-server"></i>
+              <h4>2. Database Tenant</h4>
+              <p>Provisions Supabase schemas & seeding Starter directories</p>
+            </div>
+            
+            <i class="fa-solid fa-arrow-right-long pipeline-arrow"></i>
+            
+            <div class="pipeline-node active social-node">
+              <i class="fa-solid fa-bullhorn"></i>
+              <h4>3. Social Set</h4>
+              <p>Creates brand scheduling templates & queues AI post assistants</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <!-- Unison Console Log -->
+          <div class="glass-card" style="margin-bottom: 32px;">
+            <h3 style="font-family: var(--font-display); font-size: 1.2rem; margin-bottom: 12px;"><i class="fa-solid fa-terminal" style="margin-right:8px; color: var(--primary-color);"></i> Telemetry Feed</h3>
+            <div id="overview-activity-feed" style="display:flex; flex-direction:column; gap:8px;">
+              <!-- Seeded dynamically -->
+            </div>
+          </div>
+          
+          <!-- Conversion Optimization Notice -->
+          <div class="glass-card" style="margin-bottom: 32px; background: linear-gradient(135deg, rgba(6, 182, 212, 0.05) 0%, rgba(99, 102, 241, 0.05) 100%);">
+            <h3 style="font-family: var(--font-display); font-size: 1.2rem; margin-bottom: 12px; color: var(--accent-color);">Funnel Diagnostics</h3>
+            <p style="color:var(--text-secondary); font-size: 0.85rem; line-height: 1.6; margin-bottom: 16px;">
+              Aesthetic optimizations for 2026: Ensure all text containers are tagged with <code>data-editable="true"</code> to support visual page editing.
+            </p>
+            <div style="font-size:0.75rem; background:rgba(0,0,0,0.2); padding:12px; border-radius:6px; border-left: 3px solid var(--accent-color);">
+              <strong>Core bottleneck rule:</strong> Prioritize "above the fold" visual spaces (up to 84% attention metrics) and design for scan F-Patterns.
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- 2. MODULE: WEB FUNNELS -->
+      <section class="dashboard-view" id="view-web">
+        <div class="workspace-header">
+          <div class="workspace-title">
+            <h1>Web Funnel Compilers</h1>
+            <p>Configure layouts, branding vibe themes, and compile responsive engine landing pages.</p>
+          </div>
+        </div>
+        
+        <div class="web-engines-grid" id="web-engines-grid">
+          <!-- Populated dynamically by AppState.webProjects -->
+        </div>
+      </section>
+      
+      <!-- 3. MODULE: SOCIAL AUTOMATION -->
+      <section class="dashboard-view" id="view-social">
+        <div class="workspace-header">
+          <div class="workspace-title">
+            <h1>Social Campaigner</h1>
+            <p>Schedule media posts, reply to customer DMs/comments, and benchmark competitor channels.</p>
+          </div>
+        </div>
+        
+        <div class="tab-row">
+          <button class="tab-btn active" onclick="switchSocialTab('publisher')">Cross-Channel Publisher</button>
+          <button class="tab-btn" onclick="switchSocialTab('inbox')">Unified Moderation Inbox</button>
+          <button class="tab-btn" onclick="switchSocialTab('benchmarks')">Competitor Benchmarking</button>
+        </div>
+        
+        <!-- Social tab content: Publisher -->
+        <div id="social-tab-publisher" class="social-tab-panel active">
+          <div class="social-previews-container">
+            <!-- Composer Form -->
+            <div class="glass-card social-composer-form">
+              <h3 style="font-family: var(--font-display); font-size: 1.15rem;">Create Campaign Post</h3>
+              
+              <div class="form-group">
+                <label>Select Target Channels</label>
+                <div class="social-platform-selector">
+                  <div class="social-checkbox-btn instagram">
+                    <input type="checkbox" id="plat-insta" checked>
+                    <label for="plat-insta"><i class="fa-brands fa-instagram"></i></label>
+                  </div>
+                  <div class="social-checkbox-btn twitter">
+                    <input type="checkbox" id="plat-tweet" checked>
+                    <label for="plat-tweet"><i class="fa-brands fa-twitter"></i></label>
+                  </div>
+                  <div class="social-checkbox-btn linkedin">
+                    <input type="checkbox" id="plat-link">
+                    <label for="plat-link"><i class="fa-brands fa-linkedin-in"></i></label>
+                  </div>
+                  <div class="social-checkbox-btn tiktok">
+                    <input type="checkbox" id="plat-tok">
+                    <label for="plat-tok"><i class="fa-brands fa-tiktok"></i></label>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="social-post-text">Post Copywriting Text</label>
+                <textarea id="social-post-text" class="form-control" rows="4" placeholder="Draft your social message here..."></textarea>
+              </div>
+              
+              <div class="form-group">
+                <label for="social-post-media">Upload Campaign Graphic Link</label>
+                <input type="text" id="social-post-media" class="form-control" placeholder="https://images.unsplash.com/photo-..." value="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80">
+              </div>
+              
+              <div style="display:flex; gap:12px;">
+                <button class="btn btn-primary" onclick="scheduleMockPost()"><i class="fa-regular fa-calendar-check"></i> Add to Queue</button>
+                <button class="btn btn-secondary" onclick="generateAICopy()"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Text Helper</button>
+              </div>
+            </div>
+            
+            <!-- Mockup device preview -->
+            <div class="glass-card" style="display:flex; flex-direction:column; align-items:center;">
+              <h3 style="font-family: var(--font-display); font-size: 1.15rem; margin-bottom: 12px; align-self: flex-start;">Live Mobile Feed Preview</h3>
+              <div class="mobile-device-mockup">
+                <div class="mobile-notch"></div>
+                <div class="mobile-screen-header">
+                  <span style="font-family:var(--font-display); font-weight:700; font-size:0.8rem; color:var(--text-primary);"><i class="fa-brands fa-instagram" style="margin-right:6px;"></i>Instagram Feed</span>
+                </div>
+                <div class="mobile-canvas" id="insta-feed-mockup">
+                  <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                    <span style="width:28px; height:28px; border-radius:50%; background:var(--accent-color); display:inline-block;"></span>
+                    <strong style="font-size:0.75rem;">@kasimshah.dev</strong>
+                  </div>
+                  <img id="mockup-img" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80" style="width:100%; height:200px; object-fit:cover; border-radius:8px; margin-bottom:10px; border:1px solid rgba(255,255,255,0.05);">
+                  <p id="mockup-caption" style="font-size:0.75rem; line-height:1.4; color:var(--text-secondary);">Your caption copy will render here...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-row" style="margin-top: 32px;">
+            <!-- Scheduled list -->
+            <div class="glass-card">
+              <h3 style="font-family: var(--font-display); font-size: 1.15rem; margin-bottom: 16px;">Scheduled Campaign Queue</h3>
+              <div id="scheduled-posts-list">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+            
+            <!-- Optimal windows -->
+            <div class="glass-card">
+              <h3 style="font-family: var(--font-display); font-size: 1.15rem; margin-bottom: 16px;">Optimal Posting Windows (Metricool)</h3>
+              <div style="display:flex; flex-direction:column; gap:8px;">
+                <div style="padding:10px; background:rgba(16,185,129,0.05); border-radius:6px; display:flex; justify-content:space-between; align-items:center; border-left:3px solid var(--success-color);">
+                  <div>
+                    <strong>Wednesday, 11:00 AM</strong><br><small style="color:var(--text-muted);">Instagram / LinkedIn Optimal</small>
+                  </div>
+                  <span class="badge badge-success">High Engagement</span>
+                </div>
+                <div style="padding:10px; background:rgba(6,182,212,0.05); border-radius:6px; display:flex; justify-content:space-between; align-items:center; border-left:3px solid var(--accent-color);">
+                  <div>
+                    <strong>Friday, 4:00 PM</strong><br><small style="color:var(--text-muted);">TikTok Visual Window</small>
+                  </div>
+                  <span class="badge badge-primary">High Reach</span>
+                </div>
+              </div>
+              
+              <h4 style="margin-top: 24px; margin-bottom: 12px;">Brand Accounts Telemetry</h4>
+              <div id="social-accounts-list" style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Social tab content: Moderation Inbox -->
+        <div id="social-tab-inbox" class="social-tab-panel" style="display:none;">
+          <div class="form-row">
+            <div class="glass-card" style="padding: 16px;">
+              <h3 style="font-family: var(--font-display); font-size: 1.1rem; margin-bottom:12px;">Customer Threads</h3>
+              <div id="social-inbox-list" style="display:flex; flex-direction:column; gap:4px;">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+            
+            <div class="glass-card" id="social-inbox-details" style="padding: 24px; display:flex; flex-direction:column; justify-content:center; align-items:center; color:var(--text-muted);">
+              <i class="fa-regular fa-message" style="font-size:3rem; margin-bottom:16px;"></i>
+              <p>Select a message thread from the index list to moderate comments or reply to messages.</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Social tab content: Benchmarking -->
+        <div id="social-tab-benchmarks" class="social-tab-panel" style="display:none;">
+          <div class="glass-card">
+            <h3 style="font-family: var(--font-display); font-size: 1.25rem; margin-bottom:16px;">Competitor Benchmarks (Brandwatch)</h3>
+            <div class="custom-table-container">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Brand / Competitor</th>
+                    <th>Audience Size</th>
+                    <th>Frequency</th>
+                    <th>Engagement Rate</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="competitors-list">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- 4. MODULE: MULTI-TENANT OS -->
+      <section class="dashboard-view" id="view-salon">
+        <div class="workspace-header">
+          <div class="workspace-title">
+            <h1>Multi-Tenant Salon Growth OS</h1>
+            <p>Manage bookings database schemas, POS checkouts, waitlists, and client CRM records.</p>
+          </div>
+        </div>
+        
+        <div class="tenant-workspace-layout">
+          <!-- Left side: Select Tenant -->
+          <div class="glass-card" style="padding: 16px; display:flex; flex-direction:column; gap:16px; height:fit-content;">
+            <h3 style="font-family:var(--font-display); font-size:1.1rem;"><i class="fa-solid fa-building-user" style="color:var(--accent-color); margin-right:8px;"></i> Salon Workspaces</h3>
+            <div id="salon-tenants-list" style="display:flex; flex-direction:column; gap:8px;">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+          
+          <!-- Right side: Active Workspace Manager -->
+          <div id="tenant-active-panel" style="display:none;">
+            <div class="glass-card" style="margin-bottom:24px; border-left: 4px solid var(--accent-color);">
+              <h2 id="tenant-workspace-title" style="font-family:var(--font-display); font-size:1.5rem; margin-bottom:4px;">No Active Salon Workspace</h2>
+              <p id="tenant-workspace-subtitle" style="color:var(--text-secondary); font-size:0.85rem;">Choose a workspace card from the sidebar list to retrieve Supabase client records.</p>
+            </div>
+            
+            <div class="tab-row" style="margin-bottom: 20px;">
+              <button class="tab-btn active" id="tenant-tab-calendar" onclick="switchTenantSubTab('calendar')">Bookings & Waitlist</button>
+              <button class="tab-btn" id="tenant-tab-crm" onclick="switchTenantSubTab('crm')">CRM Clients & Loyalty</button>
+              <button class="tab-btn" id="tenant-tab-billing" onclick="switchTenantSubTab('billing')">Campaign Configs</button>
+            </div>
+            
+            <!-- Tenant Subtab: Calendar -->
+            <div id="tenant-panel-calendar" class="tenant-panel-content">
+              <div class="form-row">
+                <div class="glass-card" id="tenant-calendar-container">
+                  <!-- Rendered dynamically -->
+                </div>
+                
+                <div class="glass-card" style="padding:16px;">
+                  <h3 style="font-family:var(--font-display); font-size:1.1rem; margin-bottom:12px;">Active Client Waitlist</h3>
+                  <div id="tenant-waitlist-box">
+                    <!-- Populated dynamically -->
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Tenant Subtab: CRM -->
+            <div id="tenant-panel-crm" class="tenant-panel-content" style="display:none;">
+              <div class="glass-card" style="margin-bottom:24px;">
+                <div class="form-group" style="margin-bottom:0;">
+                  <label for="crm-client-select">Search Client Card Profile</label>
+                  <select id="crm-client-select" class="form-control select-control">
+                    <!-- Populated dynamically -->
+                  </select>
+                </div>
+              </div>
+              
+              <div class="glass-card" id="crm-client-details-box" style="display:flex; flex-direction:column; justify-content:center; align-items:center; min-height:220px; color:var(--text-muted);">
+                <i class="fa-regular fa-id-card" style="font-size:3rem; margin-bottom:16px;"></i>
+                <p>Select a client from the dropdown list to pull up timeline transactions and initiate POS checkouts.</p>
+              </div>
+            </div>
+            
+            <!-- Tenant Subtab: Billing/Rules -->
+            <div id="tenant-panel-billing" class="tenant-panel-content" style="display:none;">
+              <div class="glass-card" id="tenant-billing-panel">
+                <!-- Rendered dynamically -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+    </main>
+  </div>
+
+  <!-- MODAL: UNISON PROVISION WIZARD -->
+  <div class="modal-overlay" id="unison-wizard-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Provision Client Workspace</h3>
+        <button class="modal-close-btn" id="btn-close-wizard">&times;</button>
+      </div>
+      
+      <div class="modal-body">
+        <!-- Wizard step list -->
+        <div class="wizard-steps" id="wizard-indicator">
+          <div class="w-step active">
+            <span class="w-step-num">1</span> Identity
+          </div>
+          <div class="w-step">
+            <span class="w-step-num">2</span> Industry Vertical
+          </div>
+          <div class="w-step">
+            <span class="w-step-num">3</span> Confirm Setup
+          </div>
+        </div>
+        
+        <form id="wizard-form">
+          <!-- Step 1 Panel -->
+          <div class="wizard-panel active" id="wiz-step-1">
+            <h4 style="margin-bottom:16px; font-family:var(--font-display);">1. General & Subdomain Identity</h4>
+            
+            <div class="form-group">
+              <label for="wizName">Business Trade Name</label>
+              <input type="text" id="wizName" class="form-control" placeholder="e.g. Deluxe Aesthetics Salon" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="wizSubdomain">Custom Subdomain</label>
+              <div style="display:flex; align-items:center;">
+                <input type="text" id="wizSubdomain" class="form-control" placeholder="e.g. deluxe-salon" style="flex-grow:1; border-top-right-radius:0; border-bottom-right-radius:0;" required>
+                <span style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-left:none; padding:12px 16px; font-size:0.9rem; color:var(--text-muted); border-top-right-radius:var(--border-radius-sm); border-bottom-right-radius:var(--border-radius-sm);">.kasimshah.com</span>
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="wizTemplate">Select Template Vibe</label>
+                <select id="wizTemplate" class="form-control select-control">
+                  <option value="editorial-luxe">Editorial Luxe Theme</option>
+                  <option value="tech-sleek">Tech Sleek Theme</option>
+                  <option value="boutique-warm">Boutique Warm Theme</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="wizColor">Brand Accent Color</label>
+                <div style="display:flex; gap:10px; align-items:center;">
+                  <input type="color" id="wizColor" class="form-control" value="#10b981" style="width:60px; height:46px; padding:4px; cursor:pointer;">
+                  <span style="font-size:0.8rem; color:var(--text-secondary);">Palette highlight code</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Step 2 Panel -->
+          <div class="wizard-panel" id="wiz-step-2">
+            <h4 style="margin-bottom:16px; font-family:var(--font-display);">2. Industry Starter Pack & Owner Profile</h4>
+            
+            <div class="form-group">
+              <label for="wizIndustry">Select Industry Vertical</label>
+              <select id="wizIndustry" class="form-control select-control">
+                <option value="barber">💈 Barber Shop Pack (Skin fades, razor waivers)</option>
+                <option value="nails">💅 Nails Salon Pack (Gel manicure, acrylic forms)</option>
+                <option value="aesthetics">💉 Aesthetics Clinic Pack (Laser consulting, patch consents)</option>
+              </select>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="wizOwnerEmail">Owner User Email</label>
+                <input type="email" id="wizOwnerEmail" class="form-control" placeholder="owner@salon.com">
+              </div>
+              <div class="form-group">
+                <label for="wizOwnerPassword">Temporary Password</label>
+                <input type="password" id="wizOwnerPassword" class="form-control" placeholder="At least 8 chars" value="kasimshah123">
+              </div>
+            </div>
+          </div>
+          
+          <!-- Step 3 Panel -->
+          <div class="wizard-panel" id="wiz-step-3">
+            <h4 style="margin-bottom:16px; font-family:var(--font-display);">3. Verify Configuration Summary</h4>
+            <p style="color:var(--text-secondary); font-size:0.85rem; line-height:1.5; margin-bottom:20px;">
+              Review the provision profiles below. Confirming will compile the static site drafts, register the Supabase schema rows, and setup the brand social set profiles.
+            </p>
+            
+            <div style="background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.05); border-radius:var(--border-radius-sm); padding:16px; font-size:0.9rem;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span>Business Trade:</span><strong id="summary-biz-name">Salon Name</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span>Domain Routing:</span><strong id="summary-subdomain">sub.kasimshah.com</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span>Seeding Starter:</span><strong id="summary-industry">BARBER</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Branding accent:</span><span id="summary-color" style="width:20px; height:20px; border-radius:4px; display:inline-block;"></span>
+              </div>
+            </div>
+            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:16px;">
+              ⚠️ Direct connection credentials to Supabase PG will be triggered. Rollback scripts will run automatically on compile errors.
+            </p>
+          </div>
+        </form>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="wiz-btn-prev" style="display:none;">Back</button>
+        <button class="btn btn-primary" id="wiz-btn-next">Next: Service Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POS SLIDING DRAWER -->
+  <div class="checkout-drawer" id="pos-checkout-drawer">
+    <div class="checkout-drawer-header">
+      <h3><i class="fa-solid fa-calculator" style="color:var(--success-color);"></i> POS Checkout</h3>
+      <button class="modal-close-btn" id="btn-close-checkout">&times;</button>
+    </div>
+    
+    <div class="checkout-drawer-body">
+      <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:var(--border-radius-sm); padding:12px 16px;">
+        <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Selected Customer</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+          <strong id="checkout-client-name" style="font-size:1.1rem;">Customer Name</strong>
+          <span id="checkout-client-points" style="font-size:0.85rem; color:var(--success-color); font-weight:700;">100 pts</span>
+        </div>
+      </div>
+      
+      <!-- Cart Builder -->
+      <div>
+        <h4 style="margin-bottom:12px; font-size:0.9rem; text-transform:uppercase; color:var(--text-secondary); letter-spacing:0.5px;">Add Service / Product Item</h4>
+        <div class="form-group">
+          <select id="checkout-services-select" class="form-control select-control" style="margin-bottom:10px;">
+            <!-- Seeding services dynamically -->
+          </select>
+          <select id="checkout-staff-select" class="form-control select-control" style="margin-bottom:12px;">
+            <!-- Seeding staff dynamically -->
+          </select>
+          <button class="btn btn-secondary" id="btn-add-cart" style="width:100%;"><i class="fa-solid fa-plus"></i> Add Item to Cart</button>
+        </div>
+      </div>
+      
+      <!-- Cart items list -->
+      <div>
+        <h4 style="margin-bottom:8px; font-size:0.9rem; text-transform:uppercase; color:var(--text-secondary); letter-spacing:0.5px;">Cart Review</h4>
+        <div id="checkout-cart-items" style="display:flex; flex-direction:column; max-height:160px; overflow-y:auto;">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+    
+    <div class="checkout-drawer-footer">
+      <div class="summary-row">
+        <span>Cart Subtotal</span>
+        <span id="checkout-subtotal">£0.00</span>
+      </div>
+      <div class="summary-row" style="color:var(--success-color);">
+        <span>Points to Earn (1pt/£1)</span>
+        <strong id="checkout-earned-points">+0 points</strong>
+      </div>
+      <div class="summary-row total">
+        <span>Grand Total</span>
+        <span id="checkout-total">£0.00</span>
+      </div>
+      
+      <button class="btn btn-primary" id="btn-process-checkout" style="width:100%; margin-top:20px; font-size:1rem; padding:14px 0;"><i class="fa-solid fa-credit-card"></i> Pay Now</button>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT SOURCES -->
+  <script src="mockSocialData.js"></script>
+  <script src="app.js"></script>
+  
+  <script>
+    // Tab switching scripts inside pages
+    function switchSocialTab(tabId) {
+      const panels = document.querySelectorAll('.social-tab-panel');
+      panels.forEach(p => p.style.display = 'none');
+      document.getElementById(`social-tab-${tabId}`).style.display = 'block';
+      
+      const btns = document.querySelectorAll('.tab-row button');
+      btns.forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+    
+    function switchTenantSubTab(tabId) {
+      const panels = document.querySelectorAll('.tenant-panel-content');
+      panels.forEach(p => p.style.display = 'none');
+      document.getElementById(`tenant-panel-${tabId}`).style.display = 'block';
+      
+      const btns = document.querySelectorAll('.tenant-workspace-layout .tab-btn');
+      btns.forEach(b => b.classList.remove('active'));
+      document.getElementById(`tenant-tab-${tabId}`).classList.add('active');
+    }
+    
+    function scheduleMockPost() {
+      const text = document.getElementById('social-post-text').value.trim();
+      const media = document.getElementById('social-post-media').value.trim();
+      
+      if (!text) {
+        alert('Please draft copy text for your campaign post.');
+        return;
+      }
+      
+      const newPost = {
+        id: `post-${Date.now()}`,
+        platforms: ['instagram', 'twitter'],
+        content: text,
+        mediaType: media ? 'image' : 'none',
+        mediaUrl: media || '',
+        scheduleDate: new Date(Date.now() + 86400000 * 2).toISOString(),
+        status: 'scheduled'
+      };
+      
+      KSSocialMockData.scheduledPosts.push(newPost);
+      document.getElementById('social-post-text').value = '';
+      
+      if (typeof renderSocialDashboard === 'function') {
+        renderSocialDashboard();
+      }
+      alert('Campaign post added to the automated publishing queue!');
+    }
+    
+    function generateAICopy() {
+      const postText = document.getElementById('social-post-text');
+      postText.value = "Transform your routine with our premium wellness packages. Designed to rejuvenate your skin and elevate your health metrics. Book your session now! ✨💆‍♀️";
+      // Update mockup caption
+      document.getElementById('mockup-caption').textContent = postText.value;
+    }
+    
+    // Live update preview mockup details
+    document.getElementById('social-post-text').addEventListener('input', (e) => {
+      document.getElementById('mockup-caption').textContent = e.target.value || "Your caption copy will render here...";
+    });
+    
+    document.getElementById('social-post-media').addEventListener('input', (e) => {
+      document.getElementById('mockup-img').src = e.target.value || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80";
+    });
+  </script>
+
+</body>
+</html>
