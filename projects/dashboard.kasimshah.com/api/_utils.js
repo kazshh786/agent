@@ -99,7 +99,11 @@ async function requireActiveWorkspace(supabase, workspaceId) {
     .eq('id', workspaceId)
     .single();
   if (error || !data) return createSafeApiError('NOT_FOUND', 'Workspace not found', 404);
-  if (data.status !== 'active') return createSafeApiError('WORKSPACE_SUSPENDED', 'Workspace is not active', 403);
+  if (data.status === 'suspended') return createSafeApiError('WORKSPACE_SUSPENDED', 'Workspace is suspended', 403);
+  if (data.status === 'archived') return createSafeApiError('WORKSPACE_ARCHIVED', 'Workspace is archived', 403);
+  if (data.status === 'provisioning') return createSafeApiError('WORKSPACE_PROVISIONING', 'Workspace is provisioning', 409);
+  if (data.status === 'failed') return createSafeApiError('WORKSPACE_FAILED', 'Workspace provisioning failed', 409);
+  if (data.status !== 'active') return createSafeApiError('WORKSPACE_INACTIVE', 'Workspace is not active', 403);
   return { status: data.status };
 }
 
