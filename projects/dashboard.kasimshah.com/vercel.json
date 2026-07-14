@@ -4,6 +4,12 @@
   "outputDirectory": ".",
   "framework": null,
   "installCommand": "npm install",
+  "crons": [
+    {
+      "path": "/api/automations/worker",
+      "schedule": "* * * * *"
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/(.*)",
