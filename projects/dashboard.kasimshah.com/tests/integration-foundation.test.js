@@ -24,6 +24,15 @@ describe('integration encryption and provider registry', () => {
     const result = await executeProviderJob({ provider: 'ks_os', job_type: 'connection.test' });
     expect(result).toEqual(expect.objectContaining({ succeeded: false, errorCode: 'PROVIDER_NOT_CONFIGURED' }));
   });
+
+  test('KS OS connection test calls the versioned tenant status contract', async () => {
+    process.env.KS_OS_API_URL='https://booking.example.com';
+    global.fetch=jest.fn().mockResolvedValue({ok:true,status:200,json:async()=>({tenant:{id:'tenant-id'},readiness:{ready:true}})});
+    const result=await executeProviderJob({provider:'ks_os',job_type:'connection.test'},{credentials:{serviceToken:'service-secret'},connection:{external_account_id:'tenant-id'}});
+    expect(result).toEqual(expect.objectContaining({succeeded:true,result:{tenantId:'tenant-id',readiness:{ready:true}}}));
+    expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/v1/service/tenants/tenant-id/status'),expect.objectContaining({headers:{Authorization:'Bearer service-secret'}}));
+    delete process.env.KS_OS_API_URL;delete global.fetch;
+  });
 });
 
 describe('integration migration boundaries', () => {

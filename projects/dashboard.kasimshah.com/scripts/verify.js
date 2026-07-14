@@ -33,6 +33,8 @@ const jsFilesToCheck = [
   'api/_providers.js',
   'api/_website.js',
   'api/_analytics.js',
+  'api/_booking.js',
+  'api/booking.js',
   'api/websites.js',
   'api/analytics/collect.js',
   'api/analytics/summary.js',
@@ -70,7 +72,9 @@ const required = [
   '.env.example', 'vercel.json', 'package.json',
   'supabase_migrations.sql',
   'supabase/migrations/20260714040000_website_booking_analytics.sql',
-  'docs/WEBSITE_BOOKING_CONTRACT.md', 'docs/ANALYTICS_PRIVACY.md'
+  'supabase/migrations/20260714050000_booking_rate_limits.sql',
+  'docs/WEBSITE_BOOKING_CONTRACT.md', 'docs/ANALYTICS_PRIVACY.md',
+  'docs/BOOKING_RUNTIME.md'
 ];
 required.forEach(f => {
   fs.existsSync(path.join(ROOT, f)) ? pass(f) : fail(`${f}: missing`);
@@ -83,7 +87,8 @@ if (fs.existsSync(envPath)) {
   const envContent = fs.readFileSync(envPath, 'utf8');
   ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY',
    'WEBSITE_ENGINE_API_URL', 'WEBSITE_ENGINE_API_TOKEN', 'APP_URL',
-   'INTEGRATION_ENCRYPTION_KEY', 'JOB_RUNNER_SECRET', 'KS_OS_API_URL', 'KS_OS_SERVICE_TOKEN'].forEach(v => {
+   'INTEGRATION_ENCRYPTION_KEY', 'JOB_RUNNER_SECRET', 'KS_OS_API_URL', 'KS_OS_SERVICE_TOKEN',
+   'BOOKING_RATE_LIMIT_SALT'].forEach(v => {
     envContent.includes(v) ? pass(v) : fail(`${v}: missing from .env.example`);
   });
 } else {

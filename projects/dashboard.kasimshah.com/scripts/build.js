@@ -30,14 +30,16 @@ const requiredFiles = [
   'api/integrations.js', 'api/jobs.js', 'api/jobs/run.js',
   'api/_crypto.js', 'api/_providers.js',
   'api/_website.js', 'api/_analytics.js', 'api/websites.js',
+  'api/_booking.js', 'api/booking.js',
   'api/analytics/collect.js', 'api/analytics/summary.js',
   'api/website-engine/compile.js',
   'supabase/migrations/20260714040000_website_booking_analytics.sql',
+  'supabase/migrations/20260714050000_booking_rate_limits.sql',
   'supabase_migrations.sql',
   'docs/ARCHITECTURE.md', 'docs/SUPABASE_SETUP.md',
   'docs/VERCEL_SETUP.md', 'docs/SECURITY.md',
   'docs/INTEGRATIONS_AND_JOBS.md', 'docs/KS_OS_INTEGRATION.md',
-  'docs/WEBSITE_BOOKING_CONTRACT.md', 'docs/ANALYTICS_PRIVACY.md'
+  'docs/WEBSITE_BOOKING_CONTRACT.md', 'docs/ANALYTICS_PRIVACY.md', 'docs/BOOKING_RUNTIME.md'
 ];
 
 requiredFiles.forEach(f => {
@@ -54,6 +56,7 @@ const jsFiles = [
   'api/integrations.js', 'api/jobs.js', 'api/jobs/run.js',
   'api/_crypto.js', 'api/_providers.js',
   'api/_website.js', 'api/_analytics.js', 'api/websites.js',
+  'api/_booking.js', 'api/booking.js',
   'api/analytics/collect.js', 'api/analytics/summary.js',
   'api/website-engine/compile.js'
 ];
@@ -88,7 +91,8 @@ console.log('\n--- Environment Variables ---');
 const requiredEnvVars = [
   'SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY',
   'WEBSITE_ENGINE_API_URL', 'WEBSITE_ENGINE_API_TOKEN', 'APP_URL',
-  'INTEGRATION_ENCRYPTION_KEY', 'JOB_RUNNER_SECRET', 'KS_OS_API_URL', 'KS_OS_SERVICE_TOKEN'
+  'INTEGRATION_ENCRYPTION_KEY', 'JOB_RUNNER_SECRET', 'KS_OS_API_URL', 'KS_OS_SERVICE_TOKEN',
+  'BOOKING_RATE_LIMIT_SALT'
 ];
 
 const envExample = fs.existsSync(path.join(ROOT, '.env.example'))

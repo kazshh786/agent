@@ -6,7 +6,7 @@ describe('booking-first website database foundation',()=>{
   let db;const as=async(role,uid,sql)=>{await db.exec("RESET ROLE; SET request.jwt.claim.sub = '';");if(role)await db.exec(`SET ROLE ${role}`);if(uid)await db.exec(`SET request.jwt.claim.sub='${uid}'`);return db.exec(sql);};
   beforeAll(async()=>{
     db=new PGlite();await db.waitReady;await db.exec(`CREATE SCHEMA auth;CREATE TABLE auth.users(id UUID PRIMARY KEY,email TEXT,raw_user_meta_data JSONB DEFAULT '{}');CREATE FUNCTION auth.uid() RETURNS UUID LANGUAGE sql STABLE AS 'SELECT NULLIF(current_setting(''request.jwt.claim.sub'',true),'''')::UUID';CREATE ROLE anon;CREATE ROLE authenticated;CREATE ROLE service_role;`);
-    const files=['20260713000000_initial_foundation.sql','20260713010000_security_fixes.sql','20260713020000_final_security_corrections.sql','20260714000000_platform_control_plane.sql','20260714010000_platform_control_security_fixes.sql','20260714020000_customer_invitations.sql','20260714030000_integration_job_foundation.sql','20260714040000_website_booking_analytics.sql'];
+    const files=['20260713000000_initial_foundation.sql','20260713010000_security_fixes.sql','20260713020000_final_security_corrections.sql','20260714000000_platform_control_plane.sql','20260714010000_platform_control_security_fixes.sql','20260714020000_customer_invitations.sql','20260714030000_integration_job_foundation.sql','20260714040000_website_booking_analytics.sql','20260714050000_booking_rate_limits.sql'];
     const dir=path.join(__dirname,'../supabase/migrations');for(const file of files){let sql=fs.readFileSync(path.join(dir,file),'utf8');if(file.includes('000000_initial_foundation'))sql=sql.replace(/CREATE TRIGGER on_auth_user_created[\s\S]*?EXECUTE FUNCTION handle_new_user\(\);/i,'');if(file.includes('customer_invitations'))sql=sql.replace(/CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;/i,'').replace(/\bCITEXT\b/g,'TEXT');await db.exec(sql);}
     await db.exec(`GRANT USAGE ON SCHEMA public,auth TO authenticated,service_role;GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO authenticated,service_role;INSERT INTO auth.users(id,email)VALUES('${OWNER}','owner@test.dev'),('${EDITOR}','editor@test.dev'),('${VIEWER}','viewer@test.dev');INSERT INTO workspaces(id,name,slug,owner_id,status)VALUES('${WS}','Web Test','web-test','${OWNER}','active');INSERT INTO workspace_members(workspace_id,user_id,role)VALUES('${WS}','${OWNER}','owner'),('${WS}','${EDITOR}','editor'),('${WS}','${VIEWER}','viewer');INSERT INTO workspace_modules(workspace_id,module,enabled)VALUES('${WS}','website',true),('${WS}','booking',true),('${WS}','analytics',true);`);
   });
@@ -43,6 +43,17 @@ describe('booking-first website database foundation',()=>{
   test('browser users cannot forge a successful compile result',async()=>{
     await db.exec('RESET ROLE');const site=(await db.query('SELECT id FROM website_sites LIMIT 1')).rows[0].id;
     await expect(as('authenticated',EDITOR,`SELECT record_website_compile_result('${EDITOR}'::uuid,'${site}'::uuid,'forged-correlation',true,'forged','https://attacker.example',NULL)`)).rejects.toThrow();
+  });
+
+  test('booking rate limit is service-only and enforces the bucket allowance',async()=>{
+    const key='a'.repeat(64);
+    await expect(as('authenticated',EDITOR,`SELECT consume_booking_rate_limit('${key}',2,60)`)).rejects.toThrow();
+    await db.exec('RESET ROLE;SET ROLE service_role');
+    const first=await db.query(`SELECT consume_booking_rate_limit('${key}',2,60) AS allowed`);
+    const second=await db.query(`SELECT consume_booking_rate_limit('${key}',2,60) AS allowed`);
+    const third=await db.query(`SELECT consume_booking_rate_limit('${key}',2,60) AS allowed`);
+    expect(first.rows[0].allowed).toBe(true);expect(second.rows[0].allowed).toBe(true);expect(third.rows[0].allowed).toBe(false);
+    await db.exec('RESET ROLE');
   });
 });
 

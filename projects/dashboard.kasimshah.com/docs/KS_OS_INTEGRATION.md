@@ -1,7 +1,7 @@
 # KS OS Integration Boundary
 
-KS OS (`kazshh786/ks-os`) is the booking, POS and CRM product. The Agency OS treats it as the `ks_os` provider for the `booking` module; it does not duplicate KS OS appointment, service, client or payment tables.
+KS OS (`kazshh786/ks-os`) is the system of record for services, staff schedules, availability, customers, appointments and booking payments. Agency OS supplies workspace entitlements, encrypted connection credentials, website configuration and booking-conversion analytics.
 
-The current KS OS repository does not yet provide a service-token API or signed webhook contract. Phase 4 therefore registers KS OS but returns `PROVIDER_CONTRACT_UNAVAILABLE` rather than calling its master-admin provisioning endpoint or fabricating a successful connection.
+Phase 6 uses the versioned KS OS `/api/v1/service` contract. All calls require a scoped `KS_OS_SERVICE_TOKEN`. Agency OS tests an existing tenant through the status endpoint and records the tenant UUID on its website sites. Browser booking traffic passes through `/api/booking`, which validates the website origin and keeps the KS OS token server-side.
 
-Before enabling the adapter, KS OS needs versioned service endpoints for health, tenant provisioning/status and signed booking events. Authentication must use scoped service credentials rather than a hard-coded administrator email. Requests need idempotency keys and responses must use stable machine-readable error codes.
+The public browser never receives a Supabase service key, KS OS token or Stripe secret key and never writes directly to KS OS tables. Payment card data is collected by Stripe.js; KS OS receives only PaymentIntent results through a signed webhook.
