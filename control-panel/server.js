@@ -3,13 +3,26 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
+const crypto = require('crypto');
 const { exec } = require('child_process');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Enable CORS and JSON parsing
-app.use(cors());
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin) return callback(null, true); // server-to-server and same-origin non-CORS requests
+    const allowedOrigin = process.env.WEBSITE_ENGINE_ALLOWED_ORIGIN;
+    if (allowedOrigin && origin === allowedOrigin) return callback(null, true);
+    if (process.env.NODE_ENV !== 'production' && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Origin not allowed'));
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Correlation-Id'],
+}));
 app.use(express.json({ limit: '50mb' }));
 
 // Env credentials for serverless cloud integration
@@ -18,6 +31,31 @@ const GITHUB_REPO = 'kazshh786/agent';
 const WORKSPACE_DIR = path.resolve(__dirname, '..');
 const PROJECTS_DIR = path.join(WORKSPACE_DIR, 'projects');
 const TEMPLATES_DIR = path.join(WORKSPACE_DIR, 'templates');
+
+function escapeHtml(value) {
+  return String(value || '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+}
+
+function buildAnalyticsSnippet({ analyticsKey, analyticsEndpoint, bookingLink }) {
+  if (!analyticsKey || !analyticsEndpoint) return '';
+  const config = JSON.stringify({ key: analyticsKey, endpoint: analyticsEndpoint, bookingPath: bookingLink || '/book' }).replace(/</g, '\\u003c');
+  return `<script data-ks-conversion-tracker>(function(){'use strict';var c=${config};var sid=sessionStorage.getItem('ks_sid');if(!sid){sid=crypto.randomUUID();sessionStorage.setItem('ks_sid',sid);}function track(name,extra){var q=new URLSearchParams(location.search);var body=Object.assign({siteKey:c.key,eventId:crypto.randomUUID(),sessionId:sid,eventName:name,occurredAt:new Date().toISOString(),path:location.pathname,utm:{source:q.get('utm_source'),medium:q.get('utm_medium'),campaign:q.get('utm_campaign')}},extra||{});fetch(c.endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),keepalive:true}).catch(function(){});}window.KSAnalytics={track:track};track(location.pathname.replace(/\\/$/,'')===c.bookingPath.replace(/\\/$/,'')?'booking_page_viewed':'page_view');document.addEventListener('click',function(e){var a=e.target.closest('a');if(!a)return;try{var u=new URL(a.href,location.href);if(u.origin===location.origin&&u.pathname.replace(/\\/$/,'')===c.bookingPath.replace(/\\/$/,''))track('booking_cta_clicked');}catch(_){}});})();</script>`;
+}
+
+function buildBookingPage(shellHtml, { name, paymentMode, analyticsKey, analyticsEndpoint, bookingLink }) {
+  const safeName = escapeHtml(name);
+  const safeMode = escapeHtml(paymentMode || 'pay_later');
+  const main = `<main id="main-content"><section class="ks-booking-page" aria-labelledby="booking-title" style="max-width:1100px;margin:0 auto;padding:clamp(48px,8vw,96px) 24px;"><div style="max-width:720px;margin:0 auto;text-align:center;"><p style="text-transform:uppercase;letter-spacing:.14em;font-size:.75rem;opacity:.7;">Online booking</p><h1 id="booking-title" data-editable="true">Schedule with ${safeName}</h1><p data-editable="true">Choose your service, preferred time and payment option.</p></div><ol aria-label="Booking steps" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;list-style:none;padding:32px 0;margin:0;"><li>1. Service</li><li>2. Time</li><li>3. Details</li><li>4. Confirm</li></ol><div data-ks-booking-root data-provider="ks_os" data-payment-mode="${safeMode}" aria-live="polite" style="min-height:360px;padding:32px;border:1px solid currentColor;border-radius:12px;"><h2>Booking is being connected</h2><p>The secure booking calendar will appear here when KS OS is connected for this workspace.</p></div></section></main>`;
+  let page = shellHtml || '<!doctype html><html><head><meta charset="utf-8"><title>Book online</title></head><body></body></html>';
+  if (/<main\b[^>]*>[\s\S]*?<\/main>/i.test(page)) page = page.replace(/<main\b[^>]*>[\s\S]*?<\/main>/i, main);
+  else page = page.replace(/<\/body>/i, `${main}</body>`);
+  return instrumentWebsiteHtml(page, { analyticsKey, analyticsEndpoint, bookingLink });
+}
+
+function instrumentWebsiteHtml(html, config) {
+  if (!html || html.includes('data-ks-conversion-tracker')) return html;
+  return html.replace(/<\/body>/i, `${buildAnalyticsSnippet(config)}</body>`);
+}
 
 // Native HTTPS Helper for API calls (Zero-Dependencies)
 function makeHttpsRequest(url, method, headers, body = null) {
@@ -640,6 +678,12 @@ app.get('/api/projects', async (req, res) => {
 
 // API: Create a New Project (Website Instance from Template)
 app.post('/api/projects', async (req, res) => {
+  const expectedToken = Buffer.from(process.env.WEBSITE_ENGINE_API_TOKEN || '');
+  const suppliedToken = Buffer.from((req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
+  if (!expectedToken.length) return res.status(503).json({ error: 'Website Engine authentication is not configured.' });
+  if (suppliedToken.length !== expectedToken.length || !crypto.timingSafeEqual(suppliedToken, expectedToken)) {
+    return res.status(401).json({ error: 'Unauthorized.' });
+  }
   const { 
     name, 
     templateName, 
@@ -654,11 +698,27 @@ app.post('/api/projects', async (req, res) => {
     heroImg, 
     services,
     bookingLink,
+    bookingProvider,
+    paymentMode,
+    analyticsKey,
+    analyticsEndpoint,
     pageSize
   } = req.body;
 
   if (!name) {
     return res.status(400).json({ error: 'Project name is required' });
+  }
+  const paymentModes = ['no_payment', 'pay_later', 'deposit', 'full_payment', 'customer_choice'];
+  if (bookingLink !== '/book' || bookingProvider !== 'ks_os') {
+    return res.status(400).json({ error: 'Every website requires the same-domain KS OS /book route.' });
+  }
+  if (!paymentModes.includes(paymentMode) || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(analyticsKey || '')) {
+    return res.status(400).json({ error: 'Booking payment mode or analytics key is invalid.' });
+  }
+  try {
+    if (new URL(analyticsEndpoint).protocol !== 'https:') throw new Error('HTTPS required');
+  } catch {
+    return res.status(400).json({ error: 'A valid HTTPS analytics endpoint is required.' });
   }
 
   // Slugified domain name e.g. "boutique-dental"
@@ -695,6 +755,7 @@ app.post('/api/projects', async (req, res) => {
       // 2. Clone/Commit files to projects/projectName on GitHub
       const pagesList = [];
       let serviceSingleHtml = '';
+      let bookingShellHtml = '';
 
       for (const file of filesToCopy) {
         const fileContentRes = await makeHttpsRequest(`https://api.github.com/repos/${GITHUB_REPO}/contents/${file.path}`, 'GET', headers);
@@ -703,7 +764,7 @@ app.post('/api/projects', async (req, res) => {
           const relativeFilePath = file.path.replace(`templates/${selectedTemplate}/`, '');
 
           if (relativeFilePath === 'service-single.html') {
-            serviceSingleHtml = content;
+            serviceSingleHtml = instrumentWebsiteHtml(content, { analyticsKey, analyticsEndpoint, bookingLink });
             continue;
           }
 
@@ -723,6 +784,10 @@ app.post('/api/projects', async (req, res) => {
               content = content.replace(/onclick="window\.location\.href='qualification\.html'"/g, `onclick="window.location.href='${bookingLink}'"`);
               content = content.replace(/window\.location\.href='qualification\.html'/g, `window.location.href='${bookingLink}'`);
             }
+            content = instrumentWebsiteHtml(content, { analyticsKey, analyticsEndpoint, bookingLink });
+            if (relativeFilePath === 'index.html' || (!bookingShellHtml && /qualification|contact/i.test(relativeFilePath))) {
+              bookingShellHtml = content;
+            }
           }
 
           if (relativeFilePath === 'sitemap.json') {
@@ -735,6 +800,15 @@ app.post('/api/projects', async (req, res) => {
             content: base64Content
           });
         }
+      }
+
+      if (bookingLink === '/book') {
+        const bookingPage = buildBookingPage(bookingShellHtml, { name, paymentMode, analyticsKey, analyticsEndpoint, bookingLink });
+        await makeHttpsRequest(`https://api.github.com/repos/${GITHUB_REPO}/contents/projects/${name}/book/index.html`, 'PUT', headers, {
+          message: 'Website Engine: add branded KS OS booking route',
+          content: Buffer.from(bookingPage).toString('base64')
+        });
+        pagesList.push({ file: 'book/index.html', name: 'Book Online', type: 'booking' });
       }
 
       // 3. Process dynamic services subpages & localized SEO pages
@@ -852,6 +926,9 @@ app.post('/api/projects', async (req, res) => {
         tone_of_voice: tone || 'Sophisticated/Editorial',
         services: services || [],
         booking_link: bookingLink || '',
+        booking_provider: bookingProvider || 'ks_os',
+        payment_mode: paymentMode || 'pay_later',
+        analytics_enabled: Boolean(analyticsKey && analyticsEndpoint),
         page_size: pageSize || '10'
       };
       await makeHttpsRequest(`https://api.github.com/repos/${GITHUB_REPO}/contents/projects/${name}/client_data.json`, 'PUT', headers, {
@@ -1131,6 +1208,8 @@ app.post('/api/projects', async (req, res) => {
             htmlContent = htmlContent.replace(/window\.location\.href='qualification\.html'/g, `window.location.href='${bookingLink}'`);
           }
 
+          htmlContent = instrumentWebsiteHtml(htmlContent, { analyticsKey, analyticsEndpoint, bookingLink });
+
           if (logoImgPath) {
             const logoImgTag = `<img src="${logoImgPath}" alt="${name} Logo" style="max-height: 40px; width: auto; vertical-align: middle;">`;
             htmlContent = htmlContent.replace(/(id="header-logo"[^>]*>)[^<]*(<\/a>)/g, `$1${logoImgTag}$2`);
@@ -1148,6 +1227,14 @@ app.post('/api/projects', async (req, res) => {
     }
 
     processHtmlFilesRecursively(targetFolder);
+
+    if (bookingLink === '/book') {
+      const indexPath = path.join(targetFolder, 'index.html');
+      const shell = fs.existsSync(indexPath) ? fs.readFileSync(indexPath, 'utf8') : '';
+      const bookingDir = path.join(targetFolder, 'book');
+      fs.mkdirSync(bookingDir, { recursive: true });
+      fs.writeFileSync(path.join(bookingDir, 'index.html'), buildBookingPage(shell, { name, paymentMode, analyticsKey, analyticsEndpoint, bookingLink }), 'utf8');
+    }
 
     const themePath = path.join(targetFolder, 'theme.json');
     if (fs.existsSync(themePath)) {

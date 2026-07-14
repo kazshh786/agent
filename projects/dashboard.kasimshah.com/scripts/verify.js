@@ -31,6 +31,11 @@ const jsFilesToCheck = [
   'api/jobs/run.js',
   'api/_crypto.js',
   'api/_providers.js',
+  'api/_website.js',
+  'api/_analytics.js',
+  'api/websites.js',
+  'api/analytics/collect.js',
+  'api/analytics/summary.js',
   'api/website-engine/compile.js',
   'scripts/build.js'
 ];
@@ -63,7 +68,9 @@ console.log('\n--- Required Files ---');
 const required = [
   'index.html', 'styles.css', 'app.js', 'js/router.js',
   '.env.example', 'vercel.json', 'package.json',
-  'supabase_migrations.sql'
+  'supabase_migrations.sql',
+  'supabase/migrations/20260714040000_website_booking_analytics.sql',
+  'docs/WEBSITE_BOOKING_CONTRACT.md', 'docs/ANALYTICS_PRIVACY.md'
 ];
 required.forEach(f => {
   fs.existsSync(path.join(ROOT, f)) ? pass(f) : fail(`${f}: missing`);

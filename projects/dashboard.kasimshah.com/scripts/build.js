@@ -29,11 +29,15 @@ const requiredFiles = [
   'api/workspaces.js', 'api/projects.js',
   'api/integrations.js', 'api/jobs.js', 'api/jobs/run.js',
   'api/_crypto.js', 'api/_providers.js',
+  'api/_website.js', 'api/_analytics.js', 'api/websites.js',
+  'api/analytics/collect.js', 'api/analytics/summary.js',
   'api/website-engine/compile.js',
+  'supabase/migrations/20260714040000_website_booking_analytics.sql',
   'supabase_migrations.sql',
   'docs/ARCHITECTURE.md', 'docs/SUPABASE_SETUP.md',
   'docs/VERCEL_SETUP.md', 'docs/SECURITY.md',
-  'docs/INTEGRATIONS_AND_JOBS.md', 'docs/KS_OS_INTEGRATION.md'
+  'docs/INTEGRATIONS_AND_JOBS.md', 'docs/KS_OS_INTEGRATION.md',
+  'docs/WEBSITE_BOOKING_CONTRACT.md', 'docs/ANALYTICS_PRIVACY.md'
 ];
 
 requiredFiles.forEach(f => {
@@ -49,6 +53,8 @@ const jsFiles = [
   'api/workspaces.js', 'api/projects.js',
   'api/integrations.js', 'api/jobs.js', 'api/jobs/run.js',
   'api/_crypto.js', 'api/_providers.js',
+  'api/_website.js', 'api/_analytics.js', 'api/websites.js',
+  'api/analytics/collect.js', 'api/analytics/summary.js',
   'api/website-engine/compile.js'
 ];
 

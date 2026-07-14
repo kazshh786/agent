@@ -794,13 +794,84 @@ async function navigate(mode, viewId, workspaceId) {
   }
 
   if (mode === 'agency' && viewId === 'overview') renderAgencyControlCentre();
+  else if (mode === 'agency' && viewId === 'websites') renderAgencyWebsites();
   else if (mode === 'agency' && viewId === 'integrations') renderAgencyIntegrations();
   else if (mode === 'agency' && viewId === 'jobs') renderAgencyJobs();
   else if (mode === 'customer') {
     if (viewId === 'overview') renderOverviewTelemetry();
-    else if (viewId === 'website' || viewId === 'web') renderWebCatalogView();
+    else if (viewId === 'website' || viewId === 'web') renderCustomerWebsite();
+    else if (viewId === 'analytics') renderCustomerAnalytics();
     else renderCustomerModuleState(viewId);
   }
+}
+
+function createWebsiteWorkspaceSelect(selectedId, onChange) {
+  const select=createEl('select',{className:'form-control select-control'},workspaceOptions(selectedId));
+  select.addEventListener('change',()=>onChange(select.value));return select;
+}
+
+async function renderAgencyWebsites() {
+  if(AppState.agencyWorkspaces.length===0)await loadAgencyWorkspaces();
+  const host=document.getElementById('agency-websites-content');if(!host)return;
+  const workspaceId=host.dataset.workspaceId||AppState.agencyWorkspaces[0]?.id;
+  clearEl(host);if(!workspaceId)return host.appendChild(createEl('p',{textContent:'No customer workspaces are available.'}));
+  host.appendChild(createWebsiteWorkspaceSelect(workspaceId,id=>{host.dataset.workspaceId=id;renderAgencyWebsites();}));
+  const content=createEl('div',{style:{marginTop:'16px'}});host.appendChild(content);
+  await renderWebsiteManager(content,workspaceId,true);
+}
+
+async function renderCustomerWebsite(){
+  const host=document.getElementById('customer-website-content');if(!host||!AppState.currentWorkspace)return;
+  await renderWebsiteManager(host,AppState.currentWorkspace.id,false);
+}
+
+async function renderWebsiteManager(host,workspaceId,isAgency){
+  clearEl(host);
+  const loading=createEl('p',{textContent:'Loading website configuration…'});host.appendChild(loading);
+  let data;
+  try{data=await apiRequest(`/websites?workspaceId=${encodeURIComponent(workspaceId)}`);}catch(error){loading.textContent=error.message;return;}
+  loading.remove();
+  const canManage=isAgency||['owner','admin','editor'].includes(AppState.currentWorkspace?.role);
+  const form=createEl('form',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:'12px',marginBottom:'24px'}},[
+    createEl('input',{className:'form-control',name:'name',placeholder:'Website name',required:true}),
+    createEl('input',{className:'form-control',name:'domain',placeholder:'client.kasimshah.com',required:true}),
+    createEl('select',{className:'form-control select-control',name:'template'},[createEl('option',{value:'editorial-luxe',textContent:'Editorial Luxe'})]),
+    createEl('select',{className:'form-control select-control',name:'paymentMode'},[
+      createEl('option',{value:'pay_later',textContent:'Pay later / in person'}),createEl('option',{value:'no_payment',textContent:'No payment'}),
+      createEl('option',{value:'deposit',textContent:'Deposit required'}),createEl('option',{value:'full_payment',textContent:'Full payment'}),
+      createEl('option',{value:'customer_choice',textContent:'Customer choice'})]),
+    createEl('button',{className:'btn btn-primary',type:'submit',textContent:'Create booking-first website'})
+  ]);
+  form.addEventListener('submit',async event=>{event.preventDefault();const button=form.querySelector('button');button.disabled=true;try{
+    await apiRequest('/websites',{method:'POST',body:JSON.stringify({workspaceId,name:form.elements.name.value.trim(),templateName:form.elements.template.value,primaryDomain:form.elements.domain.value.trim().toLowerCase(),paymentMode:form.elements.paymentMode.value})});
+    showToast('Website created with the required /book conversion route.','success');await renderWebsiteManager(host,workspaceId,isAgency);
+  }catch(error){showToast(error.message,'error');}finally{button.disabled=false;}});
+  if(canManage)host.appendChild(form);
+  if(!data.websites.length){host.appendChild(createEl('p',{textContent:'No websites configured for this workspace.'}));return;}
+  data.websites.forEach(site=>{
+    const readiness=site.bookingReadiness;const card=createEl('div',{className:'glass-card',style:{padding:'18px',marginTop:'12px'}},[
+      createEl('div',{style:{display:'flex',justifyContent:'space-between',gap:'12px',alignItems:'flex-start'}},[
+        createEl('div',{},[createEl('h3',{textContent:site.primary_domain}),createEl('p',{textContent:`Primary conversion: ${site.booking_path} · Payment: ${site.payment_mode}`,style:{color:'var(--text-secondary)',fontSize:'.8rem'}})]),
+        createEl('span',{className:`badge ${site.publishReady?'badge-success':'badge-warning'}`,textContent:site.publishReady?'Publish ready':site.status})]),
+      createEl('p',{textContent:readiness.ready?'KS OS booking connection is ready.':`Publishing blocked: ${readiness.reasons.join(', ')}`,style:{color:readiness.ready?'var(--success-color)':'var(--warning-color)',marginTop:'12px'}})
+    ]);
+    const actions=createEl('div',{style:{display:'flex',gap:'8px',marginTop:'12px'}});
+    const compile=createEl('button',{className:'btn btn-secondary',textContent:'Compile website + booking page'});
+    compile.addEventListener('click',async()=>{compile.disabled=true;try{await apiRequest('/website-engine/compile',{method:'POST',headers:{'X-Workspace-Id':workspaceId},body:JSON.stringify({siteId:site.id})});showToast('Website compiled with booking route and conversion tracking.','success');await renderWebsiteManager(host,workspaceId,isAgency);}catch(error){showToast(error.message,'error');}finally{compile.disabled=false;}});
+    if(canManage)actions.appendChild(compile);
+    if(site.live_url)actions.appendChild(createEl('a',{className:'btn btn-secondary',href:site.live_url,target:'_blank',rel:'noopener',textContent:'Preview'}));
+    card.appendChild(actions);host.appendChild(card);
+  });
+}
+
+async function renderCustomerAnalytics(){
+  const host=document.getElementById('customer-analytics-content');if(!host||!AppState.currentWorkspace)return;clearEl(host);
+  try{const data=await apiRequest(`/analytics/summary?workspaceId=${encodeURIComponent(AppState.currentWorkspace.id)}&days=30`);
+    const cards=[['Sessions',data.sessions],['Booking CTA clicks',data.funnel.booking_cta_clicked],['Booking starts',data.funnel.booking_started],['Confirmed bookings',data.confirmedBookings],['Booking conversion',`${data.bookingConversionRate}%`],['Attributed revenue',data.currency?`${data.currency} ${(data.revenueMinor/100).toFixed(2)}`:'No payment data']];
+    const grid=createEl('div',{className:'stats-grid'});cards.forEach(([label,value])=>grid.appendChild(createEl('div',{className:'glass-card stat-card'},[createEl('span',{className:'stat-title',textContent:label}),createEl('span',{className:'stat-value',textContent:String(value)})])));host.appendChild(grid);
+    const funnel=createEl('div',{style:{marginTop:'24px'}});funnel.appendChild(createEl('h3',{textContent:'Booking funnel · last 30 days'}));
+    ['page_view','booking_cta_clicked','booking_page_viewed','booking_started','service_selected','slot_selected','customer_details_submitted','payment_started','payment_completed'].forEach(name=>funnel.appendChild(createEl('div',{style:{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:'1px solid rgba(255,255,255,.08)'}},[createEl('span',{textContent:name.replaceAll('_',' ')}),createEl('strong',{textContent:String(data.funnel[name]||0)})])));host.appendChild(funnel);
+  }catch(error){host.appendChild(createEl('p',{textContent:error.message,style:{color:'var(--danger-color)'}}));}
 }
 
 const INTEGRATION_PROVIDER_FIELDS = {
