@@ -1116,6 +1116,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindAuthForms();
   bindWorkspaceForms();
   bindInvitationForms();
+});
 
 function bindAuthForms() {
   // Login form

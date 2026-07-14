@@ -14,39 +14,39 @@ describe('Workspace Roles Middleware', () => {
 
   it('Owner can access owner-restricted operations', async () => {
     mockSupabase.single.mockResolvedValueOnce({ data: { role: 'owner' }, error: null });
-    const result = await requireWorkspaceRole(mockSupabase, 'user-1', 'workspace-1', ['owner']);
-    expect(result.member.role).toBe('owner');
+    const result = await requireWorkspaceRole(mockSupabase, 'user-1', '123e4567-e89b-12d3-a456-426614174000', ['owner']);
+    expect(result.role).toBe('owner');
   });
 
   it('Admin can access admin-restricted operations', async () => {
     mockSupabase.single.mockResolvedValueOnce({ data: { role: 'admin' }, error: null });
-    const result = await requireWorkspaceRole(mockSupabase, 'user-1', 'workspace-1', ['owner', 'admin']);
-    expect(result.member.role).toBe('admin');
+    const result = await requireWorkspaceRole(mockSupabase, 'user-1', '123e4567-e89b-12d3-a456-426614174000', ['owner', 'admin']);
+    expect(result.role).toBe('admin');
   });
 
   it('Editor can access editor-restricted operations', async () => {
     mockSupabase.single.mockResolvedValueOnce({ data: { role: 'editor' }, error: null });
-    const result = await requireWorkspaceRole(mockSupabase, 'user-1', 'workspace-1', ['owner', 'admin', 'editor']);
-    expect(result.member.role).toBe('editor');
+    const result = await requireWorkspaceRole(mockSupabase, 'user-1', '123e4567-e89b-12d3-a456-426614174000', ['owner', 'admin', 'editor']);
+    expect(result.role).toBe('editor');
   });
 
   it('Viewer CANNOT write (rejected with 403)', async () => {
     mockSupabase.single.mockResolvedValueOnce({ data: { role: 'viewer' }, error: null });
-    const result = await requireWorkspaceRole(mockSupabase, 'user-1', 'workspace-1', ['owner', 'admin', 'editor']);
+    const result = await requireWorkspaceRole(mockSupabase, 'user-1', '123e4567-e89b-12d3-a456-426614174000', ['owner', 'admin', 'editor']);
     expect(result.status).toBe(403);
-    expect(result.error).toBe('FORBIDDEN');
+    expect(result.error.code).toBe('FORBIDDEN');
   });
 
   it('Viewer CAN read', async () => {
     mockSupabase.single.mockResolvedValueOnce({ data: { role: 'viewer' }, error: null });
-    const result = await requireWorkspaceRole(mockSupabase, 'user-1', 'workspace-1', ['owner', 'admin', 'editor', 'viewer']);
-    expect(result.member.role).toBe('viewer');
+    const result = await requireWorkspaceRole(mockSupabase, 'user-1', '123e4567-e89b-12d3-a456-426614174000', ['owner', 'admin', 'editor', 'viewer']);
+    expect(result.role).toBe('viewer');
   });
 
   it('Editor CANNOT delete projects (rejected with 403)', async () => {
     mockSupabase.single.mockResolvedValueOnce({ data: { role: 'editor' }, error: null });
-    const result = await requireWorkspaceRole(mockSupabase, 'user-1', 'workspace-1', ['owner', 'admin']);
+    const result = await requireWorkspaceRole(mockSupabase, 'user-1', '123e4567-e89b-12d3-a456-426614174000', ['owner', 'admin']);
     expect(result.status).toBe(403);
-    expect(result.error).toBe('FORBIDDEN');
+    expect(result.error.code).toBe('FORBIDDEN');
   });
 });
