@@ -26,6 +26,11 @@ const jsFilesToCheck = [
   'api/me.js',
   'api/workspaces.js',
   'api/projects.js',
+  'api/integrations.js',
+  'api/jobs.js',
+  'api/jobs/run.js',
+  'api/_crypto.js',
+  'api/_providers.js',
   'api/website-engine/compile.js',
   'scripts/build.js'
 ];
@@ -70,7 +75,8 @@ const envPath = path.join(ROOT, '.env.example');
 if (fs.existsSync(envPath)) {
   const envContent = fs.readFileSync(envPath, 'utf8');
   ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY',
-   'WEBSITE_ENGINE_API_URL', 'WEBSITE_ENGINE_API_TOKEN', 'APP_URL'].forEach(v => {
+   'WEBSITE_ENGINE_API_URL', 'WEBSITE_ENGINE_API_TOKEN', 'APP_URL',
+   'INTEGRATION_ENCRYPTION_KEY', 'JOB_RUNNER_SECRET', 'KS_OS_API_URL', 'KS_OS_SERVICE_TOKEN'].forEach(v => {
     envContent.includes(v) ? pass(v) : fail(`${v}: missing from .env.example`);
   });
 } else {

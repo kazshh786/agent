@@ -42,7 +42,7 @@ module.exports = async function (req, res) {
 
     const { data: modulesData, error: modulesError } = await supabase
       .from('workspace_modules')
-      .select('module_name, enabled')
+      .select('module, enabled')
       .eq('workspace_id', id);
 
     if (modulesError) {
@@ -56,7 +56,7 @@ module.exports = async function (req, res) {
       status: workspace.status,
       role: mem.role,
       modules: (modulesData || []).map(module => ({
-        module_name: module.module_name,
+        module: module.module,
         enabled: module.enabled
       }))
     });

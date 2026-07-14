@@ -794,11 +794,118 @@ async function navigate(mode, viewId, workspaceId) {
   }
 
   if (mode === 'agency' && viewId === 'overview') renderAgencyControlCentre();
+  else if (mode === 'agency' && viewId === 'integrations') renderAgencyIntegrations();
+  else if (mode === 'agency' && viewId === 'jobs') renderAgencyJobs();
   else if (mode === 'customer') {
     if (viewId === 'overview') renderOverviewTelemetry();
     else if (viewId === 'website' || viewId === 'web') renderWebCatalogView();
     else renderCustomerModuleState(viewId);
   }
+}
+
+const INTEGRATION_PROVIDER_FIELDS = {
+  ks_os: { label: 'KS OS Booking', secretLabel: 'Service token', placeholder: 'Available after KS OS service API is added' },
+  website_engine: { label: 'Website Engine', secretLabel: 'API token' },
+  resend: { label: 'Resend Email', secretLabel: 'API key' },
+  meta: { label: 'Meta Social', secretLabel: 'Access token' },
+};
+
+function workspaceOptions(selectedId) {
+  return AppState.agencyWorkspaces.map(ws => createEl('option', {
+    value: ws.id, textContent: `${ws.name} (${ws.status})`, ...(ws.id === selectedId ? { selected: true } : {}),
+  }));
+}
+
+async function renderAgencyIntegrations() {
+  if (AppState.agencyWorkspaces.length === 0) await loadAgencyWorkspaces();
+  const formHost = document.getElementById('agency-integration-form');
+  const listHost = document.getElementById('agency-integration-list');
+  if (!formHost || !listHost) return;
+  clearEl(formHost);
+  const selectedId = formHost.dataset.workspaceId || AppState.agencyWorkspaces[0]?.id || '';
+  if (!selectedId) {
+    clearEl(listHost); listHost.appendChild(createEl('p', { textContent: 'No customer workspaces are available.' })); return;
+  }
+  const workspaceSelect = createEl('select', { className: 'form-control select-control', name: 'workspaceId' }, workspaceOptions(selectedId));
+  const providerSelect = createEl('select', { className: 'form-control select-control', name: 'provider' },
+    Object.entries(INTEGRATION_PROVIDER_FIELDS).map(([value, def]) => createEl('option', { value, textContent: def.label })));
+  const secretInput = createEl('input', { className: 'form-control', name: 'secret', type: 'password', autocomplete: 'new-password', placeholder: 'Provider credential' });
+  const externalInput = createEl('input', { className: 'form-control', name: 'externalAccountId', placeholder: 'Tenant/account ID (optional)' });
+  const form = createEl('form', { className: 'integration-connect-form' }, [
+    createEl('h3', { textContent: 'Connect provider', style: { marginBottom: '12px' } }),
+    workspaceSelect, providerSelect, externalInput, secretInput,
+    createEl('button', { className: 'btn btn-primary', type: 'submit', textContent: 'Save securely and test' }),
+    createEl('p', { textContent: 'Credentials are encrypted server-side and are never returned to the browser.', style: { color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '8px' } }),
+  ]);
+  workspaceSelect.addEventListener('change', () => { formHost.dataset.workspaceId = workspaceSelect.value; loadAgencyIntegrationList(workspaceSelect.value); });
+  providerSelect.addEventListener('change', () => {
+    const def = INTEGRATION_PROVIDER_FIELDS[providerSelect.value];
+    secretInput.placeholder = def.placeholder || def.secretLabel;
+  });
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    const provider = providerSelect.value;
+    const def = INTEGRATION_PROVIDER_FIELDS[provider];
+    const credentialKey = provider === 'ks_os' ? 'serviceToken' : provider === 'website_engine' ? 'apiToken' : provider === 'resend' ? 'apiKey' : 'accessToken';
+    if (!secretInput.value.trim()) return showToast(`${def.secretLabel} is required.`, 'error');
+    try {
+      await apiRequest('/integrations', { method: 'POST', body: JSON.stringify({
+        workspaceId: workspaceSelect.value, provider, displayName: def.label,
+        externalAccountId: externalInput.value.trim() || null, configuration: {},
+        credentials: { [credentialKey]: secretInput.value.trim() },
+      }) });
+      secretInput.value = '';
+      showToast('Integration saved and a connection test was queued.', 'success');
+      await loadAgencyIntegrationList(workspaceSelect.value);
+    } catch (error) { showToast(error.message, 'error'); }
+  });
+  formHost.appendChild(form);
+  await loadAgencyIntegrationList(selectedId);
+}
+
+async function loadAgencyIntegrationList(workspaceId) {
+  const host = document.getElementById('agency-integration-list');
+  if (!host) return;
+  clearEl(host); host.appendChild(createEl('p', { textContent: 'Loading integrations…' }));
+  try {
+    const data = await apiRequest(`/integrations?workspaceId=${encodeURIComponent(workspaceId)}`);
+    clearEl(host);
+    if (!data.connections.length) return host.appendChild(createEl('p', { textContent: 'No providers connected for this workspace.' }));
+    data.connections.forEach(connection => host.appendChild(createEl('div', { className: 'integration-row', style: { display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,.08)' } }, [
+      createEl('div', {}, [createEl('strong', { textContent: connection.display_name || connection.provider }), createEl('div', { textContent: connection.external_account_id || 'No external account ID', style: { color: 'var(--text-muted)', fontSize: '.75rem' } })]),
+      createEl('span', { className: `badge ${connection.status === 'connected' ? 'badge-success' : 'badge-primary'}`, textContent: connection.status }),
+    ])));
+  } catch (error) { clearEl(host); host.appendChild(createEl('p', { textContent: error.message, style: { color: 'var(--danger-color)' } })); }
+}
+
+async function renderAgencyJobs() {
+  if (AppState.agencyWorkspaces.length === 0) await loadAgencyWorkspaces();
+  const controls = document.getElementById('agency-jobs-controls');
+  if (!controls) return;
+  clearEl(controls);
+  const selectedId = controls.dataset.workspaceId || AppState.agencyWorkspaces[0]?.id || '';
+  if (!selectedId) return controls.appendChild(createEl('p', { textContent: 'No customer workspaces are available.' }));
+  const select = createEl('select', { className: 'form-control select-control' }, workspaceOptions(selectedId));
+  select.addEventListener('change', () => { controls.dataset.workspaceId = select.value; loadAgencyJobs(select.value); });
+  controls.appendChild(select);
+  await loadAgencyJobs(selectedId);
+}
+
+async function loadAgencyJobs(workspaceId) {
+  const host = document.getElementById('agency-jobs-list');
+  if (!host) return;
+  clearEl(host); host.appendChild(createEl('p', { textContent: 'Loading jobs…' }));
+  try {
+    const data = await apiRequest(`/jobs?workspaceId=${encodeURIComponent(workspaceId)}`);
+    clearEl(host);
+    if (!data.jobs.length) return host.appendChild(createEl('p', { textContent: 'No integration jobs have been queued.' }));
+    data.jobs.forEach(job => host.appendChild(createEl('div', { style: { display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 1fr', gap: '12px', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,.08)', fontSize: '.85rem' } }, [
+      createEl('span', { textContent: `${job.provider} · ${job.job_type}` }),
+      createEl('span', { textContent: job.status }),
+      createEl('span', { textContent: `${job.attempts}/${job.max_attempts} attempts` }),
+      createEl('span', { textContent: job.last_error_code || '—', style: { color: job.last_error_code ? 'var(--warning-color)' : 'var(--text-muted)' } }),
+    ])));
+  } catch (error) { clearEl(host); host.appendChild(createEl('p', { textContent: error.message, style: { color: 'var(--danger-color)' } })); }
 }
 
 // --- AGENCY CONTROL CENTRE ---

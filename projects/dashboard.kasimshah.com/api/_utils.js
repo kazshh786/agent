@@ -119,7 +119,7 @@ async function requireEnabledModule(supabase, workspaceId, moduleName) {
     .from('workspace_modules')
     .select('enabled')
     .eq('workspace_id', workspaceId)
-    .eq('module_name', moduleName)
+    .eq('module', moduleName)
     .single();
   if (error || !data || !data.enabled) return createSafeApiError('MODULE_DISABLED', 'Module is disabled', 403);
   return { enabled: true };

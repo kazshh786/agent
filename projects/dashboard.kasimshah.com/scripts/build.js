@@ -27,10 +27,13 @@ const requiredFiles = [
   'vercel.json', 'package.json', '.env.example',
   'api/_utils.js', 'api/health.js', 'api/me.js',
   'api/workspaces.js', 'api/projects.js',
+  'api/integrations.js', 'api/jobs.js', 'api/jobs/run.js',
+  'api/_crypto.js', 'api/_providers.js',
   'api/website-engine/compile.js',
   'supabase_migrations.sql',
   'docs/ARCHITECTURE.md', 'docs/SUPABASE_SETUP.md',
-  'docs/VERCEL_SETUP.md', 'docs/SECURITY.md'
+  'docs/VERCEL_SETUP.md', 'docs/SECURITY.md',
+  'docs/INTEGRATIONS_AND_JOBS.md', 'docs/KS_OS_INTEGRATION.md'
 ];
 
 requiredFiles.forEach(f => {
@@ -44,6 +47,8 @@ const jsFiles = [
   'app.js', 'js/router.js',
   'api/_utils.js', 'api/health.js', 'api/me.js',
   'api/workspaces.js', 'api/projects.js',
+  'api/integrations.js', 'api/jobs.js', 'api/jobs/run.js',
+  'api/_crypto.js', 'api/_providers.js',
   'api/website-engine/compile.js'
 ];
 
@@ -76,7 +81,8 @@ jsFiles.forEach(f => {
 console.log('\n--- Environment Variables ---');
 const requiredEnvVars = [
   'SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY',
-  'WEBSITE_ENGINE_API_URL', 'WEBSITE_ENGINE_API_TOKEN', 'APP_URL'
+  'WEBSITE_ENGINE_API_URL', 'WEBSITE_ENGINE_API_TOKEN', 'APP_URL',
+  'INTEGRATION_ENCRYPTION_KEY', 'JOB_RUNNER_SECRET', 'KS_OS_API_URL', 'KS_OS_SERVICE_TOKEN'
 ];
 
 const envExample = fs.existsSync(path.join(ROOT, '.env.example'))

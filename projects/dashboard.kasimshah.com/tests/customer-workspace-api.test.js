@@ -54,7 +54,7 @@ test('customer workspace endpoint rejects missing IDs and non-members', async ()
 test('customer workspace endpoint returns only its public allowlist', async () => {
   const supabase = supabaseFor({
     workspace: { id: WS, name: 'Acme', slug: 'acme', status: 'active', owner_id: 'secret', customer_email: 'secret@example.com' },
-    modules: [{ module_name: 'analytics', enabled: true, provider_token: 'secret' }]
+    modules: [{ module: 'analytics', enabled: true, provider_token: 'secret' }]
   });
   mockRequireAuth.mockResolvedValue({ user: { id: 'user' }, supabase });
   mockRequireMembership.mockResolvedValue({ role: 'viewer' });
@@ -64,7 +64,7 @@ test('customer workspace endpoint returns only its public allowlist', async () =
   expect(Object.keys(res.body).sort()).toEqual(['id', 'modules', 'name', 'role', 'slug', 'status']);
   expect(res.body.owner_id).toBeUndefined();
   expect(res.body.customer_email).toBeUndefined();
-  expect(res.body.modules).toEqual([{ module_name: 'analytics', enabled: true }]);
+  expect(res.body.modules).toEqual([{ module: 'analytics', enabled: true }]);
 });
 
 test('customer workspace endpoint returns a safe database error', async () => {
