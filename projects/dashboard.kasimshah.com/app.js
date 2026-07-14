@@ -363,34 +363,34 @@ function showDashboard() {
 }
 
 function showLoginForm() {
-  document.getElementById('auth-login-form').style.display = 'block';
-  document.getElementById('auth-register-form').style.display = 'none';
-  document.getElementById('auth-forgot-form').style.display = 'none';
-  document.getElementById('auth-reset-form').style.display = 'none';
+  document.getElementById('login-form').style.display = 'block';
+  document.getElementById('register-form').style.display = 'none';
+  document.getElementById('forgot-form').style.display = 'none';
+  document.getElementById('reset-form').style.display = 'none';
   clearAuthMessages();
 }
 
 function showRegisterForm() {
-  document.getElementById('auth-login-form').style.display = 'none';
-  document.getElementById('auth-register-form').style.display = 'block';
-  document.getElementById('auth-forgot-form').style.display = 'none';
-  document.getElementById('auth-reset-form').style.display = 'none';
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('register-form').style.display = 'block';
+  document.getElementById('forgot-form').style.display = 'none';
+  document.getElementById('reset-form').style.display = 'none';
   clearAuthMessages();
 }
 
 function showForgotPasswordForm() {
-  document.getElementById('auth-login-form').style.display = 'none';
-  document.getElementById('auth-register-form').style.display = 'none';
-  document.getElementById('auth-forgot-form').style.display = 'block';
-  document.getElementById('auth-reset-form').style.display = 'none';
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('register-form').style.display = 'none';
+  document.getElementById('forgot-form').style.display = 'block';
+  document.getElementById('reset-form').style.display = 'none';
   clearAuthMessages();
 }
 
 function showResetPasswordForm() {
-  document.getElementById('auth-login-form').style.display = 'none';
-  document.getElementById('auth-register-form').style.display = 'none';
-  document.getElementById('auth-forgot-form').style.display = 'none';
-  document.getElementById('auth-reset-form').style.display = 'block';
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('register-form').style.display = 'none';
+  document.getElementById('forgot-form').style.display = 'none';
+  document.getElementById('reset-form').style.display = 'block';
   clearAuthMessages();
 }
 
