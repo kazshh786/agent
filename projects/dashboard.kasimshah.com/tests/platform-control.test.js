@@ -304,6 +304,24 @@ describe('Platform Control Plane & Security Fixes', () => {
       const res = await ownerDb.query(`DELETE FROM platform_audit_logs`).catch(e => e);
       expect(res[0].affectedRows).toBe(0); // RLS prevents delete
     });
+
+    it('audit logs persist with NULL actor_id when user is deleted', async () => {
+      // Create an audit log via a platform action by support user (to generate a log we can check)
+      // Actually, we can just use the audit logs already generated. Let's find one by the admin user
+      const beforeRes = await db.exec(`SELECT count(*) FROM platform_audit_logs WHERE actor_id = '${TEST_USERS.admin}'`);
+      expect(Number(beforeRes[0].rows[0].count)).toBeGreaterThan(0);
+      
+      // Delete the admin user from auth.users (simulate account deletion)
+      await db.exec(`
+        RESET ROLE;
+        DELETE FROM auth.users WHERE id = '${TEST_USERS.admin}';
+      `);
+      
+      // Verify audit logs for that user still exist but actor_id is now NULL
+      // To reliably find them, let's just make sure there are some logs with NULL actor_id now
+      const afterRes = await db.exec(`SELECT count(*) FROM platform_audit_logs WHERE actor_id IS NULL`);
+      expect(Number(afterRes[0].rows[0].count)).toBeGreaterThan(0);
+    });
   });
 
   describe('Platform Users Protection', () => {

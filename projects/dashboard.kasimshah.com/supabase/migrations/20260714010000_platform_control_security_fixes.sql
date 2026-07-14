@@ -18,7 +18,7 @@ CREATE TYPE platform_audit_action AS ENUM (
 -- 2. platform_audit_logs table
 CREATE TABLE platform_audit_logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    actor_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    actor_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
     action platform_audit_action NOT NULL,
     target_type TEXT NOT NULL,
     target_id UUID,
@@ -26,6 +26,18 @@ CREATE TABLE platform_audit_logs (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     CONSTRAINT platform_audit_logs_metadata_size CHECK (pg_column_size(metadata) <= 4096)
 );
+
+-- 2b. Fix original audit_logs actor_id constraint to allow account deletion
+ALTER TABLE audit_logs ALTER COLUMN actor_id DROP NOT NULL;
+ALTER TABLE audit_logs DROP CONSTRAINT audit_logs_actor_id_fkey;
+ALTER TABLE audit_logs ADD CONSTRAINT audit_logs_actor_id_fkey FOREIGN KEY (actor_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+-- 2c. Fix other auth.users references to allow account deletion
+ALTER TABLE workspaces DROP CONSTRAINT IF EXISTS workspaces_provisioned_by_fkey;
+ALTER TABLE workspaces ADD CONSTRAINT workspaces_provisioned_by_fkey FOREIGN KEY (provisioned_by) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+ALTER TABLE platform_users DROP CONSTRAINT IF EXISTS platform_users_created_by_fkey;
+ALTER TABLE platform_users ADD CONSTRAINT platform_users_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL;
 
 ALTER TABLE platform_audit_logs ENABLE ROW LEVEL SECURITY;
 
