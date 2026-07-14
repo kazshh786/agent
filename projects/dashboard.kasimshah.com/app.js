@@ -25,10 +25,19 @@ const AppState = {
   session: null,
   authLoading: true,
 
-  // Workspace
+  // Platform identity (derived from API, never from localStorage)
+  platformRole: null,           // null | 'platform_owner' | 'platform_admin' | 'platform_support'
+  currentMode: null,            // 'agency' | 'customer' | 'unassigned' | null
+  permittedModes: [],           // ['agency'] | ['customer'] | ['agency', 'customer'] | []
+  workspaceMemberships: [],     // from /api/me
+
+  // Workspace (customer mode)
   activeView: 'overview',
   currentWorkspace: null,
   workspaces: [],
+
+  // Agency mode
+  agencyWorkspaces: [],         // all customer workspaces (from platform API)
 
   // Website Engine
   apiStatus: 'checking',
@@ -435,26 +444,47 @@ function setAuthLoading(loading) {
 // --- 5. WORKSPACE MANAGEMENT ---
 
 async function onAuthenticated() {
-  showDashboard();
   updateUserDisplay();
-  setupNavigation();
   checkApiHealth();
   loadSocialData();
 
-  // Load workspaces
-  await loadWorkspaces();
+  // Determine platform identity from API (never from localStorage)
+  try {
+    const meData = await apiRequest('/me');
+    AppState.platformRole = meData.platformRole || null;
+    AppState.permittedModes = meData.permittedModes || [];
+    AppState.workspaceMemberships = meData.workspaces || [];
+    AppState.workspaces = meData.workspaces || [];
+  } catch (err) {
+    console.error('Failed to load identity:', err);
+    AppState.platformRole = null;
+    AppState.permittedModes = [];
+    AppState.workspaces = [];
+  }
 
-  if (AppState.workspaces.length === 0) {
-    showWorkspaceOnboarding();
+  // Determine current mode from API identity
+  if (AppState.permittedModes.length === 0) {
+    AppState.currentMode = 'unassigned';
+  } else if (AppState.permittedModes.includes('agency')) {
+    AppState.currentMode = 'agency';
   } else {
-    // Restore persisted workspace or use first
-    const savedWsId = localStorage.getItem('ks_selected_workspace');
-    const saved = AppState.workspaces.find(w => w.id === savedWsId);
-    if (saved) {
-      await selectWorkspace(saved);
-    } else {
-      await selectWorkspace(AppState.workspaces[0]);
-    }
+    AppState.currentMode = 'customer';
+  }
+
+  // Show appropriate interface
+  if (AppState.currentMode === 'unassigned') {
+    showUnassignedScreen();
+    return;
+  }
+
+  showDashboard();
+  setupNavigation();
+  applyModeRouting();
+
+  if (AppState.currentMode === 'agency') {
+    await enterAgencyMode();
+  } else {
+    await enterCustomerMode();
   }
 }
 
@@ -512,9 +542,6 @@ function renderWorkspaceSelector() {
     }
     selector.appendChild(opt);
   });
-
-  // Add create option
-  selector.appendChild(createEl('option', { value: '__create__', textContent: '+ Create New Workspace' }));
 }
 
 async function selectWorkspace(workspace) {
@@ -536,7 +563,7 @@ async function selectWorkspace(workspace) {
       if (AppState.workspaces.length > 0) {
         await selectWorkspace(AppState.workspaces[0]);
       } else {
-        showWorkspaceOnboarding();
+        showUnassignedScreen();
       }
       return;
     }
@@ -560,64 +587,275 @@ async function selectWorkspace(workspace) {
 
 async function handleWorkspaceSelectorChange(e) {
   const val = e.target.value;
-  if (val === '__create__') {
-    showWorkspaceCreationModal();
-    // Reset selector to current
-    renderWorkspaceSelector();
-    return;
-  }
   const ws = AppState.workspaces.find(w => w.id === val);
   if (ws) await selectWorkspace(ws);
 }
 
-function showWorkspaceOnboarding() {
-  document.getElementById('workspace-onboarding-overlay').style.display = 'flex';
+// --- UNASSIGNED SCREEN ---
+function showUnassignedScreen() {
+  document.getElementById('auth-overlay').style.display = 'none';
+  document.getElementById('app-container').style.display = 'none';
+  document.getElementById('loading-overlay').style.display = 'none';
+  const overlay = document.getElementById('no-workspace-overlay');
+  if (overlay) overlay.style.display = 'flex';
 }
 
-function hideWorkspaceOnboarding() {
-  document.getElementById('workspace-onboarding-overlay').style.display = 'none';
+// --- MODE ROUTING ---
+function applyModeRouting() {
+  const agencyNav = document.getElementById('nav-agency');
+  const customerNavItems = document.querySelectorAll('.nav-item-customer');
+  const modeSwitcher = document.getElementById('mode-switcher');
+  const wsSelector = document.getElementById('workspace-selector-container');
+
+  if (AppState.currentMode === 'agency') {
+    if (agencyNav) agencyNav.style.display = 'block';
+    customerNavItems.forEach(el => el.style.display = 'none');
+    if (wsSelector) wsSelector.style.display = 'none';
+  } else {
+    if (agencyNav) agencyNav.style.display = 'none';
+    customerNavItems.forEach(el => el.style.display = 'block');
+    if (wsSelector) wsSelector.style.display = 'block';
+  }
+
+  // Show mode switcher if user has both modes
+  if (modeSwitcher && AppState.permittedModes.length > 1) {
+    modeSwitcher.style.display = 'flex';
+  } else if (modeSwitcher) {
+    modeSwitcher.style.display = 'none';
+  }
 }
 
-function showWorkspaceCreationModal() {
-  document.getElementById('workspace-create-modal').style.display = 'flex';
+async function switchMode(newMode) {
+  // Validate mode is actually permitted (API-derived, not forged)
+  if (!AppState.permittedModes.includes(newMode)) {
+    showToast('Access denied.', 'error');
+    return;
+  }
+  AppState.currentMode = newMode;
+  applyModeRouting();
+
+  if (newMode === 'agency') {
+    await enterAgencyMode();
+  } else {
+    await enterCustomerMode();
+  }
 }
 
-function hideWorkspaceCreationModal() {
-  document.getElementById('workspace-create-modal').style.display = 'none';
+async function enterAgencyMode() {
+  switchView('agency');
+  await loadAgencyWorkspaces();
+  renderAgencyControlCentre();
 }
 
-async function handleCreateWorkspace(name, slug) {
-  if (!name || name.length < 2) {
-    showToast('Workspace name must be at least 2 characters.', 'error');
+async function enterCustomerMode() {
+  // Load workspaces already done in onAuthenticated
+  renderWorkspaceSelector();
+  if (AppState.workspaces.length > 0) {
+    const savedWsId = localStorage.getItem('ks_selected_workspace');
+    const saved = AppState.workspaces.find(w => w.id === savedWsId);
+    if (saved) {
+      await selectWorkspace(saved);
+    } else {
+      await selectWorkspace(AppState.workspaces[0]);
+    }
+    switchView('overview');
+  } else {
+    showUnassignedScreen();
+  }
+}
+
+// --- AGENCY CONTROL CENTRE ---
+async function loadAgencyWorkspaces() {
+  try {
+    const data = await apiRequest('/platform/workspaces');
+    AppState.agencyWorkspaces = data.workspaces || [];
+  } catch (err) {
+    console.error('Failed to load agency workspaces:', err);
+    AppState.agencyWorkspaces = [];
+  }
+}
+
+function getStatusBadgeClass(status) {
+  switch (status) {
+    case 'active': return 'badge-success';
+    case 'provisioning': return 'badge-primary';
+    case 'suspended': return 'badge-warning';
+    case 'archived': return 'badge-danger';
+    case 'failed': return 'badge-danger';
+    default: return 'badge-secondary';
+  }
+}
+
+function getStatusLabel(status) {
+  if (status === 'provisioning') return 'Awaiting customer invitation';
+  return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
+function renderAgencyControlCentre() {
+  const container = document.getElementById('agency-workspace-list');
+  if (!container) return;
+  clearEl(container);
+
+  if (AppState.agencyWorkspaces.length === 0) {
+    container.appendChild(createEl('div', {
+      style: { textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }
+    }, [
+      createEl('i', { className: 'fa-solid fa-inbox', style: { fontSize: '2rem', marginBottom: '12px', display: 'block' } }),
+      createEl('p', { textContent: 'No customer workspaces provisioned yet.' })
+    ]));
     return;
   }
 
-  // Validate slug
-  const slugRegex = /^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/;
-  const cleanSlug = slug.toLowerCase().replace(/[^a-z0-9-]/g, '');
-  if (!slugRegex.test(cleanSlug)) {
-    showToast('Slug must be 3-63 characters: lowercase letters, numbers, and hyphens.', 'error');
+  AppState.agencyWorkspaces.forEach(ws => {
+    const customerDisplay = (ws.customer_name && ws.customer_name.trim())
+      ? ws.customer_name
+      : 'Legacy workspace \u2014 customer details not configured';
+
+    const modulesStr = (ws.modules || [])
+      .filter(m => m.enabled)
+      .map(m => m.module)
+      .join(', ') || 'None';
+
+    const provisionedStr = ws.provisioned_at
+      ? new Date(ws.provisioned_at).toLocaleDateString()
+      : 'Pre-platform';
+
+    const card = createEl('div', { className: 'glass-card agency-ws-card', style: { marginBottom: '12px', padding: '16px' } }, [
+      createEl('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } }, [
+        createEl('div', {}, [
+          createEl('strong', { textContent: ws.name, style: { fontSize: '1rem' } }),
+          createEl('span', { textContent: ` (${ws.slug})`, style: { color: 'var(--text-muted)', fontSize: '0.8rem', marginLeft: '6px' } })
+        ]),
+        createEl('span', { className: `badge ${getStatusBadgeClass(ws.status)}`, textContent: getStatusLabel(ws.status) })
+      ]),
+      createEl('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.85rem', color: 'var(--text-secondary)' } }, [
+        createEl('div', {}, [
+          createEl('span', { style: { color: 'var(--text-muted)' }, textContent: 'Customer: ' }),
+          createEl('span', { textContent: customerDisplay })
+        ]),
+        createEl('div', {}, [
+          createEl('span', { style: { color: 'var(--text-muted)' }, textContent: 'Provisioned: ' }),
+          createEl('span', { textContent: provisionedStr })
+        ]),
+        createEl('div', {}, [
+          createEl('span', { style: { color: 'var(--text-muted)' }, textContent: 'Modules: ' }),
+          createEl('span', { textContent: modulesStr })
+        ]),
+        createEl('div', {}, [
+          createEl('span', { style: { color: 'var(--text-muted)' }, textContent: 'Integrations: ' }),
+          createEl('span', { textContent: 'Not configured', style: { color: 'var(--warning-color)' } })
+        ])
+      ]),
+      createEl('div', { style: { display: 'flex', gap: '8px', marginTop: '12px' } },
+        buildAgencyActions(ws)
+      )
+    ]);
+
+    container.appendChild(card);
+  });
+}
+
+function buildAgencyActions(ws) {
+  const actions = [];
+  const isOwner = AppState.platformRole === 'platform_owner';
+  const isAdmin = AppState.platformRole === 'platform_admin';
+
+  if (ws.status === 'provisioning' && (isOwner || isAdmin)) {
+    actions.push(createEl('button', {
+      className: 'btn btn-secondary', style: { fontSize: '0.75rem', padding: '4px 12px' },
+      textContent: 'Activate', disabled: true, title: 'Requires customer invitation (Prompt 2)',
+    }));
+  }
+  if (ws.status === 'active' && (isOwner || isAdmin)) {
+    actions.push(createEl('button', {
+      className: 'btn btn-secondary', style: { fontSize: '0.75rem', padding: '4px 12px' },
+      textContent: 'Suspend',
+      onClick: () => handleWorkspaceAction(ws.id, 'suspend', ws.name)
+    }));
+  }
+  if ((ws.status === 'active' || ws.status === 'suspended') && isOwner) {
+    actions.push(createEl('button', {
+      className: 'btn btn-secondary', style: { fontSize: '0.75rem', padding: '4px 12px', color: 'var(--danger-color)' },
+      textContent: 'Archive',
+      onClick: () => handleWorkspaceAction(ws.id, 'archive', ws.name)
+    }));
+  }
+  if (ws.status === 'suspended' && (isOwner || isAdmin)) {
+    actions.push(createEl('button', {
+      className: 'btn btn-secondary', style: { fontSize: '0.75rem', padding: '4px 12px' },
+      textContent: 'Reactivate',
+      onClick: () => handleWorkspaceAction(ws.id, 'activate', ws.name)
+    }));
+  }
+  if (ws.status === 'failed' && (isOwner || isAdmin)) {
+    actions.push(createEl('button', {
+      className: 'btn btn-secondary', style: { fontSize: '0.75rem', padding: '4px 12px' },
+      textContent: 'Retry',
+      onClick: () => handleWorkspaceAction(ws.id, 'retry', ws.name)
+    }));
+  }
+
+  if (actions.length === 0) {
+    actions.push(createEl('span', { textContent: 'Read-only', style: { fontSize: '0.75rem', color: 'var(--text-muted)' } }));
+  }
+  return actions;
+}
+
+async function handleWorkspaceAction(wsId, action, wsName) {
+  const confirmed = confirm(`Are you sure you want to ${action} workspace "${wsName}"?`);
+  if (!confirmed) return;
+
+  try {
+    await apiRequest(`/platform/workspaces/${wsId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ action })
+    });
+    showToast(`Workspace ${action} successful.`, 'success');
+    await loadAgencyWorkspaces();
+    renderAgencyControlCentre();
+  } catch (err) {
+    showToast(`Failed to ${action}: ${err.message}`, 'error');
+  }
+}
+
+// --- AGENCY PROVISIONING (via platform API) ---
+async function handleAgencyProvision(e) {
+  e.preventDefault();
+  const submitBtn = document.getElementById('wiz-btn-next');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'PROVISIONING...';
+  }
+
+  const name = document.getElementById('wizName')?.value.trim();
+  const slug = document.getElementById('wizSubdomain')?.value.trim().toLowerCase();
+  const customerName = document.getElementById('wizCustomerName')?.value.trim();
+  const customerEmail = document.getElementById('wizCustomerEmail')?.value.trim();
+
+  // Gather selected modules
+  const moduleCheckboxes = document.querySelectorAll('.module-checkbox:checked');
+  const modules = Array.from(moduleCheckboxes).map(cb => cb.value);
+
+  if (!name || !slug || !customerName || !customerEmail || modules.length === 0) {
+    showToast('Please complete all required fields and select at least one module.', 'error');
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Provision Workspace'; }
     return;
   }
 
   try {
-    const { data, error } = await supabaseClient.rpc('create_workspace_with_owner', {
-      p_name: name,
-      p_slug: cleanSlug
+    await apiRequest('/platform/workspaces', {
+      method: 'POST',
+      body: JSON.stringify({ name, slug, customer_name: customerName, customer_email: customerEmail, modules })
     });
-
-    if (error) throw error;
-
-    showToast('Workspace created successfully!', 'success');
-    hideWorkspaceOnboarding();
-    hideWorkspaceCreationModal();
-
-    await loadWorkspaces();
-    const newWs = AppState.workspaces.find(w => w.slug === cleanSlug);
-    if (newWs) await selectWorkspace(newWs);
+    showToast('Customer workspace provisioned. Awaiting customer invitation.', 'success');
+    closeUnisonWizard();
+    await loadAgencyWorkspaces();
+    renderAgencyControlCentre();
   } catch (err) {
-    showToast(`Failed to create workspace: ${err.message}`, 'error');
+    showToast(`Provisioning failed: ${err.message}`, 'error');
   }
+
+  if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Provision Workspace'; }
 }
 
 // --- 6. API HELPERS ---
@@ -728,8 +966,9 @@ function bindAuthForms() {
   document.getElementById('show-login-from-forgot')?.addEventListener('click', (e) => { e.preventDefault(); showLoginForm(); });
   document.getElementById('show-login-from-reset')?.addEventListener('click', (e) => { e.preventDefault(); showLoginForm(); });
 
-  // Logout button
+  // Logout buttons
   document.getElementById('btn-logout')?.addEventListener('click', handleLogout);
+  document.getElementById('btn-unassigned-logout')?.addEventListener('click', handleLogout);
 }
 
 function bindWorkspaceForms() {
@@ -737,37 +976,17 @@ function bindWorkspaceForms() {
   const selector = document.getElementById('workspace-selector');
   if (selector) selector.addEventListener('change', handleWorkspaceSelectorChange);
 
-  // Onboarding workspace creation
-  const onboardingForm = document.getElementById('onboarding-workspace-form');
-  if (onboardingForm) {
-    onboardingForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const name = document.getElementById('onboarding-ws-name').value.trim();
-      const slug = document.getElementById('onboarding-ws-slug').value.trim().toLowerCase();
-      handleCreateWorkspace(name, slug);
-    });
-  }
-
-  // Modal workspace creation
-  const modalForm = document.getElementById('modal-workspace-form');
-  if (modalForm) {
-    modalForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const name = document.getElementById('modal-ws-name').value.trim();
-      const slug = document.getElementById('modal-ws-slug').value.trim().toLowerCase();
-      handleCreateWorkspace(name, slug);
-    });
-  }
-
-  document.getElementById('btn-close-ws-modal')?.addEventListener('click', hideWorkspaceCreationModal);
-
   // Wizard, checkout, report buttons
   document.getElementById('btn-unison-wizard')?.addEventListener('click', openUnisonWizard);
   document.getElementById('btn-close-wizard')?.addEventListener('click', closeUnisonWizard);
-  document.getElementById('wizard-form')?.addEventListener('submit', handleWizardSubmit);
+  document.getElementById('wizard-form')?.addEventListener('submit', handleAgencyProvision);
   document.getElementById('btn-close-checkout')?.addEventListener('click', closeCheckoutDrawer);
   document.getElementById('btn-process-checkout')?.addEventListener('click', processPOSCheckout);
   document.getElementById('btn-download-report')?.addEventListener('click', generateTelemetryReport);
+
+  // Mode switcher
+  document.getElementById('mode-switch-agency')?.addEventListener('click', () => switchMode('agency'));
+  document.getElementById('mode-switch-customer')?.addEventListener('click', () => switchMode('customer'));
 }
 
 // --- 8. STATUS BAR ---
@@ -839,7 +1058,8 @@ function switchView(viewName) {
   const target = document.getElementById(`view-${viewName}`);
   if (target) target.classList.add('active');
 
-  if (viewName === 'overview') renderOverviewTelemetry();
+  if (viewName === 'agency') renderAgencyControlCentre();
+  else if (viewName === 'overview') renderOverviewTelemetry();
   else if (viewName === 'web') renderWebCatalogView();
   else if (viewName === 'social') renderSocialDashboard();
   else if (viewName === 'salon') renderSalonOsModule();

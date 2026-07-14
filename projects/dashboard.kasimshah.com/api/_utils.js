@@ -177,6 +177,45 @@ function handleCors(req, res) {
   return false;
 }
 
+/**
+ * Validates that a string is a valid UUID v4 format.
+ */
+function validateUUID(value) {
+  return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+}
+
+/**
+ * Checks that the user holds an active platform-level role.
+ * Returns { platformRole } or { error, status }.
+ */
+async function requirePlatformRole(supabase, userId, allowedRoles) {
+  const { data, error } = await supabase
+    .from('platform_users')
+    .select('role, is_active')
+    .eq('user_id', userId)
+    .single();
+  if (error || !data || !data.is_active) {
+    return { error: 'FORBIDDEN', status: 403 };
+  }
+  if (!allowedRoles.includes(data.role)) {
+    return { error: 'FORBIDDEN', status: 403 };
+  }
+  return { platformRole: data.role };
+}
+
+/**
+ * Rejects request bodies that contain fields not in the allowedFields list.
+ * Returns { valid: true } or { valid: false, unknown: [...] }.
+ */
+function rejectUnknownFields(body, allowedFields) {
+  if (!body || typeof body !== 'object') return { valid: true };
+  const unknown = Object.keys(body).filter(k => !allowedFields.includes(k));
+  if (unknown.length > 0) {
+    return { valid: false, unknown };
+  }
+  return { valid: true };
+}
+
 module.exports = {
   createSupabaseServerClient,
   createSupabaseServiceClient,
@@ -188,4 +227,7 @@ module.exports = {
   errorResponse,
   generateCorrelationId,
   handleCors,
+  validateUUID,
+  requirePlatformRole,
+  rejectUnknownFields,
 };

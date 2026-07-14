@@ -46,6 +46,19 @@ module.exports = async function (req, res) {
       role: m.role,
     }));
 
+    // Check platform-level role
+    const { data: platformUser } = await supabase
+      .from('platform_users')
+      .select('role, is_active')
+      .eq('user_id', user.id)
+      .single();
+
+    const platformRole = (platformUser && platformUser.is_active) ? platformUser.role : null;
+
+    const permittedModes = [];
+    if (platformRole) permittedModes.push('agency');
+    if (workspaces.length > 0) permittedModes.push('customer');
+
     return res.status(200).json({
       user: {
         id: profile.id,
@@ -54,6 +67,8 @@ module.exports = async function (req, res) {
         avatarUrl: profile.avatar_url,
       },
       workspaces,
+      platformRole,
+      permittedModes,
     });
   } catch {
     return errorResponse(res, 500, 'INTERNAL_ERROR', 'An unexpected error occurred');

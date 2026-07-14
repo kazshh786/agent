@@ -333,5 +333,119 @@ dashboard.kasimshah.com/
 │   ├── SUPABASE_SETUP.md   # Supabase configuration guide
 │   ├── VERCEL_SETUP.md     # Vercel deployment guide
 │   └── SECURITY.md         # Security design document
-└── supabase_migrations.sql # Database schema & RLS policies
+├── supabase_migrations.sql # Database schema & RLS policies
+└── supabase/
+    └── migrations/
+        └── 20260714000000_platform_control_plane.sql  # Platform control plane migration
 ```
+
+---
+
+## Platform Control Plane
+
+> Added by migration `20260714000000_platform_control_plane.sql`. See [PRODUCT_MODEL.md](file:///c:/Users/syedk/Documents/KS%20AGENT/projects/dashboard.kasimshah.com/docs/PRODUCT_MODEL.md), [PLATFORM_BOOTSTRAP.md](file:///c:/Users/syedk/Documents/KS%20AGENT/projects/dashboard.kasimshah.com/docs/PLATFORM_BOOTSTRAP.md), and [WORKSPACE_LIFECYCLE.md](file:///c:/Users/syedk/Documents/KS%20AGENT/projects/dashboard.kasimshah.com/docs/WORKSPACE_LIFECYCLE.md) for full details.
+
+### Platform Users Table
+
+The `platform_users` table stores agency staff with platform-level roles. It is separate from the `workspace_members` table used for customer authorization.
+
+```sql
+CREATE TYPE platform_role AS ENUM ('platform_owner', 'platform_admin', 'platform_support');
+
+CREATE TABLE platform_users (
+    user_id     UUID          PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    role        platform_role NOT NULL,
+    is_active   BOOLEAN       NOT NULL DEFAULT true,
+    created_by  UUID          REFERENCES auth.users(id),
+    created_at  TIMESTAMPTZ   NOT NULL DEFAULT now(),
+    updated_at  TIMESTAMPTZ   NOT NULL DEFAULT now()
+);
+```
+
+| Role               | Capabilities                                    |
+|--------------------|------------------------------------------------|
+| `platform_owner`   | Full control — provisions workspaces, manages platform users, archives |
+| `platform_admin`   | Provisions and manages workspaces, cannot manage platform users |
+| `platform_support` | Read-only view of own platform record and all workspaces |
+
+RLS policies restrict visibility: owners see all, admins see active users, support sees only their own row. All mutations go through SECURITY DEFINER RPCs.
+
+### Platform Role Helpers
+
+Three SECURITY DEFINER helper functions are used in RLS policies and RPCs:
+
+| Function                           | Returns          | Purpose                                          |
+|------------------------------------|------------------|--------------------------------------------------|
+| `is_platform_user()`              | `BOOLEAN`        | True if caller has any active platform role       |
+| `get_platform_role()`             | `platform_role`  | Returns caller's platform role, or NULL           |
+| `has_platform_role(platform_role[])` | `BOOLEAN`     | True if caller's role is in the allowed array     |
+
+All three are `STABLE`, `SECURITY DEFINER`, and restricted to the `authenticated` Supabase role.
+
+### Workspace Lifecycle
+
+Workspaces follow a state machine: `provisioning` → `active` → `suspended` → `archived`, with `failed` as an error state. See [WORKSPACE_LIFECYCLE.md](file:///c:/Users/syedk/Documents/KS%20AGENT/projects/dashboard.kasimshah.com/docs/WORKSPACE_LIFECYCLE.md) for the full state diagram and transition rules.
+
+```sql
+CREATE TYPE workspace_status AS ENUM ('provisioning', 'active', 'suspended', 'archived', 'failed');
+```
+
+Lifecycle RPCs:
+
+| RPC                                | Action                    | Required Role              |
+|------------------------------------|---------------------------|----------------------------|
+| `provision_customer_workspace()`   | Create new workspace      | `platform_owner`, `platform_admin` |
+| `activate_workspace()`            | Activate workspace        | `platform_owner`, `platform_admin` |
+| `suspend_workspace()`             | Suspend active workspace  | `platform_owner`, `platform_admin` |
+| `archive_workspace()`             | Archive workspace (terminal) | `platform_owner` only   |
+| `retry_workspace_provisioning()`  | Retry failed provisioning | `platform_owner`, `platform_admin` |
+
+### Platform API Routes
+
+The following API routes are planned for the platform control plane. These routes use `requirePlatformRole()` from `_utils.js` for authorization.
+
+| Route                                  | Method  | Purpose                                  | Required Role              |
+|----------------------------------------|---------|------------------------------------------|----------------------------|
+| `/api/platform/workspaces`             | `GET`   | List all workspaces (platform view)      | Any platform role          |
+| `/api/platform/workspaces`             | `POST`  | Provision a new customer workspace       | `platform_owner`, `platform_admin` |
+| `/api/platform/workspaces/[id]`        | `GET`   | Get workspace detail + modules + members | Any platform role          |
+| `/api/platform/workspaces/[id]`        | `PATCH` | Update workspace metadata/status         | `platform_owner`, `platform_admin` |
+| `/api/platform/workspaces/[id]/activate`  | `POST` | Activate a workspace                  | `platform_owner`, `platform_admin` |
+| `/api/platform/workspaces/[id]/suspend`   | `POST` | Suspend a workspace                   | `platform_owner`, `platform_admin` |
+| `/api/platform/workspaces/[id]/archive`   | `POST` | Archive a workspace                   | `platform_owner` only      |
+| `/api/platform/workspaces/[id]/modules`   | `PATCH` | Update workspace modules             | `platform_owner`, `platform_admin` |
+
+### Separation of Platform vs Customer Authorization
+
+The platform uses **two completely independent authorization domains**:
+
+| Domain               | Table               | Middleware                   | Scope                        |
+|----------------------|---------------------|------------------------------|------------------------------|
+| **Platform**         | `platform_users`    | `requirePlatformRole()`      | Agency control centre ops    |
+| **Customer**         | `workspace_members` | `requireWorkspaceMember()`   | Workspace-scoped data access |
+
+A user may hold rows in both tables simultaneously. The two are never conflated — a platform role does not grant workspace-level data mutation rights, and a workspace role does not grant platform-level access.
+
+### Module System
+
+Each workspace has a set of enabled modules stored in `workspace_modules`:
+
+```sql
+CREATE TYPE workspace_module AS ENUM ('website', 'analytics', 'contacts', 'email', 'social', 'booking', 'crm');
+```
+
+Modules are provisioned at workspace creation and managed via `update_workspace_modules()`.
+
+#### Production Connection Status
+
+| Module       | Status                               |
+|--------------|--------------------------------------|
+| Website      | ✅ Connected — live via Website Engine |
+| CRM          | ✅ Connected                          |
+| Contacts     | ✅ Connected                          |
+| Analytics    | ⚠️ **NOT YET PRODUCTION-CONNECTED**  |
+| Email        | ⚠️ **NOT YET PRODUCTION-CONNECTED**  |
+| Social       | ⚠️ **NOT YET PRODUCTION-CONNECTED**  |
+| Booking      | ⚠️ **NOT YET PRODUCTION-CONNECTED**  |
+
+> **Note:** Analytics, Email, Social publishing, and Booking modules exist in the schema and can be enabled on workspaces. However, they are **not yet connected to production backends**. Enabling them will show UI placeholders in the workspace sidebar but will not deliver live data or functionality until their respective integrations are implemented.

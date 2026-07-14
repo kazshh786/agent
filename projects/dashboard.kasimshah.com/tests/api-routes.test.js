@@ -76,10 +76,17 @@ describe('API Routes', () => {
       
       utils.requireAuth.mockResolvedValue({ user: mockUser, supabase: mockSupabase });
       
-      // Also mock workspace fetch which uses eq not single
+      // Also mock workspace fetch which uses eq
       mockSupabase.eq = jest.fn((field, val) => {
         if (field === 'id') return { single: jest.fn().mockResolvedValue({ data: { id: 'u1', email: 'test@test.com', full_name: 'Test' } }) };
-        if (field === 'user_id') return { data: [], error: null };
+        if (field === 'user_id') {
+          // Could be for workspace_members (no single) or platform_users (with single)
+          // We will return an object that acts as a promise (for workspace_members) AND has a single() method.
+          const res = { data: [], error: null };
+          res.single = jest.fn().mockResolvedValue({ data: null, error: null });
+          res.then = (onFulfilled) => Promise.resolve({ data: [], error: null }).then(onFulfilled);
+          return res;
+        }
       });
 
       await meRoute(req, res);
