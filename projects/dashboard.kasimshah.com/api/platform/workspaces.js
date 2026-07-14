@@ -12,7 +12,7 @@ const PROVISION_ROLES = ['platform_owner', 'platform_admin'];
 
 const SLUG_REGEX = /^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const VALID_MODULES = ['website', 'analytics', 'contacts', 'email', 'social', 'booking', 'crm'];
+const VALID_MODULES = ['website', 'analytics', 'contacts', 'email', 'social', 'booking', 'crm', 'automations'];
 
 const PROVISION_FIELDS = ['name', 'slug', 'customer_name', 'customer_email', 'modules'];
 

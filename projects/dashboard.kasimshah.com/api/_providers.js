@@ -52,6 +52,11 @@ async function executeProviderJob(job, context = {}) {
       if(response.status===404)return {succeeded:false,retryable:false,errorCode:'KS_OS_TENANT_NOT_FOUND'};
       if(!response.ok)return {succeeded:false,retryable:response.status>=500,errorCode:'KS_OS_UNAVAILABLE'};
       const body=await response.json();
+      if(!job.workspace_id)return {succeeded:false,retryable:false,errorCode:'KS_OS_WORKSPACE_LINK_MISSING'};
+      const linkController=new AbortController();const linkTimeout=setTimeout(()=>linkController.abort(),10000);
+      const linkResponse=await fetch(`${apiUrl.replace(/\/$/,'')}/api/v1/service/tenants/${encodeURIComponent(tenantId)}/automation-link`,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({workspaceId:job.workspace_id}),signal:linkController.signal});
+      clearTimeout(linkTimeout);
+      if(!linkResponse.ok)return {succeeded:false,retryable:linkResponse.status>=500,errorCode:'KS_OS_AUTOMATION_LINK_FAILED'};
       return {succeeded:true,retryable:false,result:{tenantId:body.tenant?.id,readiness:body.readiness||{}}};
     }catch{clearTimeout(timeout);return {succeeded:false,retryable:true,errorCode:'KS_OS_UNAVAILABLE'};}
   }

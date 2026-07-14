@@ -801,6 +801,7 @@ async function navigate(mode, viewId, workspaceId) {
     if (viewId === 'overview') renderOverviewTelemetry();
     else if (viewId === 'website' || viewId === 'web') renderCustomerWebsite();
     else if (viewId === 'analytics') renderCustomerAnalytics();
+    else if (viewId === 'automations') renderCustomerAutomations();
     else renderCustomerModuleState(viewId);
   }
 }
@@ -1752,4 +1753,118 @@ function renderCustomerModuleState(moduleId) {
     createEl('h2', { textContent: 'Module State' }),
     createEl('p', { textContent: 'This module is ENABLED_NOT_CONFIGURED. Functionality is currently restricted.' })
   ]));
+}
+
+const automationTriggerOptions = [
+  ['booking.created', 'Booking created'], ['booking.cancelled', 'Booking cancelled'],
+  ['appointment.completed', 'Appointment completed'], ['contact.created', 'Contact created'],
+  ['contact.added_to_list', 'Contact added to list'], ['website.form_submitted', 'Website form submitted']
+];
+const automationActionOptions = [
+  ['internal_notification.create', 'Create internal notification'], ['contact.add_tag', 'Add contact tag'],
+  ['contact.remove_tag', 'Remove contact tag'], ['contact.add_to_list', 'Add contact to list'],
+  ['booking_link.create', 'Create booking link notification'], ['delay.until', 'Delay']
+];
+
+function automationOption(value, label) { return createEl('option', { value, textContent: label }); }
+
+function automationStepRow() {
+  const row = createEl('div', { className: 'glass-card', style: { padding: '14px', display: 'grid', gap: '10px', marginBottom: '10px' } });
+  const action = createEl('select', { className: 'form-control select-control', 'aria-label': 'Automation action' }, automationActionOptions.map(item => automationOption(item[0], item[1])));
+  const config = createEl('div', { style: { display: 'grid', gap: '8px' } });
+  const remove = createEl('button', { type: 'button', className: 'btn btn-secondary', textContent: 'Remove step' });
+  const renderConfig = () => {
+    clearEl(config); const type = action.value;
+    if (type === 'internal_notification.create') config.append(
+      createEl('input', { className: 'form-control', name: 'title', maxlength: '120', placeholder: 'Notification title', required: true }),
+      createEl('textarea', { className: 'form-control', name: 'message', maxlength: '1000', placeholder: 'Message — variables such as {{booking.reference}} are allowed', required: true }),
+      createEl('select', { className: 'form-control select-control', name: 'severity' }, ['info', 'success', 'warning', 'error'].map(value => automationOption(value, value)))
+    );
+    else if (type === 'contact.add_to_list') config.appendChild(createEl('input', { className: 'form-control', name: 'listKey', maxlength: '80', placeholder: 'List key', required: true }));
+    else if (type === 'delay.until') config.appendChild(createEl('input', { className: 'form-control', name: 'seconds', type: 'number', min: '60', max: '7776000', value: '3600', required: true, 'aria-label': 'Delay in seconds' }));
+    else if (type === 'booking_link.create') config.appendChild(createEl('input', { className: 'form-control', name: 'title', maxlength: '120', value: 'Booking link ready', required: true }));
+    else config.appendChild(createEl('input', { className: 'form-control', name: 'tag', maxlength: '60', placeholder: 'Contact tag', required: true }));
+  };
+  action.addEventListener('change', renderConfig); remove.addEventListener('click', () => row.remove()); renderConfig();
+  row.append(action, config, remove); row.automationValue = () => {
+    const own = {}; config.querySelectorAll('[name]').forEach(input => { own[input.name] = input.name === 'seconds' ? Number(input.value) : input.value; });
+    return { type: action.value, config: own };
+  };
+  return row;
+}
+
+async function renderCustomerAutomations() {
+  const host = document.getElementById('customer-automations-content'); const workspace = AppState.currentWorkspace;
+  if (!host || !workspace) return; clearEl(host);
+  const enabled = (workspace.modules || []).some(item => item.module === 'automations' && item.enabled);
+  if (!enabled) return renderCustomerModuleState('automations');
+  const canEdit = ['owner', 'admin', 'editor'].includes(workspace.role); const canActivate = ['owner', 'admin'].includes(workspace.role);
+  const toolbar = createEl('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap' } }, [
+    createEl('div', {}, [createEl('h2', { textContent: 'Cross-channel workflows' }), createEl('p', { textContent: 'Booking, website and contact events can run controlled launch actions.' })])
+  ]); host.appendChild(toolbar);
+  if (canEdit) toolbar.appendChild(createEl('button', { className: 'btn btn-primary', textContent: 'New automation', onClick: () => renderAutomationBuilder(host) }));
+  host.appendChild(createEl('div', { className: 'glass-card', style: { padding: '12px', marginBottom: '18px', borderLeft: '3px solid var(--warning-color)' } }, [
+    createEl('strong', { textContent: 'Launch scope: ' }), document.createTextNode('email sends and social publishing are disabled until those modules are installed. They cannot be activated through this builder.')
+  ]));
+  const list = createEl('div'); host.appendChild(list); list.appendChild(createEl('p', { textContent: 'Loading automations…' }));
+  try {
+    const data = await apiRequest(`/automations?workspaceId=${encodeURIComponent(workspace.id)}`); clearEl(list);
+    if (!(data.automations || []).length) list.appendChild(createEl('p', { textContent: 'No automations yet. Create a draft to begin.' }));
+    (data.automations || []).forEach(item => {
+      const actions = createEl('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } });
+      actions.appendChild(createEl('button', { className: 'btn btn-secondary', textContent: 'Run history', onClick: () => renderAutomationRuns(host, item) }));
+      if (canEdit && item.latest_version_id) actions.appendChild(createEl('button', { className: 'btn btn-secondary', textContent: 'Test', onClick: async () => {
+        try { const result = await apiRequest(`/automations/${item.id}/test`, { method: 'POST', body: JSON.stringify({ workspaceId: workspace.id, versionId: item.latest_version_id }) }); showToast(`Test passed: ${result.steps.length} step(s) would run`, 'success'); } catch (error) { showToast(error.message, 'error'); }
+      } }));
+      if (canActivate && item.status !== 'active' && item.latest_version_id) actions.appendChild(createEl('button', { className: 'btn btn-primary', textContent: 'Activate', onClick: async () => {
+        try { await apiRequest(`/automations/${item.id}/activate`, { method: 'POST', body: JSON.stringify({ workspaceId: workspace.id, versionId: item.latest_version_id }) }); showToast('Automation activated', 'success'); renderCustomerAutomations(); } catch (error) { showToast(error.message, 'error'); }
+      } }));
+      if (canActivate && item.status === 'active') actions.appendChild(createEl('button', { className: 'btn btn-secondary', textContent: 'Pause', onClick: async () => {
+        try { await apiRequest(`/automations/${item.id}`, { method: 'PATCH', body: JSON.stringify({ workspaceId: workspace.id, status: 'paused' }) }); showToast('Automation paused', 'success'); renderCustomerAutomations(); } catch (error) { showToast(error.message, 'error'); }
+      } }));
+      list.appendChild(createEl('article', { className: 'glass-card', style: { padding: '16px', marginBottom: '12px' } }, [
+        createEl('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '12px', marginBottom: '10px' } }, [createEl('h3', { textContent: item.name }), createEl('span', { className: `badge badge-${item.status === 'active' ? 'success' : 'primary'}`, textContent: item.status })]),
+        createEl('p', { textContent: item.description || 'No description' }), actions
+      ]));
+    });
+  } catch (error) { clearEl(list); list.appendChild(createEl('p', { textContent: error.message })); }
+}
+
+function renderAutomationBuilder(host) {
+  clearEl(host); const workspace = AppState.currentWorkspace;
+  const form = createEl('form', { style: { display: 'grid', gap: '14px' } }); const steps = createEl('div');
+  const name = createEl('input', { className: 'form-control', maxlength: '120', placeholder: 'Automation name', required: true });
+  const description = createEl('textarea', { className: 'form-control', maxlength: '500', placeholder: 'What this workflow does' });
+  const trigger = createEl('select', { className: 'form-control select-control', 'aria-label': 'Automation trigger' }, automationTriggerOptions.map(item => automationOption(item[0], item[1])));
+  steps.appendChild(automationStepRow());
+  form.append(
+    createEl('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '12px' } }, [createEl('h2', { textContent: 'New automation draft' }), createEl('button', { type: 'button', className: 'btn btn-secondary', textContent: 'Back', onClick: renderCustomerAutomations })]),
+    name, description, trigger, createEl('h3', { textContent: 'Ordered actions' }), steps,
+    createEl('button', { type: 'button', className: 'btn btn-secondary', textContent: 'Add step', onClick: () => { if (steps.children.length < 25) steps.appendChild(automationStepRow()); else showToast('Maximum 25 steps', 'error'); } }),
+    createEl('button', { type: 'submit', className: 'btn btn-primary', textContent: 'Save draft' })
+  );
+  form.addEventListener('submit', async event => {
+    event.preventDefault(); const rows = [...steps.children]; if (!rows.length) return showToast('Add at least one step', 'error');
+    const submit = form.querySelector('[type="submit"]'); submit.disabled = true;
+    try {
+      await apiRequest('/automations', { method: 'POST', body: JSON.stringify({ workspaceId: workspace.id, name: name.value, description: description.value, triggerType: trigger.value, definition: { steps: rows.map(row => row.automationValue()) } }) });
+      showToast('Automation draft created', 'success'); await renderCustomerAutomations();
+    } catch (error) { showToast(error.message, 'error'); submit.disabled = false; }
+  });
+  host.appendChild(form);
+}
+
+async function renderAutomationRuns(host, automation) {
+  clearEl(host); host.appendChild(createEl('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '12px', marginBottom: '16px' } }, [
+    createEl('h2', { textContent: `${automation.name} — run history` }), createEl('button', { className: 'btn btn-secondary', textContent: 'Back', onClick: renderCustomerAutomations })
+  ]));
+  const list = createEl('div'); host.appendChild(list); list.appendChild(createEl('p', { textContent: 'Loading run history…' }));
+  try {
+    const data = await apiRequest(`/automations/${automation.id}/runs?workspaceId=${encodeURIComponent(AppState.currentWorkspace.id)}`); clearEl(list);
+    if (!(data.runs || []).length) list.appendChild(createEl('p', { textContent: 'No runs recorded yet.' }));
+    (data.runs || []).forEach(run => list.appendChild(createEl('div', { className: 'glass-card', style: { padding: '14px', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', gap: '12px' } }, [
+      createEl('div', {}, [createEl('strong', { textContent: run.automation_events?.event_type || 'event' }), createEl('p', { textContent: new Date(run.created_at).toLocaleString() })]),
+      createEl('span', { className: `badge badge-${run.status === 'completed' ? 'success' : 'primary'}`, textContent: run.failure_code ? `${run.status}: ${run.failure_code}` : run.status })
+    ])));
+  } catch (error) { clearEl(list); list.appendChild(createEl('p', { textContent: error.message })); }
 }

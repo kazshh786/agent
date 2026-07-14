@@ -73,8 +73,9 @@ const required = [
   'supabase_migrations.sql',
   'supabase/migrations/20260714040000_website_booking_analytics.sql',
   'supabase/migrations/20260714050000_booking_rate_limits.sql',
+  'supabase/migrations/20260714070000_automation_engine.sql',
   'docs/WEBSITE_BOOKING_CONTRACT.md', 'docs/ANALYTICS_PRIVACY.md',
-  'docs/BOOKING_RUNTIME.md'
+  'docs/BOOKING_RUNTIME.md', 'docs/AUTOMATIONS.md'
 ];
 required.forEach(f => {
   fs.existsSync(path.join(ROOT, f)) ? pass(f) : fail(`${f}: missing`);
@@ -88,7 +89,7 @@ if (fs.existsSync(envPath)) {
   ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY',
    'WEBSITE_ENGINE_API_URL', 'WEBSITE_ENGINE_API_TOKEN', 'APP_URL',
    'INTEGRATION_ENCRYPTION_KEY', 'JOB_RUNNER_SECRET', 'KS_OS_API_URL', 'KS_OS_SERVICE_TOKEN',
-   'BOOKING_RATE_LIMIT_SALT'].forEach(v => {
+   'BOOKING_RATE_LIMIT_SALT', 'AUTOMATION_EVENT_SECRET', 'AUTOMATION_WORKER_SECRET'].forEach(v => {
     envContent.includes(v) ? pass(v) : fail(`${v}: missing from .env.example`);
   });
 } else {
