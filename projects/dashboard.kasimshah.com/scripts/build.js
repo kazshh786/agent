@@ -23,7 +23,7 @@ console.log('\n🔨 Build: Production Validation\n');
 // 1. Check required files exist
 console.log('--- Required Files ---');
 const requiredFiles = [
-  'index.html', 'styles.css', 'app.js', 'mockSocialData.js',
+  'index.html', 'styles.css', 'app.js', 'js/router.js',
   'vercel.json', 'package.json', '.env.example',
   'api/_utils.js', 'api/health.js', 'api/me.js',
   'api/workspaces.js', 'api/projects.js',
@@ -41,7 +41,7 @@ requiredFiles.forEach(f => {
 // 2. Validate JavaScript syntax
 console.log('\n--- JavaScript Syntax ---');
 const jsFiles = [
-  'app.js', 'mockSocialData.js',
+  'app.js', 'js/router.js',
   'api/_utils.js', 'api/health.js', 'api/me.js',
   'api/workspaces.js', 'api/projects.js',
   'api/website-engine/compile.js'
@@ -99,7 +99,7 @@ try {
 
 // 5. No committed secrets
 console.log('\n--- Security Scan ---');
-const frontendFiles = ['app.js', 'index.html', 'mockSocialData.js'];
+const frontendFiles = ['app.js', 'index.html', 'js/router.js'];
 const secretPatterns = [
   /supabase_service_role/i,
   /SUPABASE_SERVICE_ROLE_KEY/,

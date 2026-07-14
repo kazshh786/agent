@@ -20,7 +20,7 @@ console.log('\n🔍 Verify: Pre-deployment Checks\n');
 console.log('--- JavaScript Syntax ---');
 const jsFilesToCheck = [
   'app.js',
-  'mockSocialData.js',
+  'js/router.js',
   'api/_utils.js',
   'api/health.js',
   'api/me.js',
@@ -56,7 +56,7 @@ jsFilesToCheck.forEach(f => {
 // 2. Required files
 console.log('\n--- Required Files ---');
 const required = [
-  'index.html', 'styles.css', 'app.js', 'mockSocialData.js',
+  'index.html', 'styles.css', 'app.js', 'js/router.js',
   '.env.example', 'vercel.json', 'package.json',
   'supabase_migrations.sql'
 ];
@@ -79,7 +79,7 @@ if (fs.existsSync(envPath)) {
 
 // 4. No committed secrets in frontend files
 console.log('\n--- Secret Scan (Frontend) ---');
-['app.js', 'index.html', 'mockSocialData.js'].forEach(f => {
+['app.js', 'index.html', 'js/router.js'].forEach(f => {
   const fp = path.join(ROOT, f);
   if (!fs.existsSync(fp)) return;
   const content = fs.readFileSync(fp, 'utf8');

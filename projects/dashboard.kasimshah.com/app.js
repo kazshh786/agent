@@ -790,35 +790,7 @@ async function navigate(mode, viewId, workspaceId) {
     const formattedViewName = viewId.charAt(0).toUpperCase() + viewId.slice(1);
     document.title = `${formattedViewName} | KS Agency`;
     
-    const h1 = target.querySelector('h1');
-    if (h1) {
-      if (!h1.hasAttribute('tabindex')) {
-        h1.setAttribute('tabindex', '-1');
-      }
-      h1.focus();
-    }
-  }
-  
-  const links = document.querySelectorAll('.nav-item, .nav-item-customer');
-  links.forEach(link => {
-    link.removeAttribute('aria-current');
-    link.classList.remove('active');
-  });
-  
-  let activeLink = document.querySelector(`a[href="#/${mode}/${viewId}"]`);
-  if (!activeLink && mode === 'customer') {
-    activeLink = document.querySelector(`a[href^="#/workspace/"][href$="/${viewId}"]`);
-  }
-  
-  if (activeLink) {
-    activeLink.setAttribute('aria-current', 'page');
-    activeLink.classList.add('active');
-  } else {
-    const viewLinks = document.querySelectorAll(`a[data-view="${viewId}"]`);
-    if (viewLinks.length > 0) {
-      viewLinks[0].setAttribute('aria-current', 'page');
-      viewLinks[0].classList.add('active');
-    }
+    window.KSRouter.applyViewAccessibility(document, target, mode, viewId);
   }
 
   if (mode === 'agency' && viewId === 'overview') renderAgencyControlCentre();
@@ -1278,79 +1250,17 @@ function handleHashChange() {
     return;
   }
   
-  const hash = window.location.hash.replace('#', '');
-  if (!hash || hash === '/') {
-    if (AppState.permittedModes.includes('agency')) {
-      window.location.hash = '#/agency/overview';
-    } else {
-      const firstId = AppState.workspaces[0]?.id || '';
-      if (firstId) window.location.hash = `#/workspace/${firstId}/overview`;
-      else showUnassignedScreen();
-    }
+  const route = window.KSRouter.resolveRoute(window.location.hash, {
+    permittedModes: AppState.permittedModes,
+    workspaces: AppState.workspaces,
+    workspaceMemberships: AppState.workspaceMemberships
+  });
+  if (route.unassigned) return showUnassignedScreen();
+  if (route.redirect) {
+    if (window.location.hash !== route.redirect) window.location.hash = route.redirect;
     return;
   }
-  
-  const parts = hash.split('/').filter(Boolean);
-  const mode = parts[0];
-  
-  if (mode === 'agency') {
-    if (!AppState.permittedModes.includes('agency')) {
-      const firstId = AppState.workspaces[0]?.id || '';
-      if (firstId && AppState.permittedModes.includes('customer')) {
-        window.location.hash = `#/workspace/${firstId}/overview`;
-      } else {
-        showUnassignedScreen();
-      }
-      return;
-    }
-    const viewId = parts[1] || 'overview';
-    const validViews = ['overview', 'customers', 'provision', 'websites', 'integrations', 'jobs', 'subscriptions', 'audit', 'settings'];
-    if (!validViews.includes(viewId)) {
-      window.location.hash = '#/agency/overview';
-      return;
-    }
-    navigate('agency', viewId, null);
-  } else if (mode === 'workspace') {
-    if (!AppState.permittedModes.includes('customer')) {
-      if (AppState.permittedModes.includes('agency')) window.location.hash = '#/agency/overview';
-      else showUnassignedScreen();
-      return;
-    }
-    const wsId = parts[1];
-    const viewId = parts[2] || 'overview';
-    
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(wsId)) {
-      const firstId = AppState.workspaces[0]?.id || '';
-      if (firstId) window.location.hash = `#/workspace/${firstId}/overview`;
-      else showUnassignedScreen();
-      return;
-    }
-    
-    const isMember = AppState.workspaceMemberships.some(w => w.id === wsId);
-    if (!isMember) {
-      const firstId = AppState.workspaces[0]?.id || '';
-      if (firstId) window.location.hash = `#/workspace/${firstId}/overview`;
-      else showUnassignedScreen();
-      return;
-    }
-    
-    const validViews = ['overview', 'website', 'analytics', 'contacts', 'email', 'social', 'booking', 'automations', 'team', 'settings'];
-    if (!validViews.includes(viewId)) {
-      window.location.hash = `#/workspace/${wsId}/overview`;
-      return;
-    }
-    
-    navigate('customer', viewId, wsId);
-  } else {
-    if (AppState.permittedModes.includes('agency')) {
-      window.location.hash = '#/agency/overview';
-    } else {
-      const firstId = AppState.workspaces[0]?.id || '';
-      if (firstId) window.location.hash = `#/workspace/${firstId}/overview`;
-      else showUnassignedScreen();
-    }
-  }
+  navigate(route.mode, route.viewId, route.workspaceId);
 }
 
 // Toast helper - uses safe DOM creation
@@ -1509,20 +1419,6 @@ async function handleWizardSubmit(e) {
     } else {
       showToast(`Web compile failed: ${err.message}`, 'error');
     }
-  }
-
-  // Step 3: Register social set (mock — social publishing not connected)
-  if (projectSuccess) {
-    KSSocialMockData.scheduledPosts.push({
-      id: `post-${Date.now()}`,
-      platforms: ['instagram'],
-      content: `Welcome to ${name}! Professional ${industry} services now booking online. ✨`,
-      mediaType: 'none',
-      mediaUrl: '',
-      scheduleDate: new Date(Date.now() + 86400000).toISOString(),
-      status: 'scheduled'
-    });
-    showToast('Social campaign template queued (mock).', 'info');
   }
 
   if (projectSuccess || webSuccess) {

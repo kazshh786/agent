@@ -2,6 +2,7 @@ const {
   handleCors,
   requireAuth,
   requireWorkspaceMembership,
+  validateUUID,
   errorResponse
 } = require('../../_utils');
 
@@ -14,8 +15,8 @@ module.exports = async function (req, res) {
     }
 
     const { id } = req.query;
-    if (!id) {
-      return errorResponse(res, 400, 'MISSING_ID', 'Workspace ID is required');
+    if (!id || !validateUUID(id)) {
+      return errorResponse(res, 400, 'INVALID_ID', 'A valid workspace ID is required');
     }
 
     const auth = await requireAuth(req);
@@ -54,7 +55,10 @@ module.exports = async function (req, res) {
       slug: workspace.slug,
       status: workspace.status,
       role: mem.role,
-      modules: modulesData || []
+      modules: (modulesData || []).map(module => ({
+        module_name: module.module_name,
+        enabled: module.enabled
+      }))
     });
 
   } catch (err) {
