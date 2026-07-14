@@ -23,17 +23,38 @@ function validateConfiguration(provider, configuration) {
   return Object.keys(configuration).every(key => provider.configurationFields.includes(key));
 }
 
-async function executeProviderJob(job) {
+function allowedProviderUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' || (process.env.NODE_ENV !== 'production' && url.protocol === 'http:' && ['localhost','127.0.0.1'].includes(url.hostname));
+  } catch { return false; }
+}
+
+async function executeProviderJob(job, context = {}) {
   const provider = getProvider(job.provider);
   if (!provider) return { succeeded: false, retryable: false, errorCode: 'UNKNOWN_PROVIDER' };
   if (job.job_type !== 'connection.test') {
     return { succeeded: false, retryable: false, errorCode: 'UNSUPPORTED_JOB_TYPE' };
   }
-  if (provider.apiEnv && !process.env[provider.apiEnv]) {
+  const apiUrl = provider.apiEnv ? process.env[provider.apiEnv] : null;
+  if (provider.apiEnv && !allowedProviderUrl(apiUrl)) {
     return { succeeded: false, retryable: false, errorCode: 'PROVIDER_NOT_CONFIGURED' };
   }
-  // Providers need an explicit service contract before network calls are enabled.
-  // In particular, KS OS currently has no service-token integration endpoint.
+  if (job.provider === 'ks_os') {
+    const token=context.credentials?.serviceToken;
+    const tenantId=context.connection?.external_account_id;
+    if(!token||!tenantId)return {succeeded:false,retryable:false,errorCode:'KS_OS_CREDENTIALS_INCOMPLETE'};
+    const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),10000);
+    try{
+      const response=await fetch(`${apiUrl.replace(/\/$/,'')}/api/v1/service/tenants/${encodeURIComponent(tenantId)}/status`,{headers:{Authorization:`Bearer ${token}`},signal:controller.signal});
+      clearTimeout(timeout);
+      if(response.status===401||response.status===403)return {succeeded:false,retryable:false,errorCode:'KS_OS_AUTH_FAILED'};
+      if(response.status===404)return {succeeded:false,retryable:false,errorCode:'KS_OS_TENANT_NOT_FOUND'};
+      if(!response.ok)return {succeeded:false,retryable:response.status>=500,errorCode:'KS_OS_UNAVAILABLE'};
+      const body=await response.json();
+      return {succeeded:true,retryable:false,result:{tenantId:body.tenant?.id,readiness:body.readiness||{}}};
+    }catch{clearTimeout(timeout);return {succeeded:false,retryable:true,errorCode:'KS_OS_UNAVAILABLE'};}
+  }
   return { succeeded: false, retryable: false, errorCode: 'PROVIDER_CONTRACT_UNAVAILABLE' };
 }
 

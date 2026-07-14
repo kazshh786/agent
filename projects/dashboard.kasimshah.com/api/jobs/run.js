@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const { createSupabaseServiceClient, errorResponse } = require('../_utils');
 const { executeProviderJob } = require('../_providers');
+const { decryptCredentials } = require('../_crypto');
 
 module.exports = async function (req, res) {
   if (req.method !== 'POST') return errorResponse(res, 405, 'METHOD_NOT_ALLOWED', 'Only POST is allowed');
@@ -16,11 +17,22 @@ module.exports = async function (req, res) {
   const outcomes = [];
   for (const job of jobs || []) {
     let outcome;
-    try { outcome = await executeProviderJob(job); }
+    try {
+      let context={};
+      if(job.connection_id){
+        const [{data:connection,error:connectionError},{data:credential,error:credentialError}]=await Promise.all([
+          supabase.from('integration_connections').select('id,workspace_id,provider,external_account_id,configuration').eq('id',job.connection_id).single(),
+          supabase.from('integration_credentials').select('ciphertext,iv,auth_tag,key_version').eq('connection_id',job.connection_id).single(),
+        ]);
+        if(connectionError||credentialError||!connection||!credential)throw new Error('Connection material unavailable');
+        context={connection,credentials:decryptCredentials(credential)};
+      }
+      outcome = await executeProviderJob(job,context);
+    }
     catch { outcome = { succeeded: false, retryable: true, errorCode: 'PROVIDER_REQUEST_FAILED' }; }
     const retrySeconds = Math.min(3600, 30 * (2 ** Math.max(0, job.attempts - 1)));
     const { error: finishError } = await supabase.rpc('finish_integration_job', {
-      p_job_id: job.id, p_succeeded: outcome.succeeded, p_result: {},
+      p_job_id: job.id, p_succeeded: outcome.succeeded, p_result: outcome.result||{},
       p_error_code: outcome.errorCode || null, p_retry_seconds: outcome.retryable ? retrySeconds : 0,
     });
     if (!finishError && job.connection_id && job.job_type === 'connection.test') {
@@ -29,6 +41,9 @@ module.exports = async function (req, res) {
         last_checked_at: new Date().toISOString(),
         last_error_code: outcome.errorCode || null,
       }).eq('id', job.connection_id);
+      if(outcome.succeeded&&job.provider==='ks_os'&&outcome.result?.tenantId){
+        await supabase.from('website_sites').update({booking_external_tenant_id:outcome.result.tenantId,booking_health_checked_at:new Date().toISOString()}).eq('workspace_id',job.workspace_id);
+      }
     }
     outcomes.push({ id: job.id, accepted: !finishError, succeeded: outcome.succeeded, errorCode: outcome.errorCode || null });
   }

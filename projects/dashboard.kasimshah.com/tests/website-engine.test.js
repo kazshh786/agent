@@ -44,7 +44,7 @@ describe('booking-first Website Engine proxy',()=>{
     global.fetch.mockResolvedValue({ok:true,status:200,json:async()=>({success:true})});
     await compileRoute(req,res);
     const body=JSON.parse(global.fetch.mock.calls[0][1].body);
-    expect(body).toEqual(expect.objectContaining({name:'client.example.com',bookingLink:'/book',bookingProvider:'ks_os',paymentMode:'deposit',analyticsEndpoint:'https://dashboard.kasimshah.com/api/analytics/collect'}));
+    expect(body).toEqual(expect.objectContaining({name:'client.example.com',bookingLink:'/book',bookingProvider:'ks_os',paymentMode:'deposit',analyticsEndpoint:'https://dashboard.kasimshah.com/api/analytics/collect',bookingApiEndpoint:'https://dashboard.kasimshah.com/api/booking'}));
     expect(body.analyticsKey).toMatch(/^[0-9a-f-]{36}$/);
     expect(serviceClient.rpc).toHaveBeenCalledWith('record_website_compile_result',expect.objectContaining({p_actor_id:'u1',p_success:true,p_website_id:'site-id'}));
     expect(res.status).toHaveBeenCalledWith(200);
@@ -61,5 +61,6 @@ describe('booking-first Website Engine proxy',()=>{
     expect(source).toContain("bookingLink !== '/book'");expect(source).toContain('WEBSITE_ENGINE_API_TOKEN');
     expect(source).toContain('WEBSITE_ENGINE_ALLOWED_ORIGIN');
     expect(source).toContain('data-ks-booking-root');expect(source).toContain('data-ks-conversion-tracker');
+    expect(source).toContain('data-ks-booking-widget');expect(source).toContain('stripe.confirmCardPayment');
   });
 });

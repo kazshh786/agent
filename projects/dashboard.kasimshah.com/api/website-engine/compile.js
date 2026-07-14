@@ -182,6 +182,7 @@ module.exports = async function (req, res) {
           paymentMode: site.payment_mode,
           analyticsKey: site.analytics_key,
           analyticsEndpoint: `${appUrl.replace(/\/$/, '')}/api/analytics/collect`,
+          bookingApiEndpoint: `${appUrl.replace(/\/$/, '')}/api/booking`,
           ...(sanitizedSettings ? { settings: sanitizedSettings } : {}),
         }),
         signal: controller.signal,
