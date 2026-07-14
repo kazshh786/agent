@@ -586,28 +586,24 @@ async function onAuthenticated() {
   }
 
   // Determine current mode from API identity
-  if (AppState.permittedModes.length === 0) {
-    AppState.currentMode = 'unassigned';
-  } else if (AppState.permittedModes.includes('agency')) {
-    AppState.currentMode = 'agency';
-  } else {
-    AppState.currentMode = 'customer';
-  }
-
-  // Show appropriate interface
-  if (AppState.currentMode === 'unassigned') {
+  if (AppState.permittedModes.length === 0 && !AppState.platformRole) {
     showUnassignedScreen();
     return;
   }
 
   showDashboard();
   setupNavigation();
-  applyModeRouting();
-
-  if (AppState.currentMode === 'agency') {
-    await enterAgencyMode();
+  
+  if (!window.location.hash || window.location.hash === '#' || window.location.hash === '#/') {
+    if (AppState.permittedModes.includes('agency')) {
+      window.location.hash = '#/agency/overview';
+    } else {
+      const firstId = AppState.workspaces[0]?.id || '';
+      if (firstId) window.location.hash = `#/workspace/${firstId}/overview`;
+      else showUnassignedScreen();
+    }
   } else {
-    await enterCustomerMode();
+    handleHashChange();
   }
 }
 
@@ -710,8 +706,8 @@ async function selectWorkspace(workspace) {
 
 async function handleWorkspaceSelectorChange(e) {
   const val = e.target.value;
-  const ws = AppState.workspaces.find(w => w.id === val);
-  if (ws) await selectWorkspace(ws);
+  const currentView = AppState.activeView || 'overview';
+  window.location.hash = `#/workspace/${val}/${currentView}`;
 }
 
 // --- UNASSIGNED SCREEN ---
@@ -748,42 +744,90 @@ function applyModeRouting() {
   }
 }
 
-async function switchMode(newMode) {
-  // Validate mode is actually permitted (API-derived, not forged)
-  if (!AppState.permittedModes.includes(newMode)) {
-    showToast('Access denied.', 'error');
-    return;
-  }
-  AppState.currentMode = newMode;
+async function navigate(mode, viewId, workspaceId) {
+  AppState.currentMode = mode;
+  AppState.activeView = viewId;
+  
   applyModeRouting();
-
-  if (newMode === 'agency') {
-    await enterAgencyMode();
-  } else {
-    await enterCustomerMode();
+  
+  const wsSelector = document.getElementById('workspace-selector');
+  if (wsSelector && workspaceId) {
+    wsSelector.value = workspaceId;
   }
-}
-
-async function enterAgencyMode() {
-  switchView('agency');
-  await loadAgencyWorkspaces();
-  renderAgencyControlCentre();
-}
-
-async function enterCustomerMode() {
-  // Load workspaces already done in onAuthenticated
-  renderWorkspaceSelector();
-  if (AppState.workspaces.length > 0) {
-    const savedWsId = localStorage.getItem('ks_selected_workspace');
-    const saved = AppState.workspaces.find(w => w.id === savedWsId);
-    if (saved) {
-      await selectWorkspace(saved);
-    } else {
-      await selectWorkspace(AppState.workspaces[0]);
+  
+  if (mode === 'customer' && workspaceId) {
+    if (!AppState.currentWorkspace || AppState.currentWorkspace.id !== workspaceId) {
+      const ws = AppState.workspaces.find(w => w.id === workspaceId);
+      if (ws) {
+        await selectWorkspace(ws);
+      }
     }
-    switchView('overview');
+    
+    if (AppState.currentWorkspace && AppState.currentWorkspace.status === 'suspended') {
+      viewId = 'suspended';
+    }
+  } else if (mode === 'agency') {
+    if (AppState.agencyWorkspaces.length === 0) {
+      await loadAgencyWorkspaces();
+    }
+  }
+
+  const views = document.querySelectorAll('.dashboard-view');
+  views.forEach(v => v.classList.remove('active'));
+  
+  let target = document.getElementById(`view-${mode}-${viewId}`) || 
+               document.getElementById(`view-workspace-${viewId}`) ||
+               document.getElementById(`view-${viewId}`) || 
+               document.getElementById(`view-${mode}`);
+               
+  if (!target) {
+    if (viewId === 'website') target = document.getElementById('view-web');
+    if (viewId === 'booking') target = document.getElementById('view-salon');
+  }
+
+  if (target) {
+    target.classList.add('active');
+    
+    const formattedViewName = viewId.charAt(0).toUpperCase() + viewId.slice(1);
+    document.title = `${formattedViewName} | KS Agency`;
+    
+    const h1 = target.querySelector('h1');
+    if (h1) {
+      if (!h1.hasAttribute('tabindex')) {
+        h1.setAttribute('tabindex', '-1');
+      }
+      h1.focus();
+    }
+  }
+  
+  const links = document.querySelectorAll('.nav-item, .nav-item-customer');
+  links.forEach(link => {
+    link.removeAttribute('aria-current');
+    link.classList.remove('active');
+  });
+  
+  let activeLink = document.querySelector(`a[href="#/${mode}/${viewId}"]`);
+  if (!activeLink && mode === 'customer') {
+    activeLink = document.querySelector(`a[href^="#/workspace/"][href$="/${viewId}"]`);
+  }
+  
+  if (activeLink) {
+    activeLink.setAttribute('aria-current', 'page');
+    activeLink.classList.add('active');
   } else {
-    showUnassignedScreen();
+    const viewLinks = document.querySelectorAll(`a[data-view="${viewId}"]`);
+    if (viewLinks.length > 0) {
+      viewLinks[0].setAttribute('aria-current', 'page');
+      viewLinks[0].classList.add('active');
+    }
+  }
+
+  if (mode === 'agency' && viewId === 'overview') renderAgencyControlCentre();
+  else if (mode === 'customer') {
+    if (viewId === 'overview') renderOverviewTelemetry();
+    else if (viewId === 'website' || viewId === 'web') renderWebCatalogView();
+    else if (viewId === 'social') renderSocialDashboard();
+    else if (viewId === 'booking' || viewId === 'salon') renderSalonOsModule();
   }
 }
 
@@ -816,6 +860,29 @@ function getStatusLabel(status) {
 
 function renderAgencyControlCentre() {
   const container = document.getElementById('agency-workspace-list');
+  
+  let activeCount = 0;
+  let provCount = 0;
+  let suspCount = 0;
+  let failCount = 0;
+  
+  AppState.agencyWorkspaces.forEach(ws => {
+    if (ws.status === 'active') activeCount++;
+    else if (ws.status === 'provisioning') provCount++;
+    else if (ws.status === 'suspended') suspCount++;
+    else if (ws.status === 'failed') failCount++;
+  });
+  
+  const elActive = document.getElementById('agency-stat-active');
+  const elProv = document.getElementById('agency-stat-provisioning');
+  const elSusp = document.getElementById('agency-stat-suspended');
+  const elFail = document.getElementById('agency-stat-failed');
+  
+  if (elActive) elActive.textContent = activeCount;
+  if (elProv) elProv.textContent = provCount;
+  if (elSusp) elSusp.textContent = suspCount;
+  if (elFail) elFail.textContent = failCount;
+  
   if (!container) return;
   clearEl(container);
 
@@ -1120,8 +1187,17 @@ function bindWorkspaceForms() {
   document.getElementById('btn-download-report')?.addEventListener('click', generateTelemetryReport);
 
   // Mode switcher
-  document.getElementById('mode-switch-agency')?.addEventListener('click', () => switchMode('agency'));
-  document.getElementById('mode-switch-customer')?.addEventListener('click', () => switchMode('customer'));
+  document.getElementById('mode-switch-agency')?.addEventListener('click', () => {
+    window.location.hash = '#/agency/overview';
+  });
+  document.getElementById('mode-switch-customer')?.addEventListener('click', () => {
+    const firstId = AppState.workspaces[0]?.id || '';
+    if (firstId) {
+      window.location.hash = `#/workspace/${firstId}/overview`;
+    } else {
+      showUnassignedScreen();
+    }
+  });
 }
 
 // --- 8. STATUS BAR ---
@@ -1173,31 +1249,109 @@ async function checkApiHealth() {
 // --- 9. DYNAMIC ROUTING & NAVIGATION ---
 
 function setupNavigation() {
-  const links = document.querySelectorAll('.nav-item');
+  const links = document.querySelectorAll('.nav-item, .nav-item-customer');
   links.forEach(link => {
     link.addEventListener('click', (e) => {
-      e.preventDefault();
       const view = link.getAttribute('data-view');
-      switchView(view);
-      links.forEach(l => l.classList.remove('active'));
-      link.classList.add('active');
+      if (view) {
+        e.preventDefault();
+        const mode = AppState.currentMode || 'customer';
+        if (mode === 'agency') {
+          window.location.hash = `#/agency/${view}`;
+        } else {
+          const wsId = AppState.currentWorkspace?.id || AppState.workspaces[0]?.id || '';
+          if (wsId) {
+            window.location.hash = `#/workspace/${wsId}/${view}`;
+          }
+        }
+      }
     });
   });
+  
+  window.removeEventListener('hashchange', handleHashChange);
+  window.addEventListener('hashchange', handleHashChange);
 }
 
-function switchView(viewName) {
-  AppState.activeView = viewName;
-  const views = document.querySelectorAll('.dashboard-view');
-  views.forEach(v => v.classList.remove('active'));
-
-  const target = document.getElementById(`view-${viewName}`);
-  if (target) target.classList.add('active');
-
-  if (viewName === 'agency') renderAgencyControlCentre();
-  else if (viewName === 'overview') renderOverviewTelemetry();
-  else if (viewName === 'web') renderWebCatalogView();
-  else if (viewName === 'social') renderSocialDashboard();
-  else if (viewName === 'salon') renderSalonOsModule();
+function handleHashChange() {
+  if (!AppState.user) return;
+  if (AppState.permittedModes.length === 0 && !AppState.platformRole) {
+    showUnassignedScreen();
+    return;
+  }
+  
+  const hash = window.location.hash.replace('#', '');
+  if (!hash || hash === '/') {
+    if (AppState.permittedModes.includes('agency')) {
+      window.location.hash = '#/agency/overview';
+    } else {
+      const firstId = AppState.workspaces[0]?.id || '';
+      if (firstId) window.location.hash = `#/workspace/${firstId}/overview`;
+      else showUnassignedScreen();
+    }
+    return;
+  }
+  
+  const parts = hash.split('/').filter(Boolean);
+  const mode = parts[0];
+  
+  if (mode === 'agency') {
+    if (!AppState.permittedModes.includes('agency')) {
+      const firstId = AppState.workspaces[0]?.id || '';
+      if (firstId && AppState.permittedModes.includes('customer')) {
+        window.location.hash = `#/workspace/${firstId}/overview`;
+      } else {
+        showUnassignedScreen();
+      }
+      return;
+    }
+    const viewId = parts[1] || 'overview';
+    const validViews = ['overview', 'customers', 'provision', 'websites', 'integrations', 'jobs', 'subscriptions', 'audit', 'settings'];
+    if (!validViews.includes(viewId)) {
+      window.location.hash = '#/agency/overview';
+      return;
+    }
+    navigate('agency', viewId, null);
+  } else if (mode === 'workspace') {
+    if (!AppState.permittedModes.includes('customer')) {
+      if (AppState.permittedModes.includes('agency')) window.location.hash = '#/agency/overview';
+      else showUnassignedScreen();
+      return;
+    }
+    const wsId = parts[1];
+    const viewId = parts[2] || 'overview';
+    
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(wsId)) {
+      const firstId = AppState.workspaces[0]?.id || '';
+      if (firstId) window.location.hash = `#/workspace/${firstId}/overview`;
+      else showUnassignedScreen();
+      return;
+    }
+    
+    const isMember = AppState.workspaceMemberships.some(w => w.id === wsId);
+    if (!isMember) {
+      const firstId = AppState.workspaces[0]?.id || '';
+      if (firstId) window.location.hash = `#/workspace/${firstId}/overview`;
+      else showUnassignedScreen();
+      return;
+    }
+    
+    const validViews = ['overview', 'website', 'analytics', 'contacts', 'email', 'social', 'booking', 'automations', 'team', 'settings'];
+    if (!validViews.includes(viewId)) {
+      window.location.hash = `#/workspace/${wsId}/overview`;
+      return;
+    }
+    
+    navigate('customer', viewId, wsId);
+  } else {
+    if (AppState.permittedModes.includes('agency')) {
+      window.location.hash = '#/agency/overview';
+    } else {
+      const firstId = AppState.workspaces[0]?.id || '';
+      if (firstId) window.location.hash = `#/workspace/${firstId}/overview`;
+      else showUnassignedScreen();
+    }
+  }
 }
 
 // Toast helper - uses safe DOM creation
@@ -1420,39 +1574,60 @@ async function loadWebProjects() {
 }
 
 function renderOverviewTelemetry() {
-  const webCountEl = document.getElementById('overview-web-count');
-  const postsCountEl = document.getElementById('overview-posts-count');
-  const tenantsCountEl = document.getElementById('overview-tenants-count');
+  const title = document.getElementById('customer-overview-title');
+  if (title && AppState.currentWorkspace) {
+    title.textContent = AppState.currentWorkspace.name || 'Workspace Overview';
+  }
+  
+  const grid = document.getElementById('customer-module-grid');
+  if (!grid) return;
+  clearEl(grid);
 
-  if (webCountEl) webCountEl.textContent = AppState.webProjects.length;
+  if (!AppState.currentWorkspace) return;
 
-  const postsCount = KSSocialMockData.scheduledPosts.filter(p => p.status === 'scheduled').length;
-  if (postsCountEl) postsCountEl.textContent = postsCount;
-  if (tenantsCountEl) tenantsCountEl.textContent = AppState.tenants.length;
-
-  // Render activity feed using safe DOM
-  const feed = document.getElementById('overview-activity-feed');
-  if (!feed) return;
-  clearEl(feed);
-
-  const logs = [
-    { text: 'Dashboard session authenticated', time: 'Just now', type: 'system' },
-    { text: `Database sync: ${AppState.tenants.length} tenants loaded`, time: '2 mins ago', type: 'db' },
-    { text: `Projects: ${AppState.webProjects.length} records`, time: '5 mins ago', type: 'web' },
-    { text: `Social queue: ${postsCount} scheduled posts (mock)`, time: '10 mins ago', type: 'social' }
+  const modules = AppState.currentWorkspace.modules || [];
+  
+  const moduleDefs = [
+    { id: 'website', name: 'Web Engine', icon: 'fa-code', route: 'website' },
+    { id: 'analytics', name: 'Analytics', icon: 'fa-chart-bar', route: 'analytics' },
+    { id: 'contacts', name: 'Contacts', icon: 'fa-address-book', route: 'contacts' },
+    { id: 'email', name: 'Email Marketing', icon: 'fa-envelope', route: 'email' },
+    { id: 'social', name: 'Social Media', icon: 'fa-share-nodes', route: 'social' },
+    { id: 'booking', name: 'Booking', icon: 'fa-calendar-check', route: 'booking' },
+    { id: 'automations', name: 'Automations', icon: 'fa-bolt', route: 'automations' },
+    { id: 'team', name: 'Team', icon: 'fa-users-gear', route: 'team' }
   ];
 
-  logs.forEach(log => {
-    const div = createEl('div', {
-      style: { display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', padding: '8px 0', borderBottom: '1px solid rgba(255, 255, 255, 0.03)' }
-    }, [
-      createEl('span', {}, [
-        createEl('i', { className: 'fa-solid fa-circle-chevron-right', style: { color: 'var(--primary-color)', fontSize: '0.65rem', marginRight: '8px' } }),
-        document.createTextNode(log.text)
-      ]),
-      createEl('span', { style: { color: 'var(--text-muted)', fontSize: '0.75rem' }, textContent: log.time })
+  moduleDefs.forEach(def => {
+    const mod = modules.find(m => m.module === def.id);
+    const isEnabled = mod && mod.enabled;
+    const statusText = isEnabled ? 'ENABLED' : 'NOT ENABLED';
+    const statusClass = isEnabled ? 'positive' : 'neutral';
+    
+    const card = createEl('div', { className: `glass-card stat-card ${isEnabled ? '' : 'disabled'}` }, [
+      createEl('div', { className: 'stat-card-content' }, [
+        createEl('div', { className: 'stat-info' }, [
+          createEl('span', { className: 'stat-title', textContent: def.name }),
+          createEl('span', { className: 'stat-value', style: { fontSize: '1rem', marginTop: '4px' }, textContent: isEnabled ? 'Active' : 'Locked' }),
+          createEl('span', { className: `stat-trend ${statusClass}` }, [
+             createEl('i', { className: `fa-solid ${isEnabled ? 'fa-check' : 'fa-lock'}` }),
+             document.createTextNode(` ${statusText}`)
+          ])
+        ]),
+        createEl('div', { className: 'stat-icon' }, [
+          createEl('i', { className: `fa-solid ${def.icon}` })
+        ])
+      ])
     ]);
-    feed.appendChild(div);
+    
+    if (isEnabled) {
+      card.style.cursor = 'pointer';
+      card.addEventListener('click', () => {
+        window.location.hash = `#/workspace/${AppState.currentWorkspace.id}/${def.route}`;
+      });
+    }
+    
+    grid.appendChild(card);
   });
 }
 

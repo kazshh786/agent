@@ -76,22 +76,49 @@ async function requireWorkspaceMember(supabase, userId, workspaceId) {
   return { member };
 }
 
-/**
- * Checks that the user's role within the workspace is in the allowedRoles array.
- * Returns { member } or { error, status }.
- */
+function createSafeApiError(code, message, status = 400) {
+  return { error: { code, message }, status };
+}
+
+async function requireWorkspaceMembership(supabase, userId, workspaceId) {
+  if (!validateUUID(workspaceId)) return createSafeApiError('INVALID_UUID', 'Invalid workspace ID');
+  const { data, error } = await supabase
+    .from('workspace_members')
+    .select('role')
+    .eq('user_id', userId)
+    .eq('workspace_id', workspaceId)
+    .single();
+  if (error || !data) return createSafeApiError('FORBIDDEN', 'Workspace membership required', 403);
+  return { role: data.role };
+}
+
+async function requireActiveWorkspace(supabase, workspaceId) {
+  const { data, error } = await supabase
+    .from('workspaces')
+    .select('status')
+    .eq('id', workspaceId)
+    .single();
+  if (error || !data) return createSafeApiError('NOT_FOUND', 'Workspace not found', 404);
+  if (data.status !== 'active') return createSafeApiError('WORKSPACE_SUSPENDED', 'Workspace is not active', 403);
+  return { status: data.status };
+}
+
 async function requireWorkspaceRole(supabase, userId, workspaceId, allowedRoles) {
-  const result = await requireWorkspaceMember(supabase, userId, workspaceId);
+  const mem = await requireWorkspaceMembership(supabase, userId, workspaceId);
+  if (mem.error) return mem;
+  if (!allowedRoles.includes(mem.role)) return createSafeApiError('FORBIDDEN', 'Insufficient workspace role', 403);
+  return { role: mem.role };
+}
 
-  if (result.error) {
-    return result;
-  }
-
-  if (!allowedRoles.includes(result.member.role)) {
-    return { error: 'FORBIDDEN', status: 403 };
-  }
-
-  return { member: result.member };
+async function requireEnabledModule(supabase, workspaceId, moduleName) {
+  const { data, error } = await supabase
+    .from('workspace_modules')
+    .select('enabled')
+    .eq('workspace_id', workspaceId)
+    .eq('module_name', moduleName)
+    .single();
+  if (error || !data || !data.enabled) return createSafeApiError('MODULE_DISABLED', 'Module is disabled', 403);
+  return { enabled: true };
 }
 
 /**
@@ -230,4 +257,8 @@ module.exports = {
   validateUUID,
   requirePlatformRole,
   rejectUnknownFields,
+  createSafeApiError,
+  requireWorkspaceMembership,
+  requireActiveWorkspace,
+  requireEnabledModule,
 };
