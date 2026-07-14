@@ -21,6 +21,38 @@
   <!-- TOAST ALERTS CONTAINER -->
   <div class="toast-container" id="toast-container"></div>
 
+  <!-- INVITATION OVERLAY -->
+  <div id="invitation-overlay" style="position:fixed; top:0; left:0; right:0; bottom:0; background:var(--bg-dark); z-index:9001; display:none; justify-content:center; align-items:center;">
+    <div class="glass-card" style="width:100%; max-width:400px; padding:32px; text-align:center;">
+      <i class="fa-solid fa-envelope-open-text" style="font-size:2.5rem; color:var(--primary-color); margin-bottom:16px;"></i>
+      <h2 style="font-family:var(--font-display); margin-bottom:8px;">You've been invited!</h2>
+      <p id="invitation-message" style="color:var(--text-secondary); margin-bottom:24px;">Checking invitation...</p>
+      
+      <div id="invitation-auth-actions" style="display:none; flex-direction:column; gap:12px;">
+        <button id="btn-invitation-login" class="btn btn-primary">Log In</button>
+        <button id="btn-invitation-register" class="btn btn-outline">Create Account</button>
+      </div>
+
+      <div id="invitation-accept-actions" style="display:none; flex-direction:column; gap:12px;">
+        <button id="btn-invitation-accept" class="btn btn-primary">Accept Invitation</button>
+      </div>
+
+      <div id="invitation-error-actions" style="display:none; flex-direction:column; gap:12px;">
+        <button id="btn-invitation-home" class="btn btn-outline">Return to Home</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- UNASSIGNED ACCOUNT OVERLAY -->
+  <div id="unassigned-overlay" style="position:fixed; top:0; left:0; right:0; bottom:0; background:var(--bg-dark); z-index:8999; display:none; justify-content:center; align-items:center;">
+    <div class="glass-card" style="width:100%; max-width:400px; padding:32px; text-align:center;">
+      <i class="fa-solid fa-users-slash" style="font-size:2.5rem; color:var(--danger-color); margin-bottom:16px;"></i>
+      <h2 style="font-family:var(--font-display); margin-bottom:8px;">Account Unassigned</h2>
+      <p style="color:var(--text-secondary); margin-bottom:24px;">Your account is not assigned to any workspaces. Please ask your agency administrator to invite you.</p>
+      <button id="btn-unassigned-logout" class="btn btn-outline">Log Out</button>
+    </div>
+  </div>
+
   <!-- LOADING OVERLAY -->
   <div id="loading-overlay" style="position:fixed; top:0; left:0; right:0; bottom:0; background:var(--bg-dark); z-index:9999; display:flex; justify-content:center; align-items:center; color:#fff; flex-direction:column;">
     <i class="fa-solid fa-circle-notch fa-spin" style="font-size:3rem; color:var(--primary-color); margin-bottom:16px;"></i>

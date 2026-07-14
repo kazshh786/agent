@@ -214,10 +214,20 @@ async function checkExistingSession() {
       AppState.session = session;
       AppState.user = session.user;
       AppState.authLoading = false;
-      onAuthenticated();
+      const inviteToken = sessionStorage.getItem('agency_os_invite');
+      if (inviteToken) {
+        checkInvitationState(inviteToken);
+      } else {
+        onAuthenticated();
+      }
     } else {
       AppState.authLoading = false;
-      showAuthScreen();
+      const inviteToken = sessionStorage.getItem('agency_os_invite');
+      if (inviteToken) {
+        checkInvitationState(inviteToken);
+      } else {
+        showAuthScreen();
+      }
     }
   } catch (err) {
     console.error('Session check failed:', err);
@@ -357,6 +367,119 @@ function getFriendlyAuthError(err) {
 }
 
 // --- 4. AUTH UI MANAGEMENT ---
+// --- INVITATION AND UNASSIGNED LOGIC ---
+
+async function checkInvitationState(token) {
+  document.getElementById('invitation-overlay').style.display = 'flex';
+  document.getElementById('app-container').style.display = 'none';
+  document.getElementById('auth-overlay').style.display = 'none';
+  document.getElementById('loading-overlay').style.display = 'none';
+  
+  const msgEl = document.getElementById('invitation-message');
+  const authActions = document.getElementById('invitation-auth-actions');
+  const acceptActions = document.getElementById('invitation-accept-actions');
+  const errorActions = document.getElementById('invitation-error-actions');
+
+  try {
+    const res = await fetch('/api/invitations/inspect', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token })
+    });
+    const data = await res.json();
+    
+    if (!res.ok) {
+      msgEl.textContent = 'This invitation is invalid or has expired.';
+      errorActions.style.display = 'flex';
+      return;
+    }
+
+    if (data.validityCategory === 'valid') {
+      msgEl.textContent = `You have been invited to join ${data.workspaceName} as a ${data.role}.`;
+      if (AppState.user) {
+        acceptActions.style.display = 'flex';
+        authActions.style.display = 'none';
+      } else {
+        acceptActions.style.display = 'none';
+        authActions.style.display = 'flex';
+      }
+    } else {
+      msgEl.textContent = `This invitation is ${data.validityCategory}.`;
+      errorActions.style.display = 'flex';
+    }
+  } catch (err) {
+    msgEl.textContent = 'An error occurred while checking the invitation.';
+    errorActions.style.display = 'flex';
+  }
+}
+
+function bindInvitationForms() {
+  document.getElementById('btn-invitation-login')?.addEventListener('click', () => {
+    document.getElementById('invitation-overlay').style.display = 'none';
+    showAuthScreen();
+  });
+  
+  document.getElementById('btn-invitation-register')?.addEventListener('click', () => {
+    document.getElementById('invitation-overlay').style.display = 'none';
+    showAuthScreen();
+    document.getElementById('show-register').click();
+  });
+  
+  document.getElementById('btn-invitation-accept')?.addEventListener('click', async () => {
+    const token = sessionStorage.getItem('agency_os_invite');
+    if (!token) return;
+    
+    const btn = document.getElementById('btn-invitation-accept');
+    btn.disabled = true;
+    btn.textContent = 'Accepting...';
+    
+    try {
+      const res = await apiRequest('/invitations/accept', 'POST', { token });
+      sessionStorage.removeItem('agency_os_invite');
+      showToast('Invitation accepted successfully!', 'success');
+      
+      // Reload identity to reflect new workspace
+      const meData = await apiRequest('/me');
+      AppState.permittedModes = meData.permittedModes || [];
+      AppState.workspaceMemberships = meData.workspaces || [];
+      AppState.workspaces = meData.workspaces || [];
+      
+      if (AppState.permittedModes.includes('customer')) {
+        AppState.currentMode = 'customer';
+        showDashboard();
+        setupNavigation();
+        applyModeRouting();
+        await enterCustomerMode();
+      } else {
+        // Fallback if they still have no workspaces? Unlikely if accept succeeded.
+        window.location.reload();
+      }
+    } catch (err) {
+      showToast(err.message || 'Failed to accept invitation', 'error');
+      btn.disabled = false;
+      btn.textContent = 'Accept Invitation';
+    }
+  });
+
+  document.getElementById('btn-invitation-home')?.addEventListener('click', () => {
+    sessionStorage.removeItem('agency_os_invite');
+    window.location.reload();
+  });
+
+  document.getElementById('btn-unassigned-logout')?.addEventListener('click', async () => {
+    await supabaseClient.auth.signOut();
+  });
+}
+
+function showUnassignedScreen() {
+  document.getElementById('unassigned-overlay').style.display = 'flex';
+  document.getElementById('app-container').style.display = 'none';
+  document.getElementById('loading-overlay').style.display = 'none';
+  document.getElementById('auth-overlay').style.display = 'none';
+  document.getElementById('invitation-overlay').style.display = 'none';
+}
+
+// --- /INVITATION AND UNASSIGNED LOGIC ---
 
 function showAuthScreen() {
   document.getElementById('auth-overlay').style.display = 'flex';
@@ -892,10 +1015,22 @@ async function apiRequest(path, options = {}) {
 // --- 7. LIFECYCLE LOADERS ---
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // Intercept invitation token immediately
+  const urlParams = new URLSearchParams(window.location.search);
+  const inviteToken = urlParams.get('invite');
+  if (inviteToken) {
+    sessionStorage.setItem('agency_os_invite', inviteToken);
+    urlParams.delete('invite');
+    const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+    window.history.replaceState({}, '', newUrl);
+  }
+
   // Show loading overlay
   document.getElementById('loading-overlay').style.display = 'flex';
   document.getElementById('app-container').style.display = 'none';
   document.getElementById('auth-overlay').style.display = 'none';
+  document.getElementById('invitation-overlay').style.display = 'none';
+  document.getElementById('unassigned-overlay').style.display = 'none';
 
   try {
     const res = await fetch('/api/config');
@@ -913,7 +1048,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSupabase();
   bindAuthForms();
   bindWorkspaceForms();
-});
+  bindInvitationForms();
 
 function bindAuthForms() {
   // Login form
