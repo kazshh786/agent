@@ -47,7 +47,40 @@ async function handleGet(req, res) {
     return errorResponse(res, roleCheck.status, roleCheck.error, 'Platform access denied');
   }
 
-  // Fetch all workspaces with their modules
+  // Filter fields based on role
+  const isSupportOnly = roleCheck.platformRole === 'platform_support';
+
+  if (isSupportOnly) {
+    const { data: supportWorkspaces, error: supportError } = await supabase.rpc('get_support_workspace_summaries');
+    if (supportError) {
+      return errorResponse(res, 500, 'INTERNAL_ERROR', 'Failed to fetch workspaces');
+    }
+    
+    // Group modules by workspace ID
+    const grouped = {};
+    (supportWorkspaces || []).forEach(row => {
+      if (!grouped[row.id]) {
+        grouped[row.id] = {
+          id: row.id,
+          name: row.name,
+          slug: row.slug,
+          status: row.status,
+          customer_name: row.customer_name,
+          provisioned_at: row.provisioned_at,
+          modules: []
+        };
+      }
+      if (row.module) {
+        grouped[row.id].modules.push({
+          module: row.module,
+          enabled: row.enabled
+        });
+      }
+    });
+    return res.status(200).json({ workspaces: Object.values(grouped) });
+  }
+
+  // Fetch all workspaces with their modules for admin/owner
   const { data: workspaces, error } = await supabase
     .from('workspaces')
     .select('*, workspace_modules(*)');
@@ -56,25 +89,7 @@ async function handleGet(req, res) {
     return errorResponse(res, 500, 'INTERNAL_ERROR', 'Failed to fetch workspaces');
   }
 
-  // Filter fields based on role
-  const isSupportOnly = roleCheck.platformRole === 'platform_support';
-
   const sanitised = (workspaces || []).map((ws) => {
-    if (isSupportOnly) {
-      return {
-        id: ws.id,
-        name: ws.name,
-        slug: ws.slug,
-        status: ws.status,
-        customer_name: ws.customer_name,
-        provisioned_at: ws.provisioned_at,
-        modules: (ws.workspace_modules || []).map((m) => ({
-          module: m.module,
-          enabled: m.enabled,
-        })),
-      };
-    }
-
     return {
       ...ws,
       modules: ws.workspace_modules || [],
@@ -82,11 +97,9 @@ async function handleGet(req, res) {
   });
 
   // Remove the nested join key from full responses
-  if (!isSupportOnly) {
-    sanitised.forEach((ws) => {
-      delete ws.workspace_modules;
-    });
-  }
+  sanitised.forEach((ws) => {
+    delete ws.workspace_modules;
+  });
 
   return res.status(200).json({ workspaces: sanitised });
 }

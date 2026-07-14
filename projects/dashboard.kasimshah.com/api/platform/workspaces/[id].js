@@ -54,6 +54,30 @@ async function handleGet(req, res) {
     return errorResponse(res, roleCheck.status, roleCheck.error, 'Platform access denied');
   }
 
+  const isSupportOnly = roleCheck.platformRole === 'platform_support';
+
+  if (isSupportOnly) {
+    const { data: supportSummary, error: supportError } = await supabase.rpc('get_support_workspace_summary', { p_workspace_id: id });
+    if (supportError || !supportSummary || supportSummary.length === 0) {
+      return errorResponse(res, 404, 'NOT_FOUND', 'Workspace not found');
+    }
+    const ws = supportSummary[0];
+    return res.status(200).json({
+      workspace: {
+        id: ws.id,
+        name: ws.name,
+        slug: ws.slug,
+        status: ws.status,
+        customer_name: ws.customer_name,
+        provisioned_at: ws.provisioned_at,
+        modules: supportSummary.filter(m => m.module).map((m) => ({
+          module: m.module,
+          enabled: m.enabled,
+        })),
+      },
+    });
+  }
+
   const { data: workspace, error } = await supabase
     .from('workspaces')
     .select('*, workspace_modules(*)')
@@ -62,25 +86,6 @@ async function handleGet(req, res) {
 
   if (error || !workspace) {
     return errorResponse(res, 404, 'NOT_FOUND', 'Workspace not found');
-  }
-
-  const isSupportOnly = roleCheck.platformRole === 'platform_support';
-
-  if (isSupportOnly) {
-    return res.status(200).json({
-      workspace: {
-        id: workspace.id,
-        name: workspace.name,
-        slug: workspace.slug,
-        status: workspace.status,
-        customer_name: workspace.customer_name,
-        provisioned_at: workspace.provisioned_at,
-        modules: (workspace.workspace_modules || []).map((m) => ({
-          module: m.module,
-          enabled: m.enabled,
-        })),
-      },
-    });
   }
 
   const result = { ...workspace, modules: workspace.workspace_modules || [] };
@@ -141,9 +146,21 @@ async function handlePatch(req, res) {
     );
   }
 
+  if (action === 'archive' && roleCheck.platformRole !== 'platform_owner') {
+    return errorResponse(res, 403, 'FORBIDDEN', 'Only platform owners can archive workspaces');
+  }
+
   const { error } = await supabase.rpc(rpcName, { p_workspace_id: id });
 
   if (error) {
+    const msg = error.message || '';
+    if (
+      msg.includes('Cannot activate') ||
+      msg.includes('Only active') ||
+      msg.includes('Only failed')
+    ) {
+      return errorResponse(res, 409, 'INVALID_WORKSPACE_STATE', msg);
+    }
     return errorResponse(res, 500, 'INTERNAL_ERROR', 'Failed to perform workspace action');
   }
 
