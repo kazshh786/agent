@@ -245,7 +245,26 @@
 
       <section class="dashboard-view" id="view-agency-provision" tabindex="-1">
         <div class="workspace-header"><div class="workspace-title"><h1>Provision Workspace</h1><p>Create a new customer workspace.</p></div></div>
-        <div class="glass-card" style="padding: 24px;">[Provisioning Form Placeholder]</div>
+        <form id="wizard-form" class="glass-card" style="padding:24px;display:grid;gap:20px;max-width:900px;">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;">
+            <label class="form-group"><span>Workspace name</span><input id="wizName" class="form-control" required minlength="2" maxlength="100" placeholder="KS Studio"></label>
+            <label class="form-group"><span>Workspace slug</span><input id="wizSubdomain" class="form-control" required minlength="3" maxlength="63" pattern="[a-z0-9][a-z0-9-]{1,61}[a-z0-9]" placeholder="ks-studio"></label>
+            <label class="form-group"><span>Customer name</span><input id="wizCustomerName" class="form-control" required maxlength="100" placeholder="Customer or business owner"></label>
+            <label class="form-group"><span>Customer email</span><input id="wizCustomerEmail" class="form-control" type="email" required placeholder="owner@example.com"></label>
+          </div>
+          <fieldset style="border:0;padding:0;margin:0;">
+            <legend style="font-weight:700;margin-bottom:12px;">Launch modules</legend>
+            <div style="display:flex;flex-wrap:wrap;gap:16px;">
+              <label><input class="module-checkbox" type="checkbox" value="website" checked> Website</label>
+              <label><input class="module-checkbox" type="checkbox" value="booking" checked> Booking</label>
+              <label><input class="module-checkbox" type="checkbox" value="analytics" checked> Analytics</label>
+              <label><input class="module-checkbox" type="checkbox" value="automations" checked> Automations</label>
+              <label><input class="module-checkbox" type="checkbox" value="contacts"> Contacts</label>
+            </div>
+          </fieldset>
+          <p style="color:var(--text-muted);margin:0;">This creates the customer workspace and entitlements. After provisioning, open <strong>Websites</strong> to create its booking-first site and <strong>Integrations</strong> to connect KS OS.</p>
+          <div><button id="wiz-btn-next" class="btn btn-primary" type="submit"><i class="fa-solid fa-building-circle-check"></i> Provision Workspace</button></div>
+        </form>
       </section>
 
       <section class="dashboard-view" id="view-agency-websites" tabindex="-1">
