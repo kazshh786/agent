@@ -16,6 +16,7 @@ module.exports = async function (req, res) {
     const components = {
       api: 'healthy',
       database: 'unhealthy',
+      ksOS: 'unavailable',
       websiteEngine: 'unavailable',
     };
 
@@ -30,6 +31,29 @@ module.exports = async function (req, res) {
       components.database = error ? 'unhealthy' : 'healthy';
     } catch {
       components.database = 'unhealthy';
+    }
+
+    // --- KS OS service health ---
+    const ksOsUrl = process.env.KS_OS_API_URL;
+    const ksOsToken = process.env.KS_OS_SERVICE_TOKEN;
+    if (ksOsUrl && ksOsToken) {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+        const headers = { Authorization: `Bearer ${ksOsToken}` };
+        if (process.env.KS_OS_VERCEL_BYPASS_TOKEN) {
+          headers['x-vercel-protection-bypass'] = process.env.KS_OS_VERCEL_BYPASS_TOKEN;
+        }
+        const ksOsRes = await fetch(`${ksOsUrl.replace(/\/$/, '')}/api/v1/service/health`, {
+          method: 'GET',
+          headers,
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+        components.ksOS = ksOsRes.ok ? 'healthy' : 'unavailable';
+      } catch {
+        components.ksOS = 'unavailable';
+      }
     }
 
     // --- Website Engine health ---
@@ -64,7 +88,7 @@ module.exports = async function (req, res) {
     let status = 'healthy';
     if (components.database === 'unhealthy') {
       status = 'unhealthy';
-    } else if (components.websiteEngine === 'unavailable') {
+    } else if (components.ksOS === 'unavailable' || components.websiteEngine === 'unavailable') {
       status = 'degraded';
     }
 

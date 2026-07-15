@@ -41,6 +41,9 @@ describe('API Routes', () => {
       process.env.WEBSITE_ENGINE_API_URL = 'http://test-engine';
       process.env.WEBSITE_ENGINE_API_TOKEN = 'engine-secret';
       process.env.WEBSITE_ENGINE_VERCEL_BYPASS_TOKEN = 'preview-bypass';
+      process.env.KS_OS_API_URL = 'https://ks-os.example.com';
+      process.env.KS_OS_SERVICE_TOKEN = 'ks-os-secret';
+      process.env.KS_OS_VERCEL_BYPASS_TOKEN = 'ks-os-preview-bypass';
       // Mock service client
       const mockSupabase = {
         from: jest.fn().mockReturnThis(),
@@ -60,6 +63,7 @@ describe('API Routes', () => {
         components: expect.objectContaining({
           api: 'healthy',
           database: 'healthy',
+          ksOS: 'healthy',
           websiteEngine: 'healthy'
         })
       }));
@@ -67,6 +71,12 @@ describe('API Routes', () => {
         headers: {
           Authorization: 'Bearer engine-secret',
           'x-vercel-protection-bypass': 'preview-bypass'
+        }
+      }));
+      expect(global.fetch).toHaveBeenCalledWith('https://ks-os.example.com/api/v1/service/health', expect.objectContaining({
+        headers: {
+          Authorization: 'Bearer ks-os-secret',
+          'x-vercel-protection-bypass': 'ks-os-preview-bypass'
         }
       }));
     });
