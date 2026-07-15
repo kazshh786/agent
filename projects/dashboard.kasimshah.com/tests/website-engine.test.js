@@ -61,6 +61,9 @@ describe('booking-first Website Engine proxy',()=>{
     const source=fs.readFileSync(path.join(__dirname,'../../../control-panel/server.js'),'utf8');
     expect(source).toContain("bookingLink !== '/book'");expect(source).toContain('WEBSITE_ENGINE_API_TOKEN');
     expect(source).toContain('WEBSITE_ENGINE_ALLOWED_ORIGIN');
+    expect(source).toContain("const GITHUB_BRANCH = process.env.GITHUB_BRANCH || 'main'");
+    expect(source).toContain("githubUrl.searchParams.set('ref', GITHUB_BRANCH)");
+    expect(source).toContain('requestBody = { ...requestBody, branch: GITHUB_BRANCH }');
     expect(source).toContain('data-ks-booking-root');expect(source).toContain('data-ks-conversion-tracker');
     expect(source).toContain('data-ks-booking-widget');expect(source).toContain('stripe.confirmCardPayment');
     expect(source).not.toContain("track('payment_completed'");expect(source).not.toContain("track('booking_confirmed'");

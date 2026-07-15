@@ -28,6 +28,7 @@ app.use(express.json({ limit: '50mb' }));
 // Env credentials for serverless cloud integration
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GITHUB_REPO = 'kazshh786/agent';
+const GITHUB_BRANCH = process.env.GITHUB_BRANCH || 'main';
 const WORKSPACE_DIR = path.resolve(__dirname, '..');
 const PROJECTS_DIR = path.join(WORKSPACE_DIR, 'projects');
 const TEMPLATES_DIR = path.join(WORKSPACE_DIR, 'templates');
@@ -79,7 +80,27 @@ function instrumentWebsiteHtml(html, config) {
 // Native HTTPS Helper for API calls (Zero-Dependencies)
 function makeHttpsRequest(url, method, headers, body = null) {
   return new Promise((resolve, reject) => {
-    const urlObj = new URL(url);
+    let requestUrl = url;
+    let requestBody = body;
+    const githubContentsPrefix = `https://api.github.com/repos/${GITHUB_REPO}/contents/`;
+
+    // GitHub's Contents API otherwise reads from and writes to the repository's
+    // default branch. Staging engines must be pinned to an explicit staging or
+    // feature branch so a preview compile can never mutate production source.
+    if (requestUrl.startsWith(githubContentsPrefix)) {
+      if (method === 'GET') {
+        const githubUrl = new URL(requestUrl);
+        if (!githubUrl.searchParams.has('ref')) {
+          githubUrl.searchParams.set('ref', GITHUB_BRANCH);
+        }
+        requestUrl = githubUrl.toString();
+      }
+      if ((method === 'PUT' || method === 'DELETE') && requestBody && typeof requestBody === 'object' && !Array.isArray(requestBody)) {
+        requestBody = { ...requestBody, branch: GITHUB_BRANCH };
+      }
+    }
+
+    const urlObj = new URL(requestUrl);
     const options = {
       hostname: urlObj.hostname,
       port: 443,
@@ -114,8 +135,8 @@ function makeHttpsRequest(url, method, headers, body = null) {
 
     req.on('error', (err) => reject(err));
 
-    if (body) {
-      req.write(JSON.stringify(body));
+    if (requestBody) {
+      req.write(JSON.stringify(requestBody));
     }
     req.end();
   });
