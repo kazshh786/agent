@@ -137,4 +137,32 @@ describe('Platform API Routes', () => {
       expect(ws.modules[0]).toHaveProperty('module', 'website');
     });
   });
+
+  describe('POST /api/platform/workspaces', () => {
+    const mockSupabase = { rpc: jest.fn() };
+
+    beforeEach(() => {
+      req.method = 'POST';
+      req.body = {
+        name: 'Bare Beauty',
+        slug: 'bare-beauty',
+        customer_name: 'Customer',
+        customer_email: 'customer@example.com',
+        modules: ['website', 'booking']
+      };
+      utils.requireAuth.mockResolvedValue({ user: { id: 'u1' }, supabase: mockSupabase });
+      utils.requirePlatformRole.mockResolvedValue({ platformRole: 'platform_owner' });
+    });
+
+    it('maps the RPC already-taken exception to a safe 409 conflict', async () => {
+      mockSupabase.rpc.mockResolvedValue({ data: null, error: { code: 'P0001', message: 'Slug "bare-beauty" is already taken' } });
+
+      await workspacesListRoute(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(409);
+      expect(res.json).toHaveBeenCalledWith({
+        error: { code: 'CONFLICT', message: 'A workspace with this slug already exists' }
+      });
+    });
+  });
 });
