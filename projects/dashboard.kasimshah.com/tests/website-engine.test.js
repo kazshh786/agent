@@ -59,6 +59,7 @@ describe('booking-first Website Engine proxy',()=>{
 
   test('engine source enforces auth and generates a branded /book route',()=>{
     const source=fs.readFileSync(path.join(__dirname,'../../../control-panel/server.js'),'utf8');
+    const vercelConfig=JSON.parse(fs.readFileSync(path.join(__dirname,'../../../control-panel/vercel.json'),'utf8'));
     expect(source).toContain("bookingLink !== '/book'");expect(source).toContain('WEBSITE_ENGINE_API_TOKEN');
     expect(source).toContain('WEBSITE_ENGINE_ALLOWED_ORIGIN');
     expect(source).toContain("app.use('/api', requireWebsiteEngineAuth)");
@@ -71,5 +72,7 @@ describe('booking-first Website Engine proxy',()=>{
     expect(source).not.toContain("track('payment_completed'");expect(source).not.toContain("track('booking_confirmed'");
     expect(source).not.toContain("track('customer_details_submitted'");expect(source).toContain("track('booking_started'");
     expect(source).toContain('bookingChannel:state.channel');
+    expect(vercelConfig.builds).toEqual([{src:'server.js',use:'@vercel/node'}]);
+    expect(vercelConfig.routes[0]).toEqual(expect.objectContaining({src:'/(.*)',dest:'/server.js'}));
   });
 });
