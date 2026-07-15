@@ -1,0 +1,2 @@
+const {read}=require('./_read');
+module.exports=(req,res)=>read(req,res,(_summary,data,auth)=>{const rows=data.conversions.filter(x=>['booking_created','booking_confirmed','booking_cancelled','appointment_completed','payment_succeeded'].includes(x.conversion_type));const start=(auth.filters.page-1)*auth.filters.pageSize;return{bookings:rows.slice(start,start+auth.filters.pageSize),pagination:{page:auth.filters.page,pageSize:auth.filters.pageSize,total:rows.length},privacy:{piiIncluded:false,mobileAddressesIncluded:false}};});

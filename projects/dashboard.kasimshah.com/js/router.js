@@ -4,7 +4,7 @@
   if (root) root.KSRouter = api;
 }(typeof globalThis !== 'undefined' ? globalThis : this, function routerFactory() {
   const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  const AGENCY_VIEWS = new Set(['overview', 'customers', 'provision', 'websites', 'integrations', 'jobs', 'subscriptions', 'audit', 'settings']);
+  const AGENCY_VIEWS = new Set(['overview', 'customers', 'provision', 'websites', 'analytics', 'launch-readiness', 'integrations', 'jobs', 'subscriptions', 'audit', 'settings']);
   const CUSTOMER_VIEWS = new Set(['overview', 'website', 'analytics', 'contacts', 'email', 'social', 'booking', 'automations', 'team', 'settings']);
 
   function firstWorkspaceId(identity) {

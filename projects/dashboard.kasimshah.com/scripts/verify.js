@@ -21,6 +21,7 @@ console.log('--- JavaScript Syntax ---');
 const jsFilesToCheck = [
   'app.js',
   'js/router.js',
+  '../../control-panel/server.js',
   'api/_utils.js',
   'api/health.js',
   'api/me.js',
@@ -38,6 +39,22 @@ const jsFilesToCheck = [
   'api/websites.js',
   'api/analytics/collect.js',
   'api/analytics/summary.js',
+  'api/_unified-analytics.js',
+  'api/_trusted-analytics.js',
+  'api/analytics/unified.js',
+  'api/analytics/funnel.js',
+  'api/analytics/attribution.js',
+  'api/analytics/campaigns.js',
+  'api/analytics/bookings.js',
+  'api/analytics/export.js',
+  'api/analytics/recalculate.js',
+  'api/analytics/ingest.js',
+  'api/analytics/identify.js',
+  'api/analytics/privacy.js',
+  'api/platform/launch-readiness.js',
+  'api/platform/analytics.js',
+  'api/_observability.js',
+  'scripts/staging-smoke.js',
   'api/website-engine/compile.js',
   'scripts/build.js'
 ];
@@ -69,13 +86,17 @@ jsFilesToCheck.forEach(f => {
 console.log('\n--- Required Files ---');
 const required = [
   'index.html', 'styles.css', 'app.js', 'js/router.js',
+  '../../control-panel/server.js',
   '.env.example', 'vercel.json', 'package.json',
   'supabase_migrations.sql',
   'supabase/migrations/20260714040000_website_booking_analytics.sql',
   'supabase/migrations/20260714050000_booking_rate_limits.sql',
   'supabase/migrations/20260714070000_automation_engine.sql',
+  'supabase/migrations/20260714080000_unified_attribution.sql',
   'docs/WEBSITE_BOOKING_CONTRACT.md', 'docs/ANALYTICS_PRIVACY.md',
-  'docs/BOOKING_RUNTIME.md', 'docs/AUTOMATIONS.md'
+  'docs/BOOKING_RUNTIME.md', 'docs/AUTOMATIONS.md',
+  'docs/UNIFIED_ATTRIBUTION.md', 'docs/ANALYTICS_DEFINITIONS.md', 'docs/ANALYTICS_PRIVACY.md',
+  'docs/LAUNCH_READINESS.md', 'docs/INITIAL_LAUNCH_RUNBOOK.md', 'docs/ROLLBACK_RUNBOOK.md'
 ];
 required.forEach(f => {
   fs.existsSync(path.join(ROOT, f)) ? pass(f) : fail(`${f}: missing`);
@@ -89,7 +110,9 @@ if (fs.existsSync(envPath)) {
   ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY',
    'WEBSITE_ENGINE_API_URL', 'WEBSITE_ENGINE_API_TOKEN', 'APP_URL',
    'INTEGRATION_ENCRYPTION_KEY', 'JOB_RUNNER_SECRET', 'KS_OS_API_URL', 'KS_OS_SERVICE_TOKEN',
-   'BOOKING_RATE_LIMIT_SALT', 'AUTOMATION_EVENT_SECRET', 'AUTOMATION_WORKER_SECRET'].forEach(v => {
+   'BOOKING_RATE_LIMIT_SALT', 'AUTOMATION_EVENT_SECRET', 'AUTOMATION_WORKER_SECRET',
+   'ATTRIBUTION_IDENTITY_SECRET', 'SECURITY_HEADERS_ACTIVE', 'ALLOW_MOCK_FALLBACKS',
+   'APP_ENV', 'STAGING_WORKSPACE_ID', 'STAGING_DASHBOARD_URL', 'STAGING_KS_OS_URL', 'STAGING_PLATFORM_ACCESS_TOKEN'].forEach(v => {
     envContent.includes(v) ? pass(v) : fail(`${v}: missing from .env.example`);
   });
 } else {
@@ -164,6 +187,18 @@ if (fs.existsSync(apiDir)) {
 } else {
   warn('api/ directory not found');
 }
+
+// 7. Canonical attribution must not introduce prohibited personal-data fields.
+console.log('\n--- Attribution Privacy Contract ---');
+const attributionFiles = [
+  'supabase/migrations/20260714080000_unified_attribution.sql',
+  'api/analytics/collect.js', 'api/analytics/ingest.js', 'api/platform/analytics.js'
+];
+const prohibitedFields = [/\bip_address\b/i, /\bmobile_address\b/i, /\bmedical_notes?\b/i, /\bcard_number\b/i, /\bcustomer_email\b/i, /\bphone_number\b/i];
+attributionFiles.forEach(f => {
+  const content = fs.readFileSync(path.join(ROOT, f), 'utf8');
+  prohibitedFields.forEach(pattern => pattern.test(content) ? fail(`${f}: prohibited field ${pattern.source}`) : pass(`${f}: no ${pattern.source}`));
+});
 
 console.log(`\n${'─'.repeat(40)}`);
 console.log(`Results: ${errors} error(s), ${warnings} warning(s)`);

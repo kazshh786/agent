@@ -26,16 +26,16 @@ function response() {
   };
 }
 
-function serviceClient(insertError = null) {
-  const insert = jest.fn().mockResolvedValue({ error: insertError });
+function serviceClient(rpcError = null) {
+  const rpc = jest.fn().mockResolvedValue({ data: null, error: rpcError });
   const single = jest.fn().mockResolvedValue({
     data: { id: 'site-id', workspace_id: 'workspace-id', primary_domain: 'client.example.com' },
     error: null,
   });
   const eq = jest.fn().mockReturnValue({ single });
   const select = jest.fn().mockReturnValue({ eq });
-  const from = jest.fn(table => table === 'website_sites' ? { select } : { insert });
-  return { client: { from }, insert };
+  const from = jest.fn(() => ({ select }));
+  return { client: { from, rpc }, rpc };
 }
 
 function validRequest(overrides = {}) {
@@ -46,7 +46,7 @@ function validRequest(overrides = {}) {
       siteKey: SITE_KEY,
       eventId: EVENT_ID,
       sessionId: SESSION_ID,
-      eventName: 'booking_confirmed',
+      eventName: 'booking_started',
       occurredAt: new Date().toISOString(),
       path: '/book',
       ...overrides,
@@ -63,10 +63,10 @@ test('accepts a same-domain event and stores only allowlisted metadata', async (
   await collect(validRequest({ metadata: { serviceId: 'svc-1', email: 'must-not-be-stored' } }), res);
   expect(res.statusCode).toBe(202);
   expect(res.headers['Access-Control-Allow-Origin']).toBe('https://client.example.com');
-  expect(db.insert).toHaveBeenCalledWith(expect.objectContaining({
-    event_name: 'booking_confirmed', path: '/book', metadata: { serviceId: 'svc-1' },
+  expect(db.rpc).toHaveBeenCalledWith('record_browser_attribution_event', expect.objectContaining({
+    p_event_name: 'booking_started', p_path: '/book', p_safe_metadata: { serviceId: 'svc-1' },
   }));
-  expect(JSON.stringify(db.insert.mock.calls)).not.toContain('must-not-be-stored');
+  expect(JSON.stringify(db.rpc.mock.calls)).not.toContain('must-not-be-stored');
 });
 
 test('rejects a forged site origin before writing', async () => {
@@ -78,7 +78,7 @@ test('rejects a forged site origin before writing', async () => {
   await collect(req, res);
   expect(res.statusCode).toBe(403);
   expect(res.body.error.code).toBe('ORIGIN_DENIED');
-  expect(db.insert).not.toHaveBeenCalled();
+  expect(db.rpc).not.toHaveBeenCalled();
 });
 
 test('rejects query-bearing paths and unknown top-level fields', async () => {
@@ -93,11 +93,11 @@ test('rejects query-bearing paths and unknown top-level fields', async () => {
   res = response();
   await collect(validRequest({ email: 'private@example.com' }), res);
   expect(res.body.error.code).toBe('INVALID_EVENT');
-  expect(db.insert).not.toHaveBeenCalled();
+  expect(db.rpc).not.toHaveBeenCalled();
 });
 
 test('treats a duplicate event id as an idempotent accepted delivery', async () => {
-  const db = serviceClient({ code: '23505' });
+  const db = serviceClient(null);
   mockCreateServiceClient.mockReturnValue(db.client);
   const res = response();
   await collect(validRequest(), res);

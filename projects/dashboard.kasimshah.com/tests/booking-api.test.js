@@ -4,7 +4,7 @@ jest.mock('../api/_utils',()=>({errorResponse:(res,status,code,message)=>res.sta
 const handler=require('../api/booking');
 const UUID='123e4567-e89b-12d3-a456-426614174000';
 function response(){return{statusCode:200,body:null,headers:{},setHeader(k,v){this.headers[k]=v;},status(c){this.statusCode=c;return this;},json(b){this.body=b;return this;},end(){return this;}};}
-beforeEach(()=>{jest.clearAllMocks();mockResolve.mockResolvedValue({origin:'https://client.example.com',tenantId:'tenant-1',site:{payment_mode:'deposit'}});mockRate.mockResolvedValue({allowed:true});});
+beforeEach(()=>{jest.clearAllMocks();mockResolve.mockResolvedValue({origin:'https://client.example.com',tenantId:'tenant-1',db:{rpc:jest.fn().mockResolvedValue({error:null})},site:{id:UUID,workspace_id:UUID,payment_mode:'deposit'}});mockRate.mockResolvedValue({allowed:true});});
 
 test('catalog is relayed with the agency payment policy',async()=>{
   mockCall.mockResolvedValue({ok:true,status:200,body:{services:[],staff:[]}});const res=response();
@@ -14,8 +14,8 @@ test('catalog is relayed with the agency payment policy',async()=>{
 
 test('booking creation forwards customer data only to KS OS and injects trusted payment mode',async()=>{
   mockCall.mockResolvedValue({ok:true,status:201,body:{booking:{reference:UUID,status:'PENDING'},payment:{required:true}}});const res=response();
-  await handler({method:'POST',headers:{origin:'https://client.example.com'},query:{action:'create',siteKey:UUID},body:{serviceId:UUID,staffId:UUID,startTime:new Date().toISOString(),client:{name:'Jane Client',email:'jane@example.com',phone:'07123456789'},payNow:true,idempotencyKey:UUID}},res);
-  const forwarded=JSON.parse(mockCall.mock.calls[0][2].body);expect(forwarded.paymentMode).toBe('deposit');expect(forwarded.client.email).toBe('jane@example.com');expect(res.statusCode).toBe(201);
+  await handler({method:'POST',headers:{origin:'https://client.example.com'},query:{action:'create',siteKey:UUID},body:{serviceId:UUID,staffId:UUID,startTime:new Date().toISOString(),client:{name:'Jane Client',email:'jane@example.com',phone:'07123456789'},payNow:true,idempotencyKey:UUID,bookingChannel:'in_shop',sessionId:UUID}},res);
+  const forwarded=JSON.parse(mockCall.mock.calls[0][2].body);expect(forwarded.paymentMode).toBe('deposit');expect(forwarded.bookingChannel).toBe('in_shop');expect(forwarded.client.email).toBe('jane@example.com');expect(forwarded.mobileAddress).toBeNull();expect(res.statusCode).toBe(201);
 });
 
 test('denied origins and unknown fields never reach KS OS',async()=>{

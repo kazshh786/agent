@@ -11,6 +11,7 @@
     "build": "node scripts/build.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --verbose --forceExit --runInBand",
     "verify": "node scripts/verify.js",
+    "smoke:staging": "node scripts/staging-smoke.js",
     "test:auth": "node --experimental-vm-modules node_modules/jest/bin/jest.js tests/auth.test.js --verbose",
     "test:membership": "node --experimental-vm-modules node_modules/jest/bin/jest.js tests/membership.test.js --verbose",
     "test:roles": "node --experimental-vm-modules node_modules/jest/bin/jest.js tests/roles.test.js --verbose",

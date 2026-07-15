@@ -1,0 +1,28 @@
+name: Launch readiness
+on:
+  pull_request:
+    paths:
+      - 'projects/dashboard.kasimshah.com/**'
+      - 'control-panel/**'
+      - '.github/workflows/launch-readiness.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dashboard:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: projects/dashboard.kasimshah.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: projects/dashboard.kasimshah.com/package-lock.json
+      - run: npm ci
+      - run: npm test -- --runInBand
+      - run: npm run build
+      - run: npm run verify
+      - run: git diff --check

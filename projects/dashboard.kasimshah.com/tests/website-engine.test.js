@@ -62,5 +62,8 @@ describe('booking-first Website Engine proxy',()=>{
     expect(source).toContain('WEBSITE_ENGINE_ALLOWED_ORIGIN');
     expect(source).toContain('data-ks-booking-root');expect(source).toContain('data-ks-conversion-tracker');
     expect(source).toContain('data-ks-booking-widget');expect(source).toContain('stripe.confirmCardPayment');
+    expect(source).not.toContain("track('payment_completed'");expect(source).not.toContain("track('booking_confirmed'");
+    expect(source).not.toContain("track('customer_details_submitted'");expect(source).toContain("track('booking_started'");
+    expect(source).toContain('bookingChannel:state.channel');
   });
 });
