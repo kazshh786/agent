@@ -1094,7 +1094,11 @@ function renderAgencyControlCentre() {
 }
 
 function buildAgencyActions(ws) {
-  const actions = [];
+  const actions = [createEl('button', {
+    className: 'btn btn-primary', style: { fontSize: '0.75rem', padding: '4px 12px' },
+    textContent: 'Open setup',
+    onClick: () => openAgencyWorkspaceSetup(ws)
+  })];
   const isOwner = AppState.platformRole === 'platform_owner';
   const isAdmin = AppState.platformRole === 'platform_admin';
 
@@ -1139,6 +1143,17 @@ function buildAgencyActions(ws) {
   return actions;
 }
 
+function openAgencyWorkspaceSetup(workspace) {
+  if (!workspace?.id) return;
+  ['agency-websites-content', 'agency-integration-form', 'agency-integration-list',
+    'agency-jobs-controls', 'agency-jobs-list', 'agency-launch-readiness-content']
+    .forEach(id => {
+      const element = document.getElementById(id);
+      if (element) element.dataset.workspaceId = workspace.id;
+    });
+  window.location.hash = '#/agency/websites';
+}
+
 async function handleWorkspaceAction(wsId, action, wsName) {
   const confirmed = confirm(`Are you sure you want to ${action} workspace "${wsName}"?`);
   if (!confirmed) return;
@@ -1181,14 +1196,15 @@ async function handleAgencyProvision(e) {
   }
 
   try {
-    await apiRequest('/platform/workspaces', {
+    const response = await apiRequest('/platform/workspaces', {
       method: 'POST',
       body: JSON.stringify({ name, slug, customer_name: customerName, customer_email: customerEmail, modules })
     });
-    showToast('Customer workspace provisioned. Create its site from Agency > Websites.', 'success');
+    const provisioned = response.workspace;
+    showToast(`${provisioned?.name || name} provisioned. Opening its website setup.`, 'success');
     e.currentTarget.reset();
     await loadAgencyWorkspaces();
-    window.location.hash = '#/agency/websites';
+    openAgencyWorkspaceSetup(provisioned || { id: AppState.agencyWorkspaces.find(ws => ws.slug === slug)?.id });
   } catch (err) {
     showToast(`Provisioning failed: ${err.message}`, 'error');
   }
