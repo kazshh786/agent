@@ -6,6 +6,10 @@
   "installCommand": "npm install",
   "crons": [
     {
+      "path": "/api/jobs/run",
+      "schedule": "* * * * *"
+    },
+    {
       "path": "/api/automations/worker",
       "schedule": "* * * * *"
     }

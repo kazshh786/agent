@@ -3,11 +3,20 @@ const { createSupabaseServiceClient, errorResponse } = require('../_utils');
 const { executeProviderJob } = require('../_providers');
 const { decryptCredentials } = require('../_crypto');
 
+function authorized(req) {
+  const supplied = Buffer.from(String(req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
+  return [process.env.JOB_RUNNER_SECRET, process.env.CRON_SECRET].filter(Boolean).some(value => {
+    const expected = Buffer.from(value);
+    return expected.length >= 32 && supplied.length === expected.length && crypto.timingSafeEqual(supplied, expected);
+  });
+}
+
 module.exports = async function (req, res) {
-  if (req.method !== 'POST') return errorResponse(res, 405, 'METHOD_NOT_ALLOWED', 'Only POST is allowed');
-  const supplied = Buffer.from((req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
-  const expected = Buffer.from(process.env.JOB_RUNNER_SECRET || '');
-  if (!expected.length || supplied.length !== expected.length || !crypto.timingSafeEqual(supplied, expected)) {
+  if (!['GET', 'POST'].includes(req.method)) {
+    res.setHeader('Allow', 'GET, POST');
+    return errorResponse(res, 405, 'METHOD_NOT_ALLOWED', 'Only GET or POST is allowed');
+  }
+  if (!authorized(req)) {
     return errorResponse(res, 401, 'UNAUTHORIZED', 'Invalid worker credential');
   }
   const supabase = createSupabaseServiceClient();
@@ -49,3 +58,5 @@ module.exports = async function (req, res) {
   }
   return res.status(200).json({ claimed: (jobs || []).length, outcomes });
 };
+
+module.exports.authorized = authorized;
