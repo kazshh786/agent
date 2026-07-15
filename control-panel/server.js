@@ -33,6 +33,22 @@ const WORKSPACE_DIR = path.resolve(__dirname, '..');
 const PROJECTS_DIR = path.join(WORKSPACE_DIR, 'projects');
 const TEMPLATES_DIR = path.join(WORKSPACE_DIR, 'templates');
 
+function requireWebsiteEngineAuth(req, res, next) {
+  const expectedToken = Buffer.from(process.env.WEBSITE_ENGINE_API_TOKEN || '');
+  const suppliedToken = Buffer.from((req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
+  if (!expectedToken.length) {
+    return res.status(503).json({ error: 'Website Engine authentication is not configured.' });
+  }
+  if (suppliedToken.length !== expectedToken.length || !crypto.timingSafeEqual(suppliedToken, expectedToken)) {
+    return res.status(401).json({ error: 'Unauthorized.' });
+  }
+  return next();
+}
+
+// Every engine API is private. Vercel deployment protection is defence in
+// depth, not the application authentication boundary.
+app.use('/api', requireWebsiteEngineAuth);
+
 function escapeHtml(value) {
   return String(value || '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 }
@@ -718,12 +734,6 @@ app.get('/api/projects', async (req, res) => {
 
 // API: Create a New Project (Website Instance from Template)
 app.post('/api/projects', async (req, res) => {
-  const expectedToken = Buffer.from(process.env.WEBSITE_ENGINE_API_TOKEN || '');
-  const suppliedToken = Buffer.from((req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
-  if (!expectedToken.length) return res.status(503).json({ error: 'Website Engine authentication is not configured.' });
-  if (suppliedToken.length !== expectedToken.length || !crypto.timingSafeEqual(suppliedToken, expectedToken)) {
-    return res.status(401).json({ error: 'Unauthorized.' });
-  }
   const { 
     name, 
     templateName, 

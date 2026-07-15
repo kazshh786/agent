@@ -61,6 +61,8 @@ describe('booking-first Website Engine proxy',()=>{
     const source=fs.readFileSync(path.join(__dirname,'../../../control-panel/server.js'),'utf8');
     expect(source).toContain("bookingLink !== '/book'");expect(source).toContain('WEBSITE_ENGINE_API_TOKEN');
     expect(source).toContain('WEBSITE_ENGINE_ALLOWED_ORIGIN');
+    expect(source).toContain("app.use('/api', requireWebsiteEngineAuth)");
+    expect(source).toContain("crypto.timingSafeEqual(suppliedToken, expectedToken)");
     expect(source).toContain("const GITHUB_BRANCH = process.env.GITHUB_BRANCH || 'main'");
     expect(source).toContain("githubUrl.searchParams.set('ref', GITHUB_BRANCH)");
     expect(source).toContain('requestBody = { ...requestBody, branch: GITHUB_BRANCH }');
