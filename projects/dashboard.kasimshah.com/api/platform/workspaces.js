@@ -191,7 +191,13 @@ async function handlePost(req, res) {
   });
 
   if (error) {
-    if (error.code === '23505' || error.message?.toLowerCase().includes('unique')) {
+    const conflictSignal = `${error.code || ''} ${error.message || ''}`.toLowerCase();
+    if (
+      error.code === '23505' ||
+      conflictSignal.includes('already taken') ||
+      conflictSignal.includes('duplicate key') ||
+      (conflictSignal.includes('unique') && conflictSignal.includes('slug'))
+    ) {
       return errorResponse(res, 409, 'CONFLICT', 'A workspace with this slug already exists');
     }
     return errorResponse(res, 500, 'INTERNAL_ERROR', 'Failed to provision workspace');
