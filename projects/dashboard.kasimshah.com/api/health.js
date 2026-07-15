@@ -39,8 +39,17 @@ module.exports = async function (req, res) {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 5000);
 
+        const headers = {};
+        if (process.env.WEBSITE_ENGINE_API_TOKEN) {
+          headers.Authorization = `Bearer ${process.env.WEBSITE_ENGINE_API_TOKEN}`;
+        }
+        if (process.env.WEBSITE_ENGINE_VERCEL_BYPASS_TOKEN) {
+          headers['x-vercel-protection-bypass'] = process.env.WEBSITE_ENGINE_VERCEL_BYPASS_TOKEN;
+        }
+
         const engineRes = await fetch(`${engineUrl}/api/templates`, {
           method: 'GET',
+          headers,
           signal: controller.signal,
         });
         clearTimeout(timeout);

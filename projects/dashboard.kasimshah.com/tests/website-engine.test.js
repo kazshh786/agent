@@ -17,7 +17,7 @@ function queryClient(){
 describe('booking-first Website Engine proxy',()=>{
   let req,res,supabase,serviceClient;const OLD_ENV=process.env;
   beforeEach(()=>{
-    process.env={...OLD_ENV,WEBSITE_ENGINE_API_URL:'https://engine.example.com',WEBSITE_ENGINE_API_TOKEN:'secret',APP_URL:'https://dashboard.kasimshah.com'};
+    process.env={...OLD_ENV,WEBSITE_ENGINE_API_URL:'https://engine.example.com',WEBSITE_ENGINE_API_TOKEN:'secret',WEBSITE_ENGINE_VERCEL_BYPASS_TOKEN:'preview-bypass',APP_URL:'https://dashboard.kasimshah.com'};
     supabase=queryClient();serviceClient={rpc:jest.fn().mockResolvedValue({error:null})};req={method:'POST',headers:{'x-workspace-id':'123e4567-e89b-12d3-a456-426614174000'},body:{siteId:'223e4567-e89b-12d3-a456-426614174000'}};
     res={status:jest.fn().mockReturnThis(),json:jest.fn(),setHeader:jest.fn(),end:jest.fn()};
     utils.requireAuth.mockResolvedValue({user:{id:'u1'},supabase});utils.createSupabaseServiceClient.mockReturnValue(serviceClient);websiteAccess.requireWebsiteWrite.mockResolvedValue({role:'editor'});
@@ -46,6 +46,7 @@ describe('booking-first Website Engine proxy',()=>{
     const body=JSON.parse(global.fetch.mock.calls[0][1].body);
     expect(body).toEqual(expect.objectContaining({name:'client.example.com',bookingLink:'/book',bookingProvider:'ks_os',paymentMode:'deposit',analyticsEndpoint:'https://dashboard.kasimshah.com/api/analytics/collect',bookingApiEndpoint:'https://dashboard.kasimshah.com/api/booking'}));
     expect(body.analyticsKey).toMatch(/^[0-9a-f-]{36}$/);
+    expect(global.fetch.mock.calls[0][1].headers['x-vercel-protection-bypass']).toBe('preview-bypass');
     expect(serviceClient.rpc).toHaveBeenCalledWith('record_website_compile_result',expect.objectContaining({p_actor_id:'u1',p_success:true,p_website_id:'site-id'}));
     expect(res.status).toHaveBeenCalledWith(200);
   });

@@ -39,6 +39,8 @@ describe('API Routes', () => {
   describe('GET /api/health', () => {
     it('returns component status', async () => {
       process.env.WEBSITE_ENGINE_API_URL = 'http://test-engine';
+      process.env.WEBSITE_ENGINE_API_TOKEN = 'engine-secret';
+      process.env.WEBSITE_ENGINE_VERCEL_BYPASS_TOKEN = 'preview-bypass';
       // Mock service client
       const mockSupabase = {
         from: jest.fn().mockReturnThis(),
@@ -60,6 +62,12 @@ describe('API Routes', () => {
           database: 'healthy',
           websiteEngine: 'healthy'
         })
+      }));
+      expect(global.fetch).toHaveBeenCalledWith('http://test-engine/api/templates', expect.objectContaining({
+        headers: {
+          Authorization: 'Bearer engine-secret',
+          'x-vercel-protection-bypass': 'preview-bypass'
+        }
       }));
     });
   });

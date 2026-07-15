@@ -173,6 +173,9 @@ module.exports = async function (req, res) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${engineToken}`,
           'X-Correlation-Id': correlationId,
+          ...(process.env.WEBSITE_ENGINE_VERCEL_BYPASS_TOKEN
+            ? { 'x-vercel-protection-bypass': process.env.WEBSITE_ENGINE_VERCEL_BYPASS_TOKEN }
+            : {}),
         },
         body: JSON.stringify({
           name: projectName,

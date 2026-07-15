@@ -36,7 +36,8 @@ async function resolveBookingContext(req,siteKey){
 async function callKsOs(context,path,options={}){
   const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),12000);
   try{
-    const response=await fetch(`${context.apiUrl}${path}`,{...options,headers:{Authorization:`Bearer ${context.serviceToken}`,'Content-Type':'application/json',...(options.headers||{})},signal:controller.signal});
+    const bypass=process.env.KS_OS_VERCEL_BYPASS_TOKEN;
+    const response=await fetch(`${context.apiUrl}${path}`,{...options,headers:{Authorization:`Bearer ${context.serviceToken}`,'Content-Type':'application/json',...(bypass?{'x-vercel-protection-bypass':bypass}:{}),...(options.headers||{})},signal:controller.signal});
     clearTimeout(timeout);let body={};try{body=await response.json();}catch{}
     return {ok:response.ok,status:response.status,body};
   }catch{clearTimeout(timeout);return {ok:false,status:503,body:{error:{code:'KS_OS_UNAVAILABLE'}}};}

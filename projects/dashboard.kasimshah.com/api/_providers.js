@@ -44,9 +44,11 @@ async function executeProviderJob(job, context = {}) {
     const token=context.credentials?.serviceToken;
     const tenantId=context.connection?.external_account_id;
     if(!token||!tenantId)return {succeeded:false,retryable:false,errorCode:'KS_OS_CREDENTIALS_INCOMPLETE'};
+    const bypass=process.env.KS_OS_VERCEL_BYPASS_TOKEN;
+    const serviceHeaders={Authorization:`Bearer ${token}`,...(bypass?{'x-vercel-protection-bypass':bypass}:{})};
     const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),10000);
     try{
-      const response=await fetch(`${apiUrl.replace(/\/$/,'')}/api/v1/service/tenants/${encodeURIComponent(tenantId)}/status`,{headers:{Authorization:`Bearer ${token}`},signal:controller.signal});
+      const response=await fetch(`${apiUrl.replace(/\/$/,'')}/api/v1/service/tenants/${encodeURIComponent(tenantId)}/status`,{headers:serviceHeaders,signal:controller.signal});
       clearTimeout(timeout);
       if(response.status===401||response.status===403)return {succeeded:false,retryable:false,errorCode:'KS_OS_AUTH_FAILED'};
       if(response.status===404)return {succeeded:false,retryable:false,errorCode:'KS_OS_TENANT_NOT_FOUND'};
@@ -54,7 +56,7 @@ async function executeProviderJob(job, context = {}) {
       const body=await response.json();
       if(!job.workspace_id)return {succeeded:false,retryable:false,errorCode:'KS_OS_WORKSPACE_LINK_MISSING'};
       const linkController=new AbortController();const linkTimeout=setTimeout(()=>linkController.abort(),10000);
-      const linkResponse=await fetch(`${apiUrl.replace(/\/$/,'')}/api/v1/service/tenants/${encodeURIComponent(tenantId)}/automation-link`,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({workspaceId:job.workspace_id}),signal:linkController.signal});
+      const linkResponse=await fetch(`${apiUrl.replace(/\/$/,'')}/api/v1/service/tenants/${encodeURIComponent(tenantId)}/automation-link`,{method:'POST',headers:{...serviceHeaders,'Content-Type':'application/json'},body:JSON.stringify({workspaceId:job.workspace_id}),signal:linkController.signal});
       clearTimeout(linkTimeout);
       if(!linkResponse.ok)return {succeeded:false,retryable:linkResponse.status>=500,errorCode:'KS_OS_AUTOMATION_LINK_FAILED'};
       return {succeeded:true,retryable:false,result:{tenantId:body.tenant?.id,readiness:body.readiness||{}}};
