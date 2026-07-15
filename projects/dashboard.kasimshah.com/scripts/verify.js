@@ -85,7 +85,7 @@ jsFilesToCheck.forEach(f => {
 // 2. Required files
 console.log('\n--- Required Files ---');
 const required = [
-  'index.html', 'styles.css', 'app.js', 'js/router.js',
+  'index.html', 'styles.css', 'elite.css', 'app.js', 'js/router.js',
   '../../control-panel/server.js',
   '.env.example', 'vercel.json', 'package.json',
   'supabase_migrations.sql',

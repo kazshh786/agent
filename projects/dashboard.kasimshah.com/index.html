@@ -8,6 +8,7 @@
   
   <!-- CSS Stylesheets -->
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="elite.css">
   
   <!-- FontAwesome & Fonts -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -138,21 +139,25 @@
   <div class="app-container" id="app-container" style="display:none;">
     
     <!-- SIDEBAR NAVIGATION -->
-    <aside class="sidebar">
+    <aside class="sidebar" aria-label="Application navigation">
       <div class="sidebar-logo">
-        <i class="fa-solid fa-microchip"></i>
-        <span>KASIM <span>SHAH</span></span>
+        <div class="brand-mark" aria-hidden="true">KS</div>
+        <div class="brand-copy"><strong>Growth OS</strong><span>Agency platform</span></div>
+        <span class="environment-chip">STAGING</span>
       </div>
       
       <nav aria-label="Main Navigation">
         <!-- AGENCY NAVIGATION GROUP -->
         <ul class="nav-menu" id="agency-nav-group" style="display:none;">
+          <li class="nav-section-label">Command centre</li>
           <li class="nav-item" data-hash="#/agency/overview"><a href="#/agency/overview"><i class="fa-solid fa-chart-pie"></i><span>Overview</span></a></li>
           <li class="nav-item" data-hash="#/agency/customers"><a href="#/agency/customers"><i class="fa-solid fa-users"></i><span>Customers</span></a></li>
           <li class="nav-item" data-hash="#/agency/provision"><a href="#/agency/provision"><i class="fa-solid fa-circle-plus"></i><span>Provision Workspace</span></a></li>
+          <li class="nav-section-label">Delivery</li>
           <li class="nav-item" data-hash="#/agency/websites"><a href="#/agency/websites"><i class="fa-solid fa-globe"></i><span>Websites</span></a></li>
           <li class="nav-item" data-hash="#/agency/analytics"><a href="#/agency/analytics"><i class="fa-solid fa-chart-column"></i><span>Analytics</span></a></li>
           <li class="nav-item" data-hash="#/agency/launch-readiness"><a href="#/agency/launch-readiness"><i class="fa-solid fa-rocket"></i><span>Launch Readiness</span></a></li>
+          <li class="nav-section-label">Platform</li>
           <li class="nav-item" data-hash="#/agency/integrations"><a href="#/agency/integrations"><i class="fa-solid fa-plug"></i><span>Integrations</span></a></li>
           <li class="nav-item" data-hash="#/agency/jobs"><a href="#/agency/jobs"><i class="fa-solid fa-server"></i><span>Jobs</span></a></li>
           <li class="nav-item" data-hash="#/agency/subscriptions"><a href="#/agency/subscriptions"><i class="fa-solid fa-credit-card"></i><span>Subscriptions</span></a></li>
@@ -162,109 +167,122 @@
 
         <!-- CUSTOMER NAVIGATION GROUP -->
         <ul class="nav-menu" id="customer-nav-group" style="display:none;">
+          <li class="nav-section-label">Performance</li>
           <li class="nav-item" data-route="overview"><a href="#/workspace/id/overview"><i class="fa-solid fa-chart-line"></i><span>Overview</span></a></li>
           <li class="nav-item" data-route="website"><a href="#/workspace/id/website"><i class="fa-solid fa-laptop-code"></i><span>Website</span></a></li>
           <li class="nav-item" data-route="analytics"><a href="#/workspace/id/analytics"><i class="fa-solid fa-chart-bar"></i><span>Analytics</span></a></li>
+          <li class="nav-section-label">Customers</li>
           <li class="nav-item" data-route="contacts"><a href="#/workspace/id/contacts"><i class="fa-solid fa-address-book"></i><span>Contacts</span></a></li>
           <li class="nav-item" data-route="email"><a href="#/workspace/id/email"><i class="fa-solid fa-envelope"></i><span>Email Marketing</span></a></li>
           <li class="nav-item" data-route="social"><a href="#/workspace/id/social"><i class="fa-solid fa-share-nodes"></i><span>Social Media</span></a></li>
           <li class="nav-item" data-route="booking"><a href="#/workspace/id/booking"><i class="fa-solid fa-calendar-check"></i><span>Booking</span></a></li>
           <li class="nav-item" data-route="automations"><a href="#/workspace/id/automations"><i class="fa-solid fa-bolt"></i><span>Automations</span></a></li>
+          <li class="nav-section-label">Workspace</li>
           <li class="nav-item" data-route="team"><a href="#/workspace/id/team"><i class="fa-solid fa-users-gear"></i><span>Team</span></a></li>
           <li class="nav-item" data-route="settings"><a href="#/workspace/id/settings"><i class="fa-solid fa-gear"></i><span>Settings</span></a></li>
         </ul>
       </nav>
       
       <!-- Mode Switcher (visible only for dual-mode users) -->
-      <div id="mode-switcher" style="display:none; padding: 8px 16px; gap: 4px; flex-direction: column;">
-        <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">Mode</div>
-        <div style="display:flex; gap:4px;">
-          <button id="mode-switch-agency" class="btn btn-secondary" style="flex:1; padding: 6px 8px; font-size: 0.75rem;">Agency</button>
-          <button id="mode-switch-customer" class="btn btn-secondary" style="flex:1; padding: 6px 8px; font-size: 0.75rem;">Customer</button>
+      <div id="mode-switcher" class="mode-switcher" style="display:none;">
+        <div class="sidebar-eyebrow">Switch experience</div>
+        <div class="mode-switcher-controls">
+          <button id="mode-switch-agency" class="mode-button"><i class="fa-solid fa-layer-group"></i> Agency</button>
+          <button id="mode-switch-customer" class="mode-button"><i class="fa-solid fa-store"></i> Customer</button>
         </div>
       </div>
 
-      <div id="workspace-selector-container" style="padding: 16px;">
-        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Workspace</div>
-        <select id="workspace-selector" class="form-control select-control" style="background-color: rgba(0,0,0,0.2); padding: 8px;">
+      <div id="workspace-selector-container" class="workspace-switcher">
+        <div class="sidebar-eyebrow">Current workspace</div>
+        <select id="workspace-selector" class="form-control select-control">
           <!-- Populated by app.js -->
         </select>
       </div>
 
-      <div class="sidebar-footer" style="flex-direction: column; gap: 12px; align-items: stretch;">
-        <div style="display:flex; align-items:center; gap:12px; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px; margin-bottom: 12px;">
-          <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary-color); display:flex; justify-content:center; align-items:center; font-weight: bold; font-size: 0.8rem;">
+      <div class="sidebar-footer">
+        <div class="user-card">
+          <div class="user-avatar">
             <i class="fa-solid fa-user"></i>
           </div>
-          <div style="flex-grow: 1; overflow: hidden;">
-            <div id="user-display-name" style="font-weight: 600; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">User</div>
-            <div id="user-display-email" style="font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+          <div class="user-copy">
+            <div id="user-display-name">User</div>
+            <div id="user-display-email"></div>
           </div>
-          <button id="btn-logout" style="background:none; border:none; color:var(--text-muted); cursor:pointer;" title="Logout">
+          <button id="btn-logout" class="icon-button" title="Logout" aria-label="Log out">
             <i class="fa-solid fa-right-from-bracket"></i>
           </button>
         </div>
-
-        <div class="connection-pill">
-          <span><i class="fa-solid fa-bolt"></i> Local Engine</span>
-          <span><span class="status-dot offline" id="api-status-dot"></span> <small id="api-status-text">OFFLINE</small></span>
-        </div>
-        <div class="connection-pill">
-          <span><i class="fa-solid fa-database"></i> Database Cloud</span>
-          <span><span class="status-dot offline" id="db-status-dot"></span> <small id="db-status-text">DISCONNECTED</small></span>
+        <div class="system-status-row">
+          <span title="Website engine"><span class="status-dot offline" id="api-status-dot"></span><small id="api-status-text">ENGINE</small></span>
+          <span title="Database"><span class="status-dot offline" id="db-status-dot"></span><small id="db-status-text">DATABASE</small></span>
         </div>
       </div>
     </aside>
     
     <!-- MAIN WORKSPACE -->
     <main class="workspace" aria-label="Main Workspace Content">
+      <header class="app-topbar">
+        <button id="mobile-nav-toggle" class="icon-button mobile-nav-toggle" aria-label="Open navigation"><i class="fa-solid fa-bars"></i></button>
+        <div class="topbar-context"><span id="topbar-mode">Agency</span><i class="fa-solid fa-chevron-right"></i><strong id="topbar-view">Overview</strong></div>
+        <div class="topbar-actions"><span class="sync-indicator"><i class="fa-solid fa-shield-halved"></i> Secure workspace</span><button class="icon-button" title="Help"><i class="fa-regular fa-circle-question"></i></button></div>
+      </header>
       
       <!-- ================= AGENCY VIEWS ================= -->
       <section class="dashboard-view" id="view-agency-overview" tabindex="-1">
-        <div class="workspace-header">
+        <div class="workspace-header hero-header">
           <div class="workspace-title">
-            <h1>Agency Overview</h1>
-            <p>Platform telemetry and workspace provisioning.</p>
+            <span class="page-eyebrow">Portfolio command centre</span>
+            <h1>Run every customer workspace from one place.</h1>
+            <p>Provision, launch and monitor booking-first growth systems without losing operational control.</p>
           </div>
           <div class="workspace-actions">
-            <a href="#/agency/provision" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Provision Customer</a>
+            <a href="#/agency/customers" class="btn btn-secondary"><i class="fa-solid fa-grip"></i> View portfolio</a>
+            <a href="#/agency/provision" class="btn btn-primary"><i class="fa-solid fa-plus"></i> New workspace</a>
           </div>
         </div>
-        <div class="stats-grid">
-          <div class="glass-card stat-card"><div class="stat-card-content"><div class="stat-info"><span class="stat-title">Active Workspaces</span><span class="stat-value" id="agency-stat-active">0</span></div><div class="stat-icon"><i class="fa-solid fa-building-circle-check"></i></div></div></div>
-          <div class="glass-card stat-card"><div class="stat-card-content"><div class="stat-info"><span class="stat-title">Provisioning</span><span class="stat-value" id="agency-stat-provisioning">0</span></div><div class="stat-icon"><i class="fa-solid fa-spinner"></i></div></div></div>
-          <div class="glass-card stat-card"><div class="stat-card-content"><div class="stat-info"><span class="stat-title">Suspended</span><span class="stat-value" id="agency-stat-suspended">0</span></div><div class="stat-icon"><i class="fa-solid fa-ban"></i></div></div></div>
-          <div class="glass-card stat-card"><div class="stat-card-content"><div class="stat-info"><span class="stat-title">Failed</span><span class="stat-value" id="agency-stat-failed">0</span></div><div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div></div></div>
+        <div class="stats-grid executive-stats">
+          <div class="glass-card stat-card"><div class="stat-card-content"><div class="stat-info"><span class="stat-title">Live workspaces</span><span class="stat-value" id="agency-stat-active">0</span><span class="stat-footnote">Customer systems operating</span></div><div class="stat-icon"><i class="fa-solid fa-building-circle-check"></i></div></div></div>
+          <div class="glass-card stat-card"><div class="stat-card-content"><div class="stat-info"><span class="stat-title">In launch pipeline</span><span class="stat-value" id="agency-stat-provisioning">0</span><span class="stat-footnote">Awaiting setup or owner</span></div><div class="stat-icon"><i class="fa-solid fa-spinner"></i></div></div></div>
+          <div class="glass-card stat-card"><div class="stat-card-content"><div class="stat-info"><span class="stat-title">Suspended</span><span class="stat-value" id="agency-stat-suspended">0</span><span class="stat-footnote">Action may be required</span></div><div class="stat-icon"><i class="fa-solid fa-ban"></i></div></div></div>
+          <div class="glass-card stat-card"><div class="stat-card-content"><div class="stat-info"><span class="stat-title">Failed checks</span><span class="stat-value" id="agency-stat-failed">0</span><span class="stat-footnote">Launch blockers</span></div><div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div></div></div>
+        </div>
+        <div class="command-grid">
+          <a class="command-card" href="#/agency/websites"><span class="command-icon violet"><i class="fa-solid fa-wand-magic-sparkles"></i></span><span><strong>Website studio</strong><small>Create and compile conversion-led sites.</small></span><i class="fa-solid fa-arrow-right"></i></a>
+          <a class="command-card" href="#/agency/launch-readiness"><span class="command-icon green"><i class="fa-solid fa-rocket"></i></span><span><strong>Launch control</strong><small>Run the full go-live gate for a workspace.</small></span><i class="fa-solid fa-arrow-right"></i></a>
+          <a class="command-card" href="#/agency/integrations"><span class="command-icon amber"><i class="fa-solid fa-plug"></i></span><span><strong>Connections</strong><small>Link KS OS and delivery providers securely.</small></span><i class="fa-solid fa-arrow-right"></i></a>
         </div>
       </section>
 
       <section class="dashboard-view" id="view-agency-customers" tabindex="-1">
-        <div class="workspace-header"><div class="workspace-title"><h1>Customers</h1><p>Manage all platform workspaces.</p></div></div>
+        <div class="workspace-header"><div class="workspace-title"><span class="page-eyebrow">Portfolio</span><h1>Customer workspaces</h1><p>See lifecycle, entitlements and next actions at a glance.</p></div><div class="workspace-actions"><a class="btn btn-primary" href="#/agency/provision"><i class="fa-solid fa-plus"></i> New workspace</a></div></div>
         <div id="agency-workspace-list" class="glass-card" style="padding: 24px;">Loading customers...</div>
       </section>
 
       <section class="dashboard-view" id="view-agency-provision" tabindex="-1">
-        <div class="workspace-header"><div class="workspace-title"><h1>Provision Workspace</h1><p>Create a new customer workspace.</p></div></div>
-        <form id="wizard-form" class="glass-card" style="padding:24px;display:grid;gap:20px;max-width:900px;">
+        <div class="workspace-header"><div class="workspace-title"><span class="page-eyebrow">New customer</span><h1>Provision a growth workspace</h1><p>Set the customer identity and launch entitlements. Nothing publishes automatically.</p></div></div>
+        <div class="provision-layout">
+        <form id="wizard-form" class="glass-card provision-form">
+          <div class="form-section-heading"><span>01</span><div><strong>Customer identity</strong><small>The details used across the agency control plane.</small></div></div>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;">
             <label class="form-group"><span>Workspace name</span><input id="wizName" class="form-control" required minlength="2" maxlength="100" placeholder="KS Studio"></label>
             <label class="form-group"><span>Workspace slug</span><input id="wizSubdomain" class="form-control" required minlength="3" maxlength="63" pattern="[a-z0-9][a-z0-9-]{1,61}[a-z0-9]" placeholder="ks-studio"></label>
             <label class="form-group"><span>Customer name</span><input id="wizCustomerName" class="form-control" required maxlength="100" placeholder="Customer or business owner"></label>
             <label class="form-group"><span>Customer email</span><input id="wizCustomerEmail" class="form-control" type="email" required placeholder="owner@example.com"></label>
           </div>
-          <fieldset style="border:0;padding:0;margin:0;">
-            <legend style="font-weight:700;margin-bottom:12px;">Launch modules</legend>
-            <div style="display:flex;flex-wrap:wrap;gap:16px;">
-              <label><input class="module-checkbox" type="checkbox" value="website" checked> Website</label>
-              <label><input class="module-checkbox" type="checkbox" value="booking" checked> Booking</label>
-              <label><input class="module-checkbox" type="checkbox" value="analytics" checked> Analytics</label>
-              <label><input class="module-checkbox" type="checkbox" value="automations" checked> Automations</label>
-              <label><input class="module-checkbox" type="checkbox" value="contacts"> Contacts</label>
+          <fieldset class="module-fieldset">
+            <div class="form-section-heading"><span>02</span><div><strong>Launch modules</strong><small>Choose what this customer can use.</small></div></div>
+            <div class="module-choice-grid">
+              <label class="module-choice"><input class="module-checkbox" type="checkbox" value="website" checked><span><i class="fa-solid fa-globe"></i><strong>Website</strong><small>Builder and publishing</small></span></label>
+              <label class="module-choice"><input class="module-checkbox" type="checkbox" value="booking" checked><span><i class="fa-solid fa-calendar-check"></i><strong>Booking</strong><small>Shop and mobile schedules</small></span></label>
+              <label class="module-choice"><input class="module-checkbox" type="checkbox" value="analytics" checked><span><i class="fa-solid fa-chart-simple"></i><strong>Analytics</strong><small>Attribution and revenue</small></span></label>
+              <label class="module-choice"><input class="module-checkbox" type="checkbox" value="automations" checked><span><i class="fa-solid fa-bolt"></i><strong>Automations</strong><small>Event-led workflows</small></span></label>
+              <label class="module-choice"><input class="module-checkbox" type="checkbox" value="contacts"><span><i class="fa-solid fa-address-book"></i><strong>Contacts</strong><small>Customer records</small></span></label>
             </div>
           </fieldset>
-          <p style="color:var(--text-muted);margin:0;">This creates the customer workspace and entitlements. After provisioning, open <strong>Websites</strong> to create its booking-first site and <strong>Integrations</strong> to connect KS OS.</p>
-          <div><button id="wiz-btn-next" class="btn btn-primary" type="submit"><i class="fa-solid fa-building-circle-check"></i> Provision Workspace</button></div>
+          <div class="form-submit-row"><p>Creates a secure, unpublished workspace.</p><button id="wiz-btn-next" class="btn btn-primary" type="submit"><i class="fa-solid fa-arrow-right"></i> Create and open setup</button></div>
         </form>
+        <aside class="launch-sequence-card"><span class="page-eyebrow">What happens next</span><h2>Your controlled launch path</h2><ol><li><span>1</span><div><strong>Workspace created</strong><small>Modules and customer identity are isolated.</small></div></li><li><span>2</span><div><strong>Build the booking-first site</strong><small>Every site receives a conversion-focused /book route.</small></div></li><li><span>3</span><div><strong>Connect KS OS</strong><small>Services, availability and payments become available.</small></div></li><li><span>4</span><div><strong>Invite and launch</strong><small>The customer accepts access before activation.</small></div></li></ol></aside>
+        </div>
       </section>
 
       <section class="dashboard-view" id="view-agency-websites" tabindex="-1">
@@ -308,7 +326,9 @@
 
       <!-- ================= CUSTOMER VIEWS ================= -->
       <section class="dashboard-view" id="view-workspace-overview" tabindex="-1">
-        <div class="workspace-header"><div class="workspace-title"><h1 id="customer-overview-title">Workspace Overview</h1><p>Your marketing operations.</p></div></div>
+        <div class="workspace-header hero-header customer-hero"><div class="workspace-title"><span class="page-eyebrow">Growth workspace</span><h1 id="customer-overview-title">Workspace Overview</h1><p>Your website, booking journey and marketing performance in one focused view.</p></div><div class="workspace-actions"><a class="btn btn-primary" data-customer-shortcut="booking" href="#"><i class="fa-solid fa-calendar-plus"></i> Booking setup</a></div></div>
+        <div class="customer-priority-strip"><span class="priority-icon"><i class="fa-solid fa-bullseye"></i></span><div><strong>Your core conversion</strong><p>Turn website visits into confirmed shop or mobile bookings.</p></div><span class="status-chip">Booking-first</span></div>
+        <div class="section-heading"><div><span class="page-eyebrow">Workspace tools</span><h2>Growth stack</h2></div><p>Only enabled products can be opened.</p></div>
         <div id="customer-module-grid" class="stats-grid">
            <!-- Rendered by JS dynamically based on real entitlements -->
         </div>
@@ -368,7 +388,7 @@
       <h2 style="font-family:var(--font-display); margin-bottom:12px;">No Workspace Assigned</h2>
       <p data-editable="true" style="color:var(--text-secondary); font-size:0.9rem; line-height:1.6; margin-bottom:24px;">No customer workspace has been assigned to this account. Please use the invitation link sent by Kasim Shah Agency, or contact support for assistance.</p>
       <div style="display:flex; gap:12px; justify-content:center;">
-        <button class="btn btn-secondary" id="btn-unassigned-logout">Log Out</button>
+        <button class="btn btn-secondary" id="btn-unassigned-logout-view">Log Out</button>
       </div>
     </div>
   </div>

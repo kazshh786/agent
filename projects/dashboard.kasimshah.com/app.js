@@ -709,20 +709,24 @@ function showUnassignedScreen() {
 
 // --- MODE ROUTING ---
 function applyModeRouting() {
-  const agencyNav = document.getElementById('nav-agency');
-  const customerNavItems = document.querySelectorAll('.nav-item-customer');
+  const agencyNav = document.getElementById('agency-nav-group');
+  const customerNav = document.getElementById('customer-nav-group');
   const modeSwitcher = document.getElementById('mode-switcher');
   const wsSelector = document.getElementById('workspace-selector-container');
+  const agencyButton = document.getElementById('mode-switch-agency');
+  const customerButton = document.getElementById('mode-switch-customer');
 
   if (AppState.currentMode === 'agency') {
-    if (agencyNav) agencyNav.style.display = 'block';
-    customerNavItems.forEach(el => el.style.display = 'none');
+    if (agencyNav) agencyNav.style.display = 'flex';
+    if (customerNav) customerNav.style.display = 'none';
     if (wsSelector) wsSelector.style.display = 'none';
   } else {
     if (agencyNav) agencyNav.style.display = 'none';
-    customerNavItems.forEach(el => el.style.display = 'block');
+    if (customerNav) customerNav.style.display = 'flex';
     if (wsSelector) wsSelector.style.display = 'block';
   }
+  agencyButton?.classList.toggle('active', AppState.currentMode === 'agency');
+  customerButton?.classList.toggle('active', AppState.currentMode === 'customer');
 
   // Show mode switcher if user has both modes
   if (modeSwitcher && AppState.permittedModes.length > 1) {
@@ -782,7 +786,14 @@ async function navigate(mode, viewId, workspaceId) {
     window.KSRouter.applyViewAccessibility(document, target, mode, viewId);
   }
 
+  const topbarMode = document.getElementById('topbar-mode');
+  const topbarView = document.getElementById('topbar-view');
+  if (topbarMode) topbarMode.textContent = mode === 'agency' ? 'Agency OS' : (AppState.currentWorkspace?.name || 'Customer workspace');
+  if (topbarView) topbarView.textContent = viewId.split('-').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
+  document.querySelector('.sidebar')?.classList.remove('mobile-open');
+
   if (mode === 'agency' && viewId === 'overview') renderAgencyControlCentre();
+  else if (mode === 'agency' && viewId === 'customers') renderAgencyControlCentre();
   else if (mode === 'agency' && viewId === 'websites') renderAgencyWebsites();
   else if (mode === 'agency' && viewId === 'analytics') renderAgencyAnalytics();
   else if (mode === 'agency' && viewId === 'launch-readiness') renderLaunchReadiness();
@@ -824,36 +835,47 @@ async function renderWebsiteManager(host,workspaceId,isAgency){
   try{data=await apiRequest(`/websites?workspaceId=${encodeURIComponent(workspaceId)}`);}catch(error){loading.textContent=error.message;return;}
   loading.remove();
   const canManage=isAgency||['owner','admin','editor'].includes(AppState.currentWorkspace?.role);
-  const form=createEl('form',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:'12px',marginBottom:'24px'}},[
-    createEl('input',{className:'form-control',name:'name',placeholder:'Website name',required:true}),
-    createEl('input',{className:'form-control',name:'domain',placeholder:'client.kasimshah.com',required:true}),
-    createEl('select',{className:'form-control select-control',name:'template'},[createEl('option',{value:'editorial-luxe',textContent:'Editorial Luxe'})]),
-    createEl('select',{className:'form-control select-control',name:'paymentMode'},[
+  const form=createEl('form',{className:'website-create-form'},[
+    createEl('div',{className:'builder-intro'},[
+      createEl('span',{className:'command-icon violet'},[createEl('i',{className:'fa-solid fa-wand-magic-sparkles'})]),
+      createEl('div',{},[createEl('strong',{textContent:'Create a booking-first website'}),createEl('p',{textContent:'Every build includes the required /book conversion route and first-party analytics contract.'})])
+    ]),
+    websiteFormField('Website name',createEl('input',{className:'form-control',name:'name',placeholder:'Bare Beauty',required:true})),
+    websiteFormField('Primary domain',createEl('input',{className:'form-control',name:'domain',placeholder:'barebeauty.co.uk',required:true})),
+    websiteFormField('Design system',createEl('select',{className:'form-control select-control',name:'template'},[createEl('option',{value:'editorial-luxe',textContent:'Editorial Luxe'})])),
+    websiteFormField('Booking payment',createEl('select',{className:'form-control select-control',name:'paymentMode'},[
       createEl('option',{value:'pay_later',textContent:'Pay later / in person'}),createEl('option',{value:'no_payment',textContent:'No payment'}),
       createEl('option',{value:'deposit',textContent:'Deposit required'}),createEl('option',{value:'full_payment',textContent:'Full payment'}),
-      createEl('option',{value:'customer_choice',textContent:'Customer choice'})]),
-    createEl('button',{className:'btn btn-primary',type:'submit',textContent:'Create booking-first website'})
+      createEl('option',{value:'customer_choice',textContent:'Customer choice'})])),
+    createEl('button',{className:'btn btn-primary',type:'submit'},[createEl('i',{className:'fa-solid fa-plus'}),'Create website'])
   ]);
   form.addEventListener('submit',async event=>{event.preventDefault();const button=form.querySelector('button');button.disabled=true;try{
     await apiRequest('/websites',{method:'POST',body:JSON.stringify({workspaceId,name:form.elements.name.value.trim(),templateName:form.elements.template.value,primaryDomain:form.elements.domain.value.trim().toLowerCase(),paymentMode:form.elements.paymentMode.value})});
     showToast('Website created with the required /book conversion route.','success');await renderWebsiteManager(host,workspaceId,isAgency);
   }catch(error){showToast(error.message,'error');}finally{button.disabled=false;}});
   if(canManage)host.appendChild(form);
-  if(!data.websites.length){host.appendChild(createEl('p',{textContent:'No websites configured for this workspace.'}));return;}
+  if(!data.websites.length){host.appendChild(createEl('div',{className:'premium-empty-state'},[createEl('i',{className:'fa-regular fa-window-maximize'}),createEl('strong',{textContent:'No website created yet'}),createEl('p',{textContent:'Use the builder setup above to create the workspace’s booking-first website.'})]));return;}
   data.websites.forEach(site=>{
-    const readiness=site.bookingReadiness;const card=createEl('div',{className:'glass-card',style:{padding:'18px',marginTop:'12px'}},[
-      createEl('div',{style:{display:'flex',justifyContent:'space-between',gap:'12px',alignItems:'flex-start'}},[
-        createEl('div',{},[createEl('h3',{textContent:site.primary_domain}),createEl('p',{textContent:`Primary conversion: ${site.booking_path} · Payment: ${site.payment_mode}`,style:{color:'var(--text-secondary)',fontSize:'.8rem'}})]),
+    const readiness=site.bookingReadiness;const card=createEl('div',{className:'site-project-card'},[
+      createEl('div',{className:'site-preview-tile'},[createEl('i',{className:'fa-solid fa-globe'}),createEl('span',{textContent:'Website preview'})]),
+      createEl('div',{className:'site-project-main'},[
+      createEl('div',{className:'site-project-heading'},[
+        createEl('div',{},[createEl('span',{className:'page-eyebrow',textContent:'Primary website'}),createEl('h3',{textContent:site.primary_domain}),createEl('p',{textContent:`Conversion route ${site.booking_path} · ${String(site.payment_mode || 'not configured').replaceAll('_',' ')}`})]),
         createEl('span',{className:`badge ${site.publishReady?'badge-success':'badge-warning'}`,textContent:site.publishReady?'Publish ready':site.status})]),
-      createEl('p',{textContent:readiness.ready?'KS OS booking connection is ready.':`Publishing blocked: ${readiness.reasons.join(', ')}`,style:{color:readiness.ready?'var(--success-color)':'var(--warning-color)',marginTop:'12px'}})
+      createEl('div',{className:`site-readiness ${readiness.ready?'ready':''}`},[createEl('i',{className:`fa-solid ${readiness.ready?'fa-circle-check':'fa-circle-exclamation'}`}),createEl('span',{textContent:readiness.ready?'KS OS booking connection is ready.':`Publishing blocked: ${readiness.reasons.join(', ')}`})])
+      ])
     ]);
-    const actions=createEl('div',{style:{display:'flex',gap:'8px',marginTop:'12px'}});
+    const actions=createEl('div',{className:'site-project-actions'});
     const compile=createEl('button',{className:'btn btn-secondary',textContent:'Compile website + booking page'});
     compile.addEventListener('click',async()=>{compile.disabled=true;try{await apiRequest('/website-engine/compile',{method:'POST',headers:{'X-Workspace-Id':workspaceId},body:JSON.stringify({siteId:site.id})});showToast('Website compiled with booking route and conversion tracking.','success');await renderWebsiteManager(host,workspaceId,isAgency);}catch(error){showToast(error.message,'error');}finally{compile.disabled=false;}});
     if(canManage)actions.appendChild(compile);
     if(site.live_url)actions.appendChild(createEl('a',{className:'btn btn-secondary',href:site.live_url,target:'_blank',rel:'noopener',textContent:'Preview'}));
-    card.appendChild(actions);host.appendChild(card);
+    card.querySelector('.site-project-main').appendChild(actions);host.appendChild(card);
   });
+}
+
+function websiteFormField(label, control) {
+  return createEl('label',{className:'form-group'},[createEl('span',{textContent:label}),control]);
 }
 
 async function renderCustomerAnalytics(){
@@ -1335,7 +1357,7 @@ function bindAuthForms() {
 
   // Logout buttons
   document.getElementById('btn-logout')?.addEventListener('click', handleLogout);
-  document.getElementById('btn-unassigned-logout')?.addEventListener('click', handleLogout);
+  document.getElementById('btn-unassigned-logout-view')?.addEventListener('click', handleLogout);
 }
 
 function bindWorkspaceForms() {
@@ -1362,6 +1384,14 @@ function bindWorkspaceForms() {
     } else {
       showUnassignedScreen();
     }
+  });
+  document.getElementById('mobile-nav-toggle')?.addEventListener('click', () => {
+    document.querySelector('.sidebar')?.classList.toggle('mobile-open');
+  });
+  document.querySelector('[data-customer-shortcut="booking"]')?.addEventListener('click', event => {
+    event.preventDefault();
+    const wsId = AppState.currentWorkspace?.id || AppState.workspaces[0]?.id;
+    if (wsId) window.location.hash = `#/workspace/${wsId}/booking`;
   });
 }
 
@@ -1414,22 +1444,17 @@ async function checkApiHealth() {
 // --- 9. DYNAMIC ROUTING & NAVIGATION ---
 
 function setupNavigation() {
-  const links = document.querySelectorAll('.nav-item, .nav-item-customer');
-  links.forEach(link => {
-    link.addEventListener('click', (e) => {
-      const view = link.getAttribute('data-view');
-      if (view) {
-        e.preventDefault();
-        const mode = AppState.currentMode || 'customer';
-        if (mode === 'agency') {
-          window.location.hash = `#/agency/${view}`;
-        } else {
-          const wsId = AppState.currentWorkspace?.id || AppState.workspaces[0]?.id || '';
-          if (wsId) {
-            window.location.hash = `#/workspace/${wsId}/${view}`;
-          }
-        }
-      }
+  document.querySelectorAll('#agency-nav-group [data-hash]').forEach(item => {
+    item.querySelector('a')?.addEventListener('click', event => {
+      event.preventDefault();
+      window.location.hash = item.dataset.hash;
+    });
+  });
+  document.querySelectorAll('#customer-nav-group [data-route]').forEach(item => {
+    item.querySelector('a')?.addEventListener('click', event => {
+      event.preventDefault();
+      const wsId = AppState.currentWorkspace?.id || AppState.workspaces[0]?.id;
+      if (wsId) window.location.hash = `#/workspace/${wsId}/${item.dataset.route}`;
     });
   });
   
@@ -1680,35 +1705,32 @@ function renderOverviewTelemetry() {
   const modules = AppState.currentWorkspace.modules || [];
   
   const moduleDefs = [
-    { id: 'website', name: 'Web Engine', icon: 'fa-code', route: 'website' },
-    { id: 'analytics', name: 'Analytics', icon: 'fa-chart-bar', route: 'analytics' },
-    { id: 'contacts', name: 'Contacts', icon: 'fa-address-book', route: 'contacts' },
-    { id: 'email', name: 'Email Marketing', icon: 'fa-envelope', route: 'email' },
-    { id: 'social', name: 'Social Media', icon: 'fa-share-nodes', route: 'social' },
-    { id: 'booking', name: 'Booking', icon: 'fa-calendar-check', route: 'booking' },
-    { id: 'automations', name: 'Automations', icon: 'fa-bolt', route: 'automations' },
-    { id: 'team', name: 'Team', icon: 'fa-users-gear', route: 'team' }
+    { id: 'website', name: 'Website', description: 'Pages, domain and booking journey', icon: 'fa-globe', route: 'website' },
+    { id: 'analytics', name: 'Analytics', description: 'Sessions, bookings and attribution', icon: 'fa-chart-simple', route: 'analytics' },
+    { id: 'booking', name: 'Booking', description: 'Shop and mobile availability', icon: 'fa-calendar-check', route: 'booking' },
+    { id: 'automations', name: 'Automations', description: 'Event-led customer workflows', icon: 'fa-bolt', route: 'automations' },
+    { id: 'contacts', name: 'Contacts', description: 'Customer records and activity', icon: 'fa-address-book', route: 'contacts' },
+    { id: 'email', name: 'Email Marketing', description: 'Campaigns and lifecycle messaging', icon: 'fa-envelope', route: 'email' },
+    { id: 'social', name: 'Social Media', description: 'Publishing and performance', icon: 'fa-share-nodes', route: 'social' },
+    { id: 'team', name: 'Team', description: 'Access and workspace roles', icon: 'fa-users-gear', route: 'team' }
   ];
 
   moduleDefs.forEach(def => {
     const mod = modules.find(m => m.module === def.id);
     const isEnabled = mod && mod.enabled;
-    const statusText = isEnabled ? 'ENABLED' : 'NOT ENABLED';
-    const statusClass = isEnabled ? 'positive' : 'neutral';
-    
-    const card = createEl('div', { className: `glass-card stat-card ${isEnabled ? '' : 'disabled'}` }, [
-      createEl('div', { className: 'stat-card-content' }, [
-        createEl('div', { className: 'stat-info' }, [
-          createEl('span', { className: 'stat-title', textContent: def.name }),
-          createEl('span', { className: 'stat-value', style: { fontSize: '1rem', marginTop: '4px' }, textContent: isEnabled ? 'Active' : 'Locked' }),
-          createEl('span', { className: `stat-trend ${statusClass}` }, [
-             createEl('i', { className: `fa-solid ${isEnabled ? 'fa-check' : 'fa-lock'}` }),
-             document.createTextNode(` ${statusText}`)
-          ])
-        ]),
-        createEl('div', { className: 'stat-icon' }, [
-          createEl('i', { className: `fa-solid ${def.icon}` })
-        ])
+    const deferred = def.id === 'email' || def.id === 'social';
+    const card = createEl('div', { className: `glass-card module-card ${isEnabled ? 'enabled' : 'disabled'}` }, [
+      createEl('div', { className: 'module-card-top' }, [
+        createEl('span', { className: 'module-card-icon' }, [createEl('i', { className: `fa-solid ${def.icon}` })]),
+        createEl('span', { className: `module-state ${isEnabled ? 'enabled' : ''}`, textContent: isEnabled ? 'Enabled' : (deferred ? 'Upcoming' : 'Not enabled') })
+      ]),
+      createEl('div', { className: 'module-card-copy' }, [
+        createEl('strong', { textContent: def.name }),
+        createEl('p', { textContent: def.description })
+      ]),
+      createEl('div', { className: 'module-card-action' }, [
+        createEl('span', { textContent: isEnabled ? 'Open product' : 'Contact your agency' }),
+        createEl('i', { className: `fa-solid ${isEnabled ? 'fa-arrow-right' : 'fa-lock'}` })
       ])
     ]);
     
@@ -1768,6 +1790,34 @@ function renderCustomerModuleState(moduleId) {
   const entitlement = (AppState.currentWorkspace?.modules || []).find(item => item.module === moduleId);
   const enabled = Boolean(entitlement?.enabled);
   clearEl(target);
+
+  if (moduleId === 'booking' && enabled) {
+    target.appendChild(createEl('div', { className: 'booking-product-shell' }, [
+      createEl('div', { className: 'workspace-header' }, [
+        createEl('div', { className: 'workspace-title' }, [
+          createEl('span', { className: 'page-eyebrow', textContent: 'KS OS booking' }),
+          createEl('h1', { textContent: 'Booking operations' }),
+          createEl('p', { textContent: 'Manage the conversion journey from website CTA to confirmed shop or mobile appointment.' })
+        ]),
+        createEl('span', { className: 'status-chip', textContent: 'Module enabled' })
+      ]),
+      createEl('div', { className: 'booking-channel-grid' }, [
+        bookingCapabilityCard('fa-store', 'Shop appointments', 'A dedicated in-location schedule with its own opening hours and availability.'),
+        bookingCapabilityCard('fa-car-side', 'Mobile appointments', 'A separate mobile-service schedule for travel windows and service coverage.'),
+        bookingCapabilityCard('fa-credit-card', 'Flexible payment', 'Support pay later, no payment, deposits, full payment or customer choice.'),
+        bookingCapabilityCard('fa-link', 'Conversion-first /book route', 'The website header and footer remain consistent throughout the booking journey.')
+      ]),
+      createEl('div', { className: 'booking-setup-notice' }, [
+        createEl('i', { className: 'fa-solid fa-plug-circle-exclamation' }),
+        createEl('div', {}, [
+          createEl('strong', { textContent: 'Customer booking controls are awaiting the KS OS management connection' }),
+          createEl('p', { textContent: 'Your agency can complete the connection from Agency OS → Integrations. No booking data is fabricated while setup is incomplete.' })
+        ])
+      ])
+    ]));
+    return;
+  }
+
   target.appendChild(createEl('div', { style: { padding: '40px', textAlign: 'center', color: 'var(--text-muted)' } }, [
     createEl('i', { className: `fa-solid ${enabled ? 'fa-plug-circle-exclamation' : 'fa-lock'}`, style: { fontSize: '3rem', marginBottom: '16px' } }),
     createEl('h2', { textContent: enabled ? 'Enabled — setup pending' : 'Module not enabled' }),
@@ -1775,6 +1825,15 @@ function renderCustomerModuleState(moduleId) {
       ? 'Your agency has enabled this module, but its customer interface or provider connection is not configured yet.'
       : 'This module is not included in this workspace. Contact your agency if you need access.' })
   ]));
+}
+
+function bookingCapabilityCard(icon, title, description) {
+  return createEl('div', { className: 'booking-capability-card' }, [
+    createEl('span', { className: 'module-card-icon' }, [createEl('i', { className: `fa-solid ${icon}` })]),
+    createEl('strong', { textContent: title }),
+    createEl('p', { textContent: description }),
+    createEl('span', { className: 'module-state enabled', textContent: 'Available in KS OS' })
+  ]);
 }
 
 const automationTriggerOptions = [

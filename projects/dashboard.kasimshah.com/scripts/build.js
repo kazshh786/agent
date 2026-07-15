@@ -23,7 +23,7 @@ console.log('\n🔨 Build: Production Validation\n');
 // 1. Check required files exist
 console.log('--- Required Files ---');
 const requiredFiles = [
-  'index.html', 'styles.css', 'app.js', 'js/router.js',
+  'index.html', 'styles.css', 'elite.css', 'app.js', 'js/router.js',
   '../../control-panel/server.js',
   'vercel.json', 'package.json', '.env.example',
   'api/_utils.js', 'api/health.js', 'api/me.js',
