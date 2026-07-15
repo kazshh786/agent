@@ -665,30 +665,19 @@ function renderWorkspaceSelector() {
 async function selectWorkspace(workspace) {
   if (!workspace || !workspace.id) return;
 
-  // Revalidate membership server-side
+  // Load the customer-safe workspace contract. This revalidates membership and
+  // hydrates status/module entitlements before any customer view is rendered.
   try {
-    const { data, error } = await supabaseClient
-      .from('workspace_members')
-      .select('role')
-      .eq('workspace_id', workspace.id)
-      .eq('user_id', AppState.user.id)
-      .single();
-
-    if (error || !data) {
-      showToast('You no longer have access to this workspace.', 'error');
-      AppState.workspaces = AppState.workspaces.filter(w => w.id !== workspace.id);
-      renderWorkspaceSelector();
-      if (AppState.workspaces.length > 0) {
-        await selectWorkspace(AppState.workspaces[0]);
-      } else {
-        showUnassignedScreen();
-      }
-      return;
-    }
-
-    workspace.role = data.role;
+    const hydrated = await apiRequest(`/customer/workspaces/${encodeURIComponent(workspace.id)}`);
+    workspace = { ...workspace, ...hydrated };
   } catch (err) {
-    console.error('Workspace validation failed:', err);
+    console.error('Workspace hydration failed:', err);
+    showToast('You no longer have access to this workspace.', 'error');
+    AppState.workspaces = AppState.workspaces.filter(w => w.id !== workspace.id);
+    renderWorkspaceSelector();
+    if (AppState.workspaces.length > 0) await selectWorkspace(AppState.workspaces[0]);
+    else showUnassignedScreen();
+    return;
   }
 
   AppState.currentWorkspace = workspace;
@@ -1182,7 +1171,7 @@ async function handleAgencyProvision(e) {
   const customerEmail = document.getElementById('wizCustomerEmail')?.value.trim();
 
   // Gather selected modules
-  const moduleCheckboxes = document.querySelectorAll('.module-checkbox:checked');
+  const moduleCheckboxes = e.currentTarget.querySelectorAll('.module-checkbox:checked');
   const modules = Array.from(moduleCheckboxes).map(cb => cb.value);
 
   if (!name || !slug || !customerName || !customerEmail || modules.length === 0) {
@@ -1196,10 +1185,10 @@ async function handleAgencyProvision(e) {
       method: 'POST',
       body: JSON.stringify({ name, slug, customer_name: customerName, customer_email: customerEmail, modules })
     });
-    showToast('Customer workspace provisioned. Awaiting customer invitation.', 'success');
-    closeUnisonWizard();
+    showToast('Customer workspace provisioned. Create its site from Agency > Websites.', 'success');
+    e.currentTarget.reset();
     await loadAgencyWorkspaces();
-    renderAgencyControlCentre();
+    window.location.hash = '#/agency/websites';
   } catch (err) {
     showToast(`Provisioning failed: ${err.message}`, 'error');
   }
@@ -1543,9 +1532,12 @@ function moveWizard(direction) {
 
 // Wizard navigation buttons
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('wiz-btn-next')?.addEventListener('click', () => {
-    if (wizardStep < 3) moveWizard(1);
-  });
+  // Retain navigation only when the legacy multi-step wizard is present.
+  if (document.getElementById('wiz-step-1')) {
+    document.getElementById('wiz-btn-next')?.addEventListener('click', () => {
+      if (wizardStep < 3) moveWizard(1);
+    });
+  }
   document.getElementById('wiz-btn-prev')?.addEventListener('click', () => {
     if (wizardStep > 1) moveWizard(-1);
   });
@@ -1757,11 +1749,15 @@ function renderWebCatalogView() {
 function renderCustomerModuleState(moduleId) {
   const target = document.getElementById(`view-workspace-${moduleId}`) || document.getElementById(`view-${moduleId}`);
   if (!target) return;
+  const entitlement = (AppState.currentWorkspace?.modules || []).find(item => item.module === moduleId);
+  const enabled = Boolean(entitlement?.enabled);
   clearEl(target);
   target.appendChild(createEl('div', { style: { padding: '40px', textAlign: 'center', color: 'var(--text-muted)' } }, [
-    createEl('i', { className: 'fa-solid fa-plug-circle-xmark', style: { fontSize: '3rem', marginBottom: '16px' } }),
-    createEl('h2', { textContent: 'Module State' }),
-    createEl('p', { textContent: 'This module is ENABLED_NOT_CONFIGURED. Functionality is currently restricted.' })
+    createEl('i', { className: `fa-solid ${enabled ? 'fa-plug-circle-exclamation' : 'fa-lock'}`, style: { fontSize: '3rem', marginBottom: '16px' } }),
+    createEl('h2', { textContent: enabled ? 'Enabled — setup pending' : 'Module not enabled' }),
+    createEl('p', { textContent: enabled
+      ? 'Your agency has enabled this module, but its customer interface or provider connection is not configured yet.'
+      : 'This module is not included in this workspace. Contact your agency if you need access.' })
   ]));
 }
 
